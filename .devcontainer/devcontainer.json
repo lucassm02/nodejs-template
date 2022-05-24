@@ -1,0 +1,42 @@
+{
+  "name": "Node.js & TypeScript",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "args": {
+      "VARIANT": "16"
+    }
+  },
+  "settings": {
+    "terminal.integrated.profiles.linux": {
+      "zsh": {
+        "path": "zsh"
+      },
+      "bash": {
+        "path": "bash",
+        "icon": "terminal-bash"
+      },
+    }
+  },
+  "postCreateCommand": "/home/node/entrypoint.sh && yarn install",
+  "forwardPorts": [
+    3000
+  ],
+  "remoteUser": "node",
+  "extensions": [
+    "redhat.vscode-yaml",
+    "CoenraadS.bracket-pair-colorizer",
+    "mikestead.dotenv",
+    "streetsidesoftware.code-spell-checker-portuguese-brazilian",
+    "streetsidesoftware.code-spell-checker",
+    "EditorConfig.EditorConfig",
+    "dbaeumer.vscode-eslint",
+    "ms-vscode.vscode-typescript-next",
+    "yzhang.markdown-all-in-one",
+    "DavidAnson.vscode-markdownlint",
+    "eg2.vscode-npm-script",
+    "Gruntfuggly.todo-tree",
+    "VisualStudioExptTeam.vscodeintellicode",
+    "esbenp.prettier-vscode",
+    "adamhartford.vscode-base64"
+  ]
+}
