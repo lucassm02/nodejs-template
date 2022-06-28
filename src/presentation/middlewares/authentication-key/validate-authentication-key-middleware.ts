@@ -1,8 +1,7 @@
 import { Logger } from '@/data/protocols/utils';
 import { ValidateAuthenticationKey } from '@/domain/usecases/authentication-key/validate-authentication-key';
 import { Middleware } from '@/presentation/protocols/middleware';
-import { badRequest, serverError } from '@/presentation/utils';
-import { makeErrorDescription } from '@/util/formatters';
+import { serverError } from '@/presentation/utils';
 
 export class ValidateAuthenticationKeyMiddleware implements Middleware {
   constructor(

@@ -7,10 +7,9 @@ import {
 
 const server = HttpServer.getInstance();
 
-server.use(makeAuthenticateByAuthenticationMiddleware());
-
 server.get(
   '/plan',
+  makeAuthenticateByAuthenticationMiddleware(),
   makeGetPlanByIdentifierMiddleware(),
   makeGetPlanByIdController()
 );
