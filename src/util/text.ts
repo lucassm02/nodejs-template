@@ -26,3 +26,6 @@ export const convertStringToBase64 = (text: string): string => {
   const buffer = Buffer.from(text);
   return buffer.toString('base64');
 };
+
+export const stringToBoolean = (value: string | undefined) =>
+  String(value).toLowerCase() === 'true';

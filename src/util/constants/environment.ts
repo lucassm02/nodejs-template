@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import { stringToBoolean } from '../text';
 
 export const SERVER = {
   PORT: process.env.PORT || 3000,
@@ -7,7 +8,9 @@ export const SERVER = {
 };
 
 export const LOGGER = {
-  DATABASE: { ENABLED: process.env.ENABLE_DATABASE_LOGS || false },
+  DATABASE: {
+    ENABLED: stringToBoolean(process.env.ENABLE_DATABASE_LOGS) || false,
+  },
   CONSOLE: { LEVEL: process.env.LOGGER_CONSOLE_LEVEL || 'info' },
 };
 
@@ -54,14 +57,14 @@ export const MONGO = {
 };
 
 export const APM = {
-  ENABLED: process.env.ENABLE_APM || false,
+  ENABLED: stringToBoolean(process.env.ENABLE_APM) || false,
   SECRET_TOKEN: process.env.APM_SECRET_TOKEN || '',
   SERVER_URL: process.env.APM_SERVER_URL || '',
   ENVIRONMENT: process.env.APM_ENVIRONMENT || '',
 };
 
 export const ELASTICSEARCH = {
-  ENABLED: process.env.ENABLE_ELASTICSEARCH || false,
+  ENABLED: stringToBoolean(process.env.ENABLE_ELASTICSEARCH) || false,
   USERNAME: process.env.ELASTICSEARCH_USERNAME || '',
   PASSWORD: process.env.ELASTICSEARCH_PASSWORD || '',
   SERVER_URL: process.env.ELASTICSEARCH_SERVER_URL || '',
