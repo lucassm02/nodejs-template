@@ -3,9 +3,9 @@ import { logger } from '@/util';
 import { MONGO, SERVER } from '@/util/constants';
 import mongoose from 'mongoose';
 
-import { server } from './application';
+import { application } from './application';
 
-server.onStart(async () => {
+application.onStart(async () => {
   try {
     await mongoose.connect(MONGO.URL(), {
       dbName: MONGO.NAME,
@@ -20,7 +20,7 @@ server.onStart(async () => {
   }
 });
 
-server.listenAsync(SERVER.PORT, () => {
+application.listenAsync(SERVER.PORT, () => {
   logger.log({
     level: 'info',
     message: `Server is running on port: ${SERVER.PORT}`,

@@ -9,21 +9,21 @@ import helmet from 'helmet';
 import { enableRoutes } from './configs';
 import { createHttpRequestLog } from './facades/create-http-request-log';
 
-const server = HttpServer.getInstance();
+const application = HttpServer.getInstance();
 
 ElasticAPM.getInstance();
 
-server.use(cors({ exposedHeaders: 'X-Total-Count' }));
-server.use(helmet());
-server.use(express.json());
-server.use(express.urlencoded({ extended: true }));
-server.use(httpLoggerAdapter(createHttpRequestLog));
+application.use(cors({ exposedHeaders: 'X-Total-Count' }));
+application.use(helmet());
+application.use(express.json());
+application.use(express.urlencoded({ extended: true }));
+application.use(httpLoggerAdapter(createHttpRequestLog));
 
-server.setSharedState({});
+application.setSharedState({});
 
-server.baseUrl(SERVER.BASE_URI);
+application.baseUrl(SERVER.BASE_URI);
 
 enableRoutes('public');
 enableRoutes('private');
 
-export { server };
+export { application };
