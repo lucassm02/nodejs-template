@@ -12,15 +12,20 @@ export function stateDependencies(dependencies: Dependencies) {
     key: string | symbol,
     descriptor: PropertyDescriptor
   ) {
+    const STATE_INDEX_IN_REQUEST = 1;
+    const STATE_INDEX_IN_STATE = 0;
+
     const originalMethod = descriptor.value;
 
     descriptor.value = function (...args: any[]) {
-      for (const key in dependencies) {
-        const dependency = dependencies[key];
-        const stateCondition = args[1][0]?.[dependency];
+      for (const index in dependencies) {
+        const DEPENDENCY_NAME = dependencies[index];
 
-        if (!stateCondition) {
-          const error = new Error(`MISSING_DEPENDENCY: ${dependency}`);
+        const state =
+          args[STATE_INDEX_IN_REQUEST][STATE_INDEX_IN_STATE]?.[DEPENDENCY_NAME];
+
+        if (state === undefined) {
+          const error = new Error(`MISSING_DEPENDENCY: ${DEPENDENCY_NAME}`);
           logger.log(error);
           return serverError(error);
         }
