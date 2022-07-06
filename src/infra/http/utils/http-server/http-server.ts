@@ -11,7 +11,7 @@ import express, {
   Response,
   Router,
 } from 'express';
-import { Server } from 'http';
+import server, { Server } from 'http';
 import { AddressInfo } from 'net';
 
 import { RouteAlias } from './route-alias';
@@ -71,6 +71,11 @@ export class HttpServer {
     return this.server;
   }
 
+  public getServer(): Server {
+    this.express.use(this.defaultBaseUrl, this.router);
+    return server.createServer(this.express);
+  }
+
   public async listenAsync(
     port: number | string,
     callback: () => void = () => {}
@@ -80,9 +85,11 @@ export class HttpServer {
 
     this.express.use(this.defaultBaseUrl, this.router);
 
-    for await (const callback of this.startupCallbacks) {
-      await callback?.();
-    }
+    const promises = this.startupCallbacks.map(async (callback) =>
+      callback?.()
+    );
+
+    await Promise.all(promises);
 
     this.listenerOptions = { callback, port: +port };
     this.server = this.express.listen(port, callback);

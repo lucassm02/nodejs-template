@@ -11,8 +11,6 @@ server.onStart(async () => {
       dbName: MONGO.NAME,
       authSource: MONGO.AUTH_SOURCE,
       authMechanism: 'SCRAM-SHA-1',
-      useUnifiedTopology: true,
-      useNewUrlParser: true,
     });
 
     await sqlConnection.raw('SELECT 1');
@@ -22,7 +20,7 @@ server.onStart(async () => {
   }
 });
 
-server.listenAsync(+SERVER.PORT, () => {
+server.listenAsync(SERVER.PORT, () => {
   logger.log({
     level: 'info',
     message: `Server is running on port: ${SERVER.PORT}`,
