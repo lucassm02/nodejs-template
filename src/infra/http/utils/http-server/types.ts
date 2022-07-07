@@ -8,6 +8,8 @@ import {
   Response,
 } from 'express';
 
+import { Route as RouteClass } from './route';
+
 export type GenericObject = { [key: string]: any };
 export type Callback = () => any | Promise<any>;
 
@@ -31,3 +33,5 @@ export type RouteMiddleware =
   | Middleware
   | CallbackWithStateHook
   | Function;
+
+export type Route = RouteClass;

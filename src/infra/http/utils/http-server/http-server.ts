@@ -11,27 +11,24 @@ import express, {
   Response,
   Router,
 } from 'express';
+import { readdirSync } from 'fs';
 import server, { Server } from 'http';
 import { AddressInfo } from 'net';
+import { resolve } from 'path';
 
-import { RouteAlias } from './route-alias';
+import { Route } from './route';
 import { Callback, ExpressRoute, RouteMiddleware } from './types';
 
 export class HttpServer {
   private express!: Express;
   private server!: Server;
   private listenerOptions!: { port: number; callback: Callback };
-  private router!: Router;
-  private defaultBaseUrl = '';
+  private baseUrl = '';
   private addressInfo!: AddressInfo | null | string;
   private routes: {
-    baseUrl: string;
-    route: Router;
-  }[] = [];
-  private httpParams: {
-    route: string;
-    request: Request | null;
-    response: Response | null;
+    path?: string;
+    baseUrl?: string;
+    router: Router;
   }[] = [];
 
   private startupCallbacks: Function[] = [];
@@ -42,7 +39,6 @@ export class HttpServer {
 
   constructor() {
     this.express = express();
-    this.router = Router();
     this.express.use(this.makeSharedStateInitializer());
   }
 
@@ -62,7 +58,7 @@ export class HttpServer {
     if (this.isStarted) return;
     this.isStarted = true;
 
-    this.express.use(this.defaultBaseUrl, this.router);
+    this.loadRoutes();
 
     this.listenerOptions = { callback, port: +port };
     this.server = this.express.listen(port, callback);
@@ -72,7 +68,6 @@ export class HttpServer {
   }
 
   public getServer(): Server {
-    this.express.use(this.defaultBaseUrl, this.router);
     return server.createServer(this.express);
   }
 
@@ -83,13 +78,13 @@ export class HttpServer {
     if (this.isStarted) return;
     this.isStarted = true;
 
-    this.express.use(this.defaultBaseUrl, this.router);
-
     const promises = this.startupCallbacks.map(async (callback) =>
       callback?.()
     );
 
     await Promise.all(promises);
+
+    this.loadRoutes();
 
     this.listenerOptions = { callback, port: +port };
     this.server = this.express.listen(port, callback);
@@ -148,7 +143,7 @@ export class HttpServer {
     this.express.set(setting, val);
   }
 
-  public baseUrl(url: string) {
+  public setBaseUrl(url: string) {
     if (this.isStarted) {
       logger.log({
         level: 'warn',
@@ -157,94 +152,93 @@ export class HttpServer {
 
       return;
     }
-    this.defaultBaseUrl = url;
+    this.baseUrl = url;
   }
 
-  public route(baseUrl = '') {
-    const filteredParams = this.routes.filter(
-      (index) => index.baseUrl !== baseUrl
-    );
+  public async routesDirectory(
+    path: string,
+    route?: Route,
+    ...middlewares: RouteMiddleware[] | ExpressRoute[] | Function[]
+  ): Promise<void>;
+  public async routesDirectory(
+    path: string,
+    baseUrl?: string,
+    ...middlewares: RouteMiddleware[] | ExpressRoute[] | Function[]
+  ): Promise<void>;
+  public async routesDirectory(
+    path: string,
+    middleware?: RouteMiddleware | ExpressRoute | Function,
+    ...middlewares: RouteMiddleware[] | ExpressRoute[] | Function[]
+  ): Promise<void>;
+  public async routesDirectory(
+    path: string,
+    agr1?: string | RouteMiddleware | ExpressRoute | Function | Route,
+    ...args: RouteMiddleware[] | ExpressRoute[] | Function[]
+  ): Promise<void> {
+    const extensionsToSearch = ['.TS', '.JS'];
+    const ignoreIfIncludes = ['.MAP.', '.SPEC.', '.TEST.'];
+
+    const baseUrl = typeof agr1 === 'string' ? agr1 : this.baseUrl;
+    const middlewares = typeof agr1 === 'function' ? [agr1, ...args] : args;
+
+    const files = readdirSync(path);
+
+    for await (const fileName of files) {
+      const fileNameToUpperCase = fileName.toLocaleUpperCase();
+
+      const hasAValidExtension = ignoreIfIncludes.map((text) =>
+        fileNameToUpperCase.includes(text)
+      );
+
+      const haveAValidName = extensionsToSearch.map((ext) =>
+        fileNameToUpperCase.endsWith(ext)
+      );
+
+      if (haveAValidName && hasAValidExtension) {
+        const filePath = resolve(path, fileName);
+        const setup = <Function>(await import(filePath)).default;
+
+        if (!setup) continue;
+
+        const route = agr1 instanceof Route ? agr1 : this.route('', baseUrl);
+
+        if (middlewares.length) {
+          const [arg1, ...args] = middlewares;
+          route.use(arg1, ...args);
+        }
+
+        setup(route);
+      }
+    }
+  }
+
+  public route(path?: string, baseUrl?: string) {
+    const route = this.getRoute(path, baseUrl);
+
+    if (route) return route;
 
     const router = Router();
-    this.express.use(baseUrl, router);
-    this.routes = [...filteredParams, { baseUrl, route: router }];
+    this.routes = [...this.routes, { path, baseUrl, router }];
 
-    return router;
+    return new Route(router, this.adaptMiddlewares.bind(this));
   }
 
-  public getRoute(baseUrl: string) {
-    const route = this?.routes?.find((route) => route.baseUrl === baseUrl);
-    return route?.route ?? null;
-  }
-
-  public post(route: string, ...middlewares: RouteMiddleware[]) {
-    this.router.post(route, ...this.adaptMiddlewares(middlewares));
-    return new RouteAlias(
-      this.router,
-      'POST',
-      this.adaptMiddlewares(middlewares)
-    );
-  }
-
-  public get(route: string, ...middlewares: RouteMiddleware[]) {
-    this.router.get(route, ...this.adaptMiddlewares(middlewares));
-    return new RouteAlias(
-      this.router,
-      'GET',
-      this.adaptMiddlewares(middlewares)
-    );
-  }
-
-  public delete(route: string, ...middlewares: RouteMiddleware[]) {
-    this.router.delete(route, ...this.adaptMiddlewares(middlewares));
-    return new RouteAlias(
-      this.router,
-      'DELETE',
-      this.adaptMiddlewares(middlewares)
-    );
-  }
-
-  public put(route: string, ...middlewares: RouteMiddleware[]) {
-    this.router.put(route, ...this.adaptMiddlewares(middlewares));
-    return new RouteAlias(
-      this.router,
-      'PUT',
-      this.adaptMiddlewares(middlewares)
-    );
-  }
-
-  public options(route: string, ...middlewares: RouteMiddleware[]) {
-    this.router.options(route, ...this.adaptMiddlewares(middlewares));
-    return new RouteAlias(
-      this.router,
-      'OPTIONS',
-      this.adaptMiddlewares(middlewares)
-    );
-  }
-
-  public patch(route: string, ...middlewares: RouteMiddleware[]) {
-    this.router.patch(route, ...this.adaptMiddlewares(middlewares));
-    return new RouteAlias(
-      this.router,
-      'PATCH',
-      this.adaptMiddlewares(middlewares)
-    );
-  }
-
-  private setHttpParams(
-    route: string,
-    request: Request | null = null,
-    response: Response | null = null
-  ) {
-    const filteredParams = this.httpParams.filter(
-      (index) => index.route !== route
+  public getRoute(path?: string, baseUrl?: string) {
+    const route = this.routes.find(
+      (route) => route.path === path && route.baseUrl === baseUrl
     );
 
-    this.httpParams = [...filteredParams, { route, request, response }];
+    if (!route) return undefined;
+
+    return new Route(route.router, this.adaptMiddlewares.bind(this));
   }
 
-  public getHttpParams(route: string) {
-    return this.httpParams.find((index) => index.route === route);
+  private loadRoutes() {
+    this.routes.forEach((route) => {
+      const baseUrl = route.baseUrl ?? this.baseUrl;
+      const url = `${baseUrl}/${route.path}`.replaceAll(/\/{2,}/g, '/');
+      this.express.use(url, route.router);
+    });
   }
 
   private makeSetStateInRequest(request: Request) {
@@ -278,12 +272,11 @@ export class HttpServer {
     return middlewares.map((middleware) => {
       if (typeof middleware === 'function')
         return (request: Request, response: Response, next: NextFunction) => {
-          this.setHttpParams(request.url, request, response);
           const middlewareResponse = middleware(request, response, next, [
             request?.sharedState,
             this.makeSetStateInRequest(request),
           ]);
-          this.setHttpParams(request.url, null, null);
+
           return middlewareResponse;
         };
       return this.middlewareAdapter(middleware);
@@ -292,7 +285,6 @@ export class HttpServer {
 
   private middlewareAdapter(middleware: Middleware | Controller) {
     return async (request: Request, response: Response, next: NextFunction) => {
-      this.setHttpParams(request.url, request, response);
       request.body = convertSnakeCaseKeysToCamelCase(request.body);
       request.params = convertSnakeCaseKeysToCamelCase(request.params);
       request.query = convertSnakeCaseKeysToCamelCase(request.query);
@@ -307,11 +299,18 @@ export class HttpServer {
 
       if (httpResponse?.headers) response.set(httpResponse.headers);
 
-      this.setHttpParams(request.url, null, null);
-
       return response
         .status(httpResponse?.statusCode)
         .json(convertCamelCaseKeysToSnakeCase(httpResponse?.body));
     };
+  }
+
+  private resolveUrl(from: string, to: string) {
+    const resolvedUrl = new URL(to, new URL(from, 'resolve://'));
+    if (resolvedUrl.protocol === 'resolve:') {
+      const { pathname, search, hash } = resolvedUrl;
+      return pathname + search + hash;
+    }
+    return resolvedUrl.toString();
   }
 }
