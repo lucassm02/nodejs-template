@@ -1,15 +1,15 @@
-import { HttpServer } from '@/infra/http/utils';
+import { Route } from '@/infra/http/utils/http-server';
 import { makeGetPlanByIdController } from '@/main/factories/controllers';
 import {
   makeAuthenticateByAuthenticationMiddleware,
   makeGetPlanByIdentifierMiddleware,
 } from '@/main/factories/middlewares';
 
-const server = HttpServer.getInstance();
-
-server.get(
-  '/plan',
-  makeAuthenticateByAuthenticationMiddleware(),
-  makeGetPlanByIdentifierMiddleware(),
-  makeGetPlanByIdController()
-);
+export default function (route: Route) {
+  route.get(
+    '/plans',
+    makeAuthenticateByAuthenticationMiddleware(),
+    makeGetPlanByIdentifierMiddleware(),
+    makeGetPlanByIdController()
+  );
+}

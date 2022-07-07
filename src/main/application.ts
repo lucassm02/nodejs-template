@@ -5,8 +5,8 @@ import { ElasticAPM } from '@/util/observability/apm';
 import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
+import path from 'path';
 
-import { enableRoutes } from './configs';
 import { createHttpRequestLog } from './facades/create-http-request-log';
 
 const application = HttpServer.getInstance();
@@ -21,9 +21,13 @@ application.use(httpLoggerAdapter(createHttpRequestLog));
 
 application.setSharedState({});
 
-application.baseUrl(SERVER.BASE_URI);
+application.setBaseUrl(SERVER.BASE_URI);
 
-enableRoutes('public');
-enableRoutes('private');
+const routesFolder = path.resolve(__dirname, 'routes');
+const publicRoutesFolder = path.resolve(routesFolder, 'public');
+const privateRotesFolder = path.resolve(routesFolder, 'private');
+
+application.routesDirectory(publicRoutesFolder);
+application.routesDirectory(privateRotesFolder);
 
 export { application };

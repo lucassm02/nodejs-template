@@ -1,7 +1,7 @@
-import { HttpServer } from '@/infra/http/utils';
+import { Route } from '@/infra/http/utils/http-server/types';
 
-const server = HttpServer.getInstance();
-
-server.get('/health', (_, res) => {
-  res.status(200).json({ message: 'The service is online!' });
-});
+export default function (route: Route) {
+  route.get('/health', (_, res) => {
+    res.status(200).json({ message: 'The service is online!' });
+  });
+}

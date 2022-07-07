@@ -1,7 +1,7 @@
 import { application } from '@/main/application';
 import request from 'supertest';
 
-application.baseUrl('/api/v1');
+application.setBaseUrl('/api/v1');
 
 const rawServer = application.getServer();
 
