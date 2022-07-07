@@ -21,6 +21,7 @@
     "prettier"
   ],
   "rules": {
+    "no-continue": "off",
     "no-restricted-syntax": "off",
     "no-param-reassign": "off",
     "func-names": "off",
