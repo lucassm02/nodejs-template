@@ -12,9 +12,11 @@
     "server:dev": "tsnd -r tsconfig-paths/register --respawn --transpile-only --ignore-watch node_modules --no-notify  src/main/server.ts",
     "server:debug": "tsnd -r tsconfig-paths/register --respawn --transpile-only --ignore-watch node_modules --no-notify --inspect --poll --watch --clear src/main/server.ts",
     "test": "jest --passWithNoTests --silent --noStackTrace --runInBand",
-    "test:verbose": "jest --passWithNoTests",
+    "test:verbose": "jest --passWithNoTests --verbose",
     "test:unit": "yarn test --watch -c jest-unit.config.ts",
     "test:integration": "yarn test --watch -c jest-integration.config.ts",
+    "test:unit:verbose": "yarn test:verbose --watch -c jest-unit.config.ts",
+    "test:integration:verbose": "yarn test:verbose --verbose --watch -c jest-integration.config.ts",
     "test:ci": "yarn test --coverage",
     "prepare": "husky install"
   },
