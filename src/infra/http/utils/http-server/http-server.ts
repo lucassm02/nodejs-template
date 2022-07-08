@@ -25,10 +25,11 @@ export class HttpServer {
   private listenerOptions!: { port: number; callback: Callback };
   private baseUrl = '';
   private addressInfo!: AddressInfo | null | string;
-  private routes: {
+  private routers: {
     path?: string;
     baseUrl?: string;
     router: Router;
+    loaded: boolean;
   }[] = [];
 
   private startupCallbacks: Function[] = [];
@@ -68,6 +69,7 @@ export class HttpServer {
   }
 
   public getServer(): Server {
+    this.loadRoutes();
     return server.createServer(this.express);
   }
 
@@ -210,6 +212,8 @@ export class HttpServer {
         setup(route);
       }
     }
+
+    this.loadRoutes();
   }
 
   public route(path?: string, baseUrl?: string) {
@@ -218,13 +222,13 @@ export class HttpServer {
     if (route) return route;
 
     const router = Router();
-    this.routes = [...this.routes, { path, baseUrl, router }];
+    this.routers = [...this.routers, { path, baseUrl, router, loaded: false }];
 
     return new Route(router, this.adaptMiddlewares.bind(this));
   }
 
   public getRoute(path?: string, baseUrl?: string) {
-    const route = this.routes.find(
+    const route = this.routers.find(
       (route) => route.path === path && route.baseUrl === baseUrl
     );
 
@@ -234,11 +238,14 @@ export class HttpServer {
   }
 
   private loadRoutes() {
-    this.routes.forEach((route) => {
-      const baseUrl = route.baseUrl ?? this.baseUrl;
-      const url = `${baseUrl}/${route.path}`.replaceAll(/\/{2,}/g, '/');
-      this.express.use(url, route.router);
-    });
+    this.routers
+      .filter((router) => !router.loaded)
+      .forEach((router) => {
+        const baseUrl = router.baseUrl ?? this.baseUrl;
+        const url = `${baseUrl}/${router.path}`.replaceAll(/\/{2,}/g, '/');
+        this.express.use(url, router.router);
+        router.loaded = true;
+      });
   }
 
   private makeSetStateInRequest(request: Request) {
@@ -303,14 +310,5 @@ export class HttpServer {
         .status(httpResponse?.statusCode)
         .json(convertCamelCaseKeysToSnakeCase(httpResponse?.body));
     };
-  }
-
-  private resolveUrl(from: string, to: string) {
-    const resolvedUrl = new URL(to, new URL(from, 'resolve://'));
-    if (resolvedUrl.protocol === 'resolve:') {
-      const { pathname, search, hash } = resolvedUrl;
-      return pathname + search + hash;
-    }
-    return resolvedUrl.toString();
   }
 }
