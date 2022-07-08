@@ -19,6 +19,8 @@ import { resolve } from 'path';
 import { Route } from './route';
 import { Callback, ExpressRoute, RouteMiddleware } from './types';
 
+const SHARED_STATE_SYMBOL = Symbol('SharedState');
+
 export class HttpServer {
   private express!: Express;
   private server!: Server;
@@ -174,14 +176,14 @@ export class HttpServer {
   ): Promise<void>;
   public async routesDirectory(
     path: string,
-    agr1?: string | RouteMiddleware | ExpressRoute | Function | Route,
+    arg1?: string | RouteMiddleware | ExpressRoute | Function | Route,
     ...args: RouteMiddleware[] | ExpressRoute[] | Function[]
   ): Promise<void> {
     const extensionsToSearch = ['.TS', '.JS'];
     const ignoreIfIncludes = ['.MAP.', '.SPEC.', '.TEST.'];
 
-    const baseUrl = typeof agr1 === 'string' ? agr1 : this.baseUrl;
-    const middlewares = typeof agr1 === 'function' ? [agr1, ...args] : args;
+    const baseUrl = typeof arg1 === 'string' ? arg1 : this.baseUrl;
+    const middlewares = typeof arg1 === 'function' ? [arg1, ...args] : args;
 
     const files = readdirSync(path);
 
@@ -202,7 +204,7 @@ export class HttpServer {
 
         if (!setup) continue;
 
-        const route = agr1 instanceof Route ? agr1 : this.route('', baseUrl);
+        const route = arg1 instanceof Route ? arg1 : this.route('', baseUrl);
 
         if (middlewares.length) {
           const [arg1, ...args] = middlewares;
@@ -252,21 +254,21 @@ export class HttpServer {
     return <T>(state: T) => {
       for (const key in state) {
         if (typeof key === 'string' || typeof key === 'number')
-          request.sharedState[key] = state[key];
+          request[SHARED_STATE_SYMBOL][key] = state[key];
       }
     };
   }
 
   private makeSharedStateInitializer() {
     return (request: Request, response: Response, next: NextFunction) => {
-      request.sharedState = {};
+      request[SHARED_STATE_SYMBOL] = {};
       next();
     };
   }
 
   private makeSharedStateChanger<T>(state: T) {
-    return (request: Request, response: Response, next: NextFunction) => {
-      response.locals.sharedSate = state;
+    return (request: Request, _: Response, next: NextFunction) => {
+      request[SHARED_STATE_SYMBOL] = state;
       next();
     };
   }
@@ -280,7 +282,7 @@ export class HttpServer {
       if (typeof middleware === 'function')
         return (request: Request, response: Response, next: NextFunction) => {
           const middlewareResponse = middleware(request, response, next, [
-            request?.sharedState,
+            request[SHARED_STATE_SYMBOL],
             this.makeSetStateInRequest(request),
           ]);
 
@@ -298,7 +300,7 @@ export class HttpServer {
 
       const httpResponse = await middleware.handle(
         request,
-        [request?.sharedState, this.makeSetStateInRequest(request)],
+        [request[SHARED_STATE_SYMBOL], this.makeSetStateInRequest(request)],
         next
       );
 

@@ -25,9 +25,9 @@ application.setBaseUrl(SERVER.BASE_URI);
 
 const routesFolder = path.resolve(__dirname, 'routes');
 const publicRoutesFolder = path.resolve(routesFolder, 'public');
-const privateRotesFolder = path.resolve(routesFolder, 'private');
+const privateRoutesFolder = path.resolve(routesFolder, 'private');
 
 application.routesDirectory(publicRoutesFolder);
-application.routesDirectory(privateRotesFolder);
+application.routesDirectory(privateRoutesFolder);
 
 export { application };
