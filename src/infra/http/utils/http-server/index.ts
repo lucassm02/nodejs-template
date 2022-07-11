@@ -1,2 +1,2 @@
-export * from './http-server';
+export * from './factory';
 export { Route } from './types';

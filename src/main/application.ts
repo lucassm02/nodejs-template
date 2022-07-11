@@ -1,4 +1,4 @@
-import { HttpServer } from '@/infra/http/utils/http-server';
+import { httpServer } from '@/infra/http/utils/http-server';
 import { httpLoggerAdapter } from '@/main/adapters';
 import { SERVER } from '@/util/constants';
 import { ElasticAPM } from '@/util/observability/apm';
@@ -9,7 +9,7 @@ import path from 'path';
 
 import { createHttpRequestLog } from './facades/create-http-request-log';
 
-const application = HttpServer.getInstance();
+const application = httpServer();
 
 ElasticAPM.getInstance();
 

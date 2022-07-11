@@ -1,4 +1,4 @@
-import { HttpServer } from '@/infra/http/utils/http-server';
+import { httpServer } from '@/infra/http/utils/http-server';
 import { adapterOptions } from '@/main/adapters';
 import { makeNoAuthenticationController } from '@/main/factories/controllers';
 import {
@@ -6,7 +6,7 @@ import {
   makeValidateTokenMiddleware,
 } from '@/main/factories/middlewares';
 
-const server = HttpServer.getInstance();
+const server = httpServer();
 
 export const switchBetweenAuthenticationAndAuthorization: adapterOptions = [
   {
