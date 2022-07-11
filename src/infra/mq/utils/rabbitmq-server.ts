@@ -20,6 +20,10 @@ type Payload = {
   headers: object;
 };
 
+type GenericObject = {
+  [key: string]: any;
+};
+
 export class RabbitMqServer {
   private connection!: Connection;
   private channel!: Channel;
@@ -37,10 +41,6 @@ export class RabbitMqServer {
     }
 
     return RabbitMqServer.instance;
-  }
-
-  public startSync() {
-    (async () => this.start())();
   }
 
   public setCredentials(credentials: Credentials) {
@@ -111,7 +111,7 @@ export class RabbitMqServer {
     );
   }
 
-  private messageFromBuffer(message: any): Buffer {
+  private messageFromBuffer(message: GenericObject): Buffer {
     const string = JSON.stringify(message);
     return Buffer.from(string);
   }
@@ -136,7 +136,7 @@ export class RabbitMqServer {
     callback: Function
   ): Promise<void> {
     try {
-      return callback(payload);
+      return await callback(payload);
     } catch (error) {
       logger.log(error);
     }

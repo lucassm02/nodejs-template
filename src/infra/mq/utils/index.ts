@@ -1,1 +1,1 @@
-export * from './rabbitmq-server';
+export * from './factory';
