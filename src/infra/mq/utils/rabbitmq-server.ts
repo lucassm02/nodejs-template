@@ -144,21 +144,17 @@ export class RabbitMqServer {
 
   public async consume(queue: string, callback: (payload: Payload) => void) {
     if (!this.connection || !this.channel) await this.restart();
-    await this.channel.consume(
-      queue,
-      async (message) => {
-        if (!message) return;
+    await this.channel.consume(queue, async (message) => {
+      if (!message) return;
 
-        const payload = {
-          body: this.messageToJson(message),
-          headers: message?.properties?.headers,
-        };
+      const payload = {
+        body: this.messageToJson(message),
+        headers: message?.properties?.headers,
+      };
 
-        await this.handleMessage(queue, payload, callback);
+      await this.handleMessage(queue, payload, callback);
 
-        this.channel.ack(message);
-      },
-      {}
-    );
+      this.channel.ack(message);
+    });
   }
 }
