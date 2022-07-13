@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 type Options<T> = {
   table: string;
   alias?: string;
@@ -12,7 +11,7 @@ type MakeTableOptions = {
 
 export const makeTable =
   ({ database, tablePrefix }: MakeTableOptions) =>
-  <T>(options: Options<T>) => {
+  <T extends string>(options: Options<T>) => {
     const table = `[${database}].${options.table}`;
 
     const prefix = tablePrefix ?? '';
@@ -35,8 +34,7 @@ export const makeTable =
     return {
       TABLE: table,
       ALIAS: tableWithAlias,
-      // @ts-ignore: Unreachable code error
-      COLUMNS: columns as { [P in Uppercase<Columns[keyof Columns]>]: string },
+      COLUMNS: columns as { [P in Uppercase<Columns[number]>]: string },
       RAW_COLUMNS: options.columns,
     };
   };
