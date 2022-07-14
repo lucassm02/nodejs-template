@@ -3,14 +3,14 @@ export type Callback<T> = (payload: T, next: Function | NextFunction) => void;
 
 export default <T>(payload: T) =>
   (...args: Callback<T>[] | Function[]) =>
-  () => {
+  async () => {
     const [launcher] = args
       .reverse()
       .reduce((callbacks: Function[], callback: Function, index) => {
         if (index === 0) {
           return [
             () =>
-              callback(payload, (func?: NextFunction) => {
+              callback(payload, async (func?: NextFunction) => {
                 func?.();
               }),
           ];
@@ -22,5 +22,5 @@ export default <T>(payload: T) =>
       }, [])
       .reverse();
 
-    launcher?.();
+    await launcher?.();
   };
