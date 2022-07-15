@@ -218,7 +218,15 @@ export class HttpServer {
     this.loadRoutes();
   }
 
-  public route(path?: string, baseUrl?: string) {
+  public route(options: { path?: string; baseUrl?: string }): Route;
+  public route(path?: string, baseUrl?: string): Route;
+  public route(
+    arg1?: string | { path?: string; baseUrl?: string },
+    arg2?: string
+  ) {
+    const { path, baseUrl } =
+      typeof arg1 === 'object' ? arg1 : { path: arg1, baseUrl: arg2 };
+
     const route = this.getRoute(path, baseUrl);
 
     if (route) return route;
@@ -244,7 +252,8 @@ export class HttpServer {
       .filter((router) => !router.loaded)
       .forEach((router) => {
         const baseUrl = router.baseUrl ?? this.baseUrl;
-        const url = `${baseUrl}/${router.path}`.replaceAll(/\/{2,}/g, '/');
+        const path = router.path ?? '';
+        const url = `${baseUrl}/${path}`.replaceAll(/\/{2,}/g, '/');
         this.express.use(url, router.router);
         router.loaded = true;
       });
