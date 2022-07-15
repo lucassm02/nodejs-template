@@ -20,7 +20,7 @@
     "test:integration": "yarn test --watch -c jest-integration.config.ts",
     "test:unit:verbose": "yarn test:verbose --watch -c jest-unit.config.ts",
     "test:integration:verbose": "yarn test:verbose --verbose --watch -c jest-integration.config.ts",
-    "test:ci": "yarn test --coverage",
+    "test:coverage": "yarn test --coverage",
     "prepare": "husky install",
     "sonar": "docker run --rm --env-file .env -v $(pwd):/usr/src sonarsource/sonar-scanner-cli"
   },
