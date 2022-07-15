@@ -1,6 +1,0 @@
-projectKey=pagtel-templates_microservice-template_AYIDNSAolnVFxe9iq2mu
-serverUrl=http://192.168.203.100:30900
-serverVersion=9.5.0.56709
-dashboardUrl=http://192.168.203.100:30900/dashboard?id=pagtel-templates_microservice-template_AYIDNSAolnVFxe9iq2mu
-ceTaskId=AYIDaX9QlnVFxe9iq2m-
-ceTaskUrl=http://192.168.203.100:30900/api/ce/task?id=AYIDaX9QlnVFxe9iq2m-
