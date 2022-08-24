@@ -1,13 +1,9 @@
-import { Job } from '@/consumer/protocols';
 import { Logger } from '@/data/protocols/utils';
+import { Task } from '@/schedule/protocols';
 
-export class ExampleJob implements Job {
+export class ExampleTask implements Task {
   constructor(private readonly logger: Logger) {}
-  async handle(
-    payload: Job.Payload,
-    state: Job.State,
-    next: Job.Next
-  ): Job.Result {
+  async handle(state: Task.State, next: Task.Next): Task.Result {
     try {
       this.logger.log({ level: 'info', message: "Hello i'm a task" });
       next();

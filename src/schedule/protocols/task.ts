@@ -1,10 +1,10 @@
 import { SharedState } from './shared-state';
 
-export interface Job {
-  handle(state: Job.State, next: Job.Next): Job.Result;
+export interface Task {
+  handle(state: Task.State, next: Task.Next): Task.Result;
 }
 
-export namespace Job {
+export namespace Task {
   type setState = (state: SharedState) => void;
   export type State = [SharedState, setState];
   export type Next = Function;

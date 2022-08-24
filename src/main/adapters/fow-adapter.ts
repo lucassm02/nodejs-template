@@ -1,5 +1,5 @@
-type NextFunction = (callback?: () => void) => void;
-export type Callback<T> = (payload: T, next: Function | NextFunction) => void;
+type Next = (callback?: () => void) => Promise<void>;
+export type Callback<T> = (payload: T, next: Function | Next) => void;
 
 export default <T>(payload: T) =>
   (...args: Callback<T>[] | Function[]) =>
@@ -9,9 +9,9 @@ export default <T>(payload: T) =>
       .reduce((callbacks: Function[], callback: Function, index) => {
         if (index === 0) {
           return [
-            () =>
-              callback(payload, async (func?: NextFunction) => {
-                func?.();
+            async () =>
+              callback(payload, async (fun?: Next) => {
+                await fun?.();
               }),
           ];
         }

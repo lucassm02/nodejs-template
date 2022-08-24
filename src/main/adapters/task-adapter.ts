@@ -1,11 +1,11 @@
-import { Job } from '@/task/protocols';
+import { Task } from '@/schedule/protocols';
 
 import makeFlow from './fow-adapter';
 
-export const taskAdapter = (...jobs: Job[]) => {
+export const taskAdapter = (...tasks: Task[]) => {
   type State = { [key: string]: any };
 
-  const state = {} as State;
+  const state: State = {};
 
   const setState = (data: State) => {
     for (const key in data) {
@@ -14,13 +14,13 @@ export const taskAdapter = (...jobs: Job[]) => {
     }
   };
 
-  const adaptedJobs = jobs.map((job) => {
-    return (next: Job.Next) => {
-      return job.handle([state, setState], next);
+  const adaptedTasks = tasks.map((task) => {
+    return (_: unknown, next: Task.Next) => {
+      return task.handle([state, setState], next);
     };
   });
 
   return () => {
-    return makeFlow({})(...adaptedJobs)();
+    return makeFlow({})(...adaptedTasks)();
   };
 };
