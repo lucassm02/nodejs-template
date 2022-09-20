@@ -5,9 +5,9 @@ export interface Job {
 }
 
 export namespace Job {
-  type setState = (state: SharedState) => void;
-  export type Payload = { body: any; headers: any };
-  export type State = [SharedState, setState];
+  type SetState = <T = SharedState>(state: T) => void;
+  export type Payload<B = any, H = any> = { body: B; headers: H };
+  export type State = [SharedState, SetState];
   export type Next = Function;
   export type Result = Promise<void>;
 }
