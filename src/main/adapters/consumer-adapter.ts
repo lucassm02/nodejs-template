@@ -9,17 +9,20 @@ export const consumerAdapter = (...jobs: Job[]) => {
 
   const adaptedJobs = jobs.map((job) => {
     return (
-      payload: Job.Payload & { [key: string | symbol]: any },
+      {
+        [STATE_KEY]: state,
+        ...payload
+      }: Job.Payload & { [key: string | symbol]: any },
       next: Job.Next
     ) => {
       const setState = (data: State) => {
         for (const key in data) {
           if (typeof key === 'string' || typeof key === 'number')
-            payload[STATE_KEY][key] = data[key];
+            state[key] = data[key];
         }
       };
 
-      const stateHook = <[any, any]>[payload[STATE_KEY], setState];
+      const stateHook = <[any, any]>[state, setState];
 
       return job.handle(payload, stateHook, next);
     };
