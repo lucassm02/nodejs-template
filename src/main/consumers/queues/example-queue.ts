@@ -4,7 +4,7 @@ import { makeExampleJob } from '@/main/factories/jobs';
 import { Options } from '../protocols';
 
 export const exampleQueue: Options = {
-  enabled: true,
+  enabled: false,
   queue: 'example-queue',
   handler: consumerAdapter(makeExampleJob()),
 };
