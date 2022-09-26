@@ -147,14 +147,31 @@ export class RabbitMqServer {
     await this.channel.consume(queue, async (message) => {
       if (!message) return;
 
-      const payload = {
-        body: this.messageToJson(message),
-        headers: message?.properties?.headers,
-      };
+      try {
+        const payload = {
+          body: this.messageToJson(message),
+          headers: message?.properties?.headers,
+        };
 
-      await this.handleMessage(queue, payload, callback);
+        await this.handleMessage(queue, payload, callback);
 
-      this.channel.ack(message);
+        this.channel.ack(message);
+      } catch (error) {
+        logger.log(error);
+
+        if (error.stack?.includes('at JSON.parse')) {
+          logger.log({
+            level: 'warn',
+            message: 'UNABLE_TO_CONVERT_MESSAGE_TO_JSON',
+            payload: {
+              message: message.content.toString(),
+              headers: message?.properties?.headers,
+            },
+          });
+        }
+
+        this.channel.ack(message);
+      }
     });
   }
 }
