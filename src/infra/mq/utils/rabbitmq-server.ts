@@ -80,12 +80,8 @@ export class RabbitMqServer {
       convertCamelCaseKeysToSnakeCase(message)
     );
 
-    return new Promise<void>((resolve) => {
-      this.channel.sendToQueue(queue, messageFromBuffer, {
-        headers,
-      });
-
-      resolve();
+    this.channel.sendToQueue(queue, messageFromBuffer, {
+      headers,
     });
   }
   @decorator({
