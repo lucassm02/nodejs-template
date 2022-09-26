@@ -1,7 +1,7 @@
 import { httpServer } from '@/infra/http/utils/http-server';
 import { httpLoggerAdapter } from '@/main/adapters';
+import { elasticAPM } from '@/util';
 import { SERVER } from '@/util/constants';
-import { ElasticAPM } from '@/util/observability/apm';
 import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
@@ -9,9 +9,9 @@ import path from 'path';
 
 import { createHttpRequestLog } from './facades/create-http-request-log';
 
-const application = httpServer();
+elasticAPM();
 
-ElasticAPM.getInstance();
+const application = httpServer();
 
 application.use(cors({ exposedHeaders: 'X-Total-Count' }));
 application.use(helmet());

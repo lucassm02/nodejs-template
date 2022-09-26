@@ -1,5 +1,5 @@
 import { getName, labelParamsToString, searchLabels } from '.';
-import { ElasticAPM } from '../../elastic-apm';
+import { elasticAPM } from '../../factory';
 import { traceLabels, TransactionOptions } from './trace-protocols';
 
 type TransactionParams = {
@@ -14,7 +14,7 @@ export function apmTransaction({ options, params, result }: TransactionParams) {
     key: string | symbol,
     descriptor: PropertyDescriptor
   ) {
-    const apm = ElasticAPM.getInstance().getAPM();
+    const apm = elasticAPM().getAPM();
 
     const originalMethod = descriptor.value;
 

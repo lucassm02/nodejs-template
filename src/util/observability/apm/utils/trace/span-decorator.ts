@@ -1,5 +1,5 @@
 import { searchLabels, getType, labelParamsToString, getName } from '.';
-import { ElasticAPM } from '../../elastic-apm';
+import { elasticAPM } from '../../factory';
 import { traceLabels, SpanOptions } from './trace-protocols';
 
 type TraceParams = {
@@ -14,7 +14,7 @@ export function apmSpan({ options, params, result }: TraceParams) {
     key: string | symbol,
     descriptor: PropertyDescriptor
   ) {
-    const apm = ElasticAPM.getInstance().getAPM();
+    const apm = elasticAPM().getAPM();
 
     const originalMethod = descriptor.value;
 
