@@ -1,5 +1,5 @@
 # BUILD STAGE
-FROM node:16.14.2-slim as builder
+FROM node:16.17.0-slim as builder
 
 WORKDIR /home/node/app
 
@@ -10,7 +10,7 @@ COPY --chown=node:node . .
 RUN yarn build
 
 # RUN STAGE
-FROM node:16.14.2-slim
+FROM node:16.17.0-slim
 LABEL maintainer="Santos <lucas.santos@pagtel.com.br>"
 
 WORKDIR /home/node/app
