@@ -6,7 +6,7 @@ import { createLogger, format, Logger, transports } from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import { ElasticsearchTransport } from 'winston-elasticsearch';
 
-import { ElasticAPM } from '../../apm';
+import { elasticAPM } from '../../apm';
 import { cli, file, json } from './formats';
 import { GenericTransport } from './transports';
 
@@ -25,7 +25,7 @@ type LogParams = {
   [key: string]: any;
 };
 
-const apm = ElasticAPM.getInstance().getAPM();
+const apm = elasticAPM().getAPM();
 
 const { combine, timestamp, colorize } = format;
 
@@ -113,10 +113,24 @@ export class CustomLogger {
   public log(error: Error): void;
   public log(params: LogParams): void;
   public log(params: LogParams | Error): void {
+    const { traceId, transactionId } = (() => {
+      if (apm) {
+        const transactionId = apm.currentTransaction?.ids['transaction.id'];
+        const traceId = apm.currentTransaction?.ids['trace.id'];
+        return { transactionId, traceId };
+      }
+
+      return { transactionId: undefined, traceId: undefined };
+    })();
+
     if (params instanceof Error) {
-      apm?.captureError(params);
+      if (apm) {
+        apm.captureError(params);
+      }
 
       this.logger.log({
+        traceId,
+        transactionId,
         name: params.name,
         message: params.message,
         stack: params.stack,
@@ -128,11 +142,11 @@ export class CustomLogger {
 
     const { level, message, ...any } = params;
 
-    const customLevel = level as string;
-
     this.logger.log({
+      traceId,
+      transactionId,
       message,
-      level: customLevel,
+      level: <string>level,
       ...any,
     });
   }
