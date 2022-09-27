@@ -76,7 +76,7 @@ export class CustomLogger {
           password: ELASTICSEARCH.PASSWORD,
         },
       };
-      this.logger.push(
+      this.logger.add(
         new ElasticsearchTransport({
           apm,
           level: 'verbose',
@@ -92,7 +92,7 @@ export class CustomLogger {
     }
 
     if (LOGGER.DATABASE.ENABLED) {
-      this.logger.transports.push(
+      this.logger.add(
         new GenericTransport({
           level: 'verbose',
           format: combine(defaultTimestamp, json),

@@ -34,11 +34,11 @@ export class GenericTransport extends Transport {
   log(params: any, callback: () => void) {
     const [levelSymbols, messageSymbols] = Object.getOwnPropertySymbols(params);
 
-    const logLevel = params[levelSymbols] as Levels;
+    const logLevel = <Levels>params[levelSymbols];
 
     const logRanking = this.levels?.[logLevel] ?? 7;
 
-    const rankingOfConfig = this.levels?.[this?.level as Levels];
+    const rankingOfConfig = this.levels?.[<Levels>this?.level];
 
     const conditionToLog =
       logRanking <= rankingOfConfig || logLevel === this?.level;
