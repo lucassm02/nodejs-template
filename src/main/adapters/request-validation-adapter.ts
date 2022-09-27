@@ -4,7 +4,7 @@ import { convertCamelCaseKeysToSnakeCase } from '@/util';
 import { formatYupError } from '@/util/formatters/yup-error-formatter';
 import { NextFunction, Request, Response } from 'express';
 
-export function validationMiddlewareAdapter(
+export function requestValidationAdapter(
   schema: YupSchema
 ): (req: Request, res: Response, next: NextFunction) => Promise<any> {
   return async (req: Request, res: Response, next: NextFunction) => {
