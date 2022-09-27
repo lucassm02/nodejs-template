@@ -4,7 +4,7 @@ import makeFlow from './fow-adapter';
 
 const STATE_KEY = Symbol('STATE');
 
-export const consumerAdapter = (...jobs: Job[] | Function[]) => {
+export const consumerAdapter = (...jobs: (Job | Function)[]) => {
   type State = { [key: string]: any };
 
   const adaptedJobs = jobs.map((job) => {
