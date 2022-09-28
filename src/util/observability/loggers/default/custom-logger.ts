@@ -7,7 +7,7 @@ import DailyRotateFile from 'winston-daily-rotate-file';
 import { ElasticsearchTransport } from 'winston-elasticsearch';
 
 import { elasticAPM } from '../../apm';
-import { cli, file, json } from './formats';
+import { cli, standard } from './formats';
 import { GenericTransport } from './transports';
 
 type LogParams = {
@@ -59,7 +59,7 @@ export class CustomLogger {
           datePattern: 'YYYY-MM-DD',
           dirname: path.resolve('logs'),
           level: 'verbose',
-          format: combine(defaultTimestamp, file),
+          format: combine(defaultTimestamp, standard),
         }),
         new transports.Console({
           level: LOGGER.CONSOLE.LEVEL,
@@ -95,7 +95,7 @@ export class CustomLogger {
       this.logger.add(
         new GenericTransport({
           level: 'verbose',
-          format: combine(defaultTimestamp, json),
+          format: combine(defaultTimestamp, standard),
           receiver: createMongoLog,
         })
       );

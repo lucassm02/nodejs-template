@@ -3,12 +3,7 @@ import { format } from 'winston';
 export const cli = format.printf(({ level, timestamp, ...params }) => {
   const upperCaseLevel = String(level).toLocaleUpperCase();
 
-  if (level === 'error') {
-    const message = `LEVEL: [${upperCaseLevel}], MESSAGE: [${params.message}], STACK: [${params?.stack}], TIMESTAMP: [${timestamp}]`;
-    return message.replace(/\n|\r|( {3})+/g, '');
-  }
-
-  const info = `LEVEL: [${upperCaseLevel}], TIMESTAMP: [${timestamp}]`;
+  const baseText = `LEVEL: [${upperCaseLevel}], TIMESTAMP: [${timestamp}]`;
 
   if (Object.keys(params).length > 0) {
     const paramsToString = Object.entries(params).reduce(
@@ -18,17 +13,26 @@ export const cli = format.printf(({ level, timestamp, ...params }) => {
         const valueToString =
           typeof value === 'object' ? JSON.stringify(value) : value;
 
+        const sanitizedValueToString = valueToString.replace(
+          /\n|\r|( {3})+/g,
+          ''
+        );
+
         if (index === 0) {
-          return `${String(key).toLocaleUpperCase()}: [${valueToString}]`;
+          return `${String(
+            key
+          ).toLocaleUpperCase()}: [${sanitizedValueToString}]`;
         }
 
-        return `${acc}, ${String(key).toLocaleUpperCase()}: [${valueToString}]`;
+        return `${acc}, ${String(
+          key
+        ).toLocaleUpperCase()}: [${sanitizedValueToString}]`;
       },
       ''
     );
 
-    return `${info}, ${paramsToString}`;
+    return `${baseText}, ${paramsToString}`;
   }
 
-  return info;
+  return baseText;
 });
