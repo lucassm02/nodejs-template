@@ -24,9 +24,8 @@ export function messageValidationAdapter(
 
       return next();
     } catch (error) {
-      logger.log(error);
       logger.log({
-        level: 'warn',
+        level: 'error',
         message: 'VALIDATION ERROR',
         erros: formatYupError(error),
       });

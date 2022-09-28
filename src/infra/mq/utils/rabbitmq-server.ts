@@ -154,8 +154,7 @@ export class RabbitMqServer {
         this.channel.ack(message);
       } catch (error) {
         logger.log(error);
-
-        if (error.stack?.includes('at JSON.parse')) {
+        if (error.stack.includes('at JSON.parse')) {
           logger.log({
             level: 'warn',
             message: 'UNABLE_TO_CONVERT_MESSAGE_TO_JSON',
