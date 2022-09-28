@@ -12,6 +12,7 @@ export function requestValidationAdapter(
       ...req.body,
       ...req.params,
       ...req.query,
+      ...req.headers,
     };
 
     try {
