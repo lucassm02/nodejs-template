@@ -69,3 +69,8 @@ export const ELASTICSEARCH = {
   PASSWORD: process.env.ELASTICSEARCH_PASSWORD || '',
   SERVER_URL: process.env.ELASTICSEARCH_SERVER_URL || '',
 };
+
+export const REPROCESSING = {
+  MAX_TRIES: process.env.MAX_TRIES || '',
+  DELAYS: process.env.DELAYS || '',
+};

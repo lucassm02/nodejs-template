@@ -21,6 +21,7 @@
     "prettier"
   ],
   "rules": {
+    "no-throw-literal": "off",
     "no-continue": "off",
     "no-restricted-syntax": "off",
     "no-param-reassign": "off",

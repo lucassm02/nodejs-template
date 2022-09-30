@@ -10,4 +10,7 @@ export namespace Job {
   export type State = [SharedState, SetState];
   export type Next = Function;
   export type Result = Promise<void>;
+  export enum Middlewares {
+    TROUBLE_EXAMPLE = 'TroubleExample',
+  }
 }
