@@ -1,6 +1,6 @@
 import { HttpValidateToken } from '@/data/usecases/http/token';
 import { SecretToken } from '@/infra/encryption';
-import { RequestAdapter } from '@/infra/http/service/adapters/web-service-rest-adapter';
+import { RequestAdapter } from '@/infra/http/service/adapters';
 import { ValidateTokenService } from '@/infra/http/service/authenticator';
 import { httpAuthenticator } from '@/infra/http/service/utils/http-authentication';
 import { ValidateTokenMiddleware } from '@/presentation/middlewares';
