@@ -1,5 +1,5 @@
 import { Job } from '@/consumer/protocols';
-import { runState } from '@/consumer/utils';
+import { overrideState } from '@/consumer/utils';
 import { Logger } from '@/data/protocols/utils';
 import { ReprocessingData } from '@/domain/models';
 
@@ -18,7 +18,7 @@ export class NormalizeReprocessingPayloadJob implements Job {
         return next();
       }
 
-      runState(state, payload.body.reprocessing.data.state);
+      overrideState(state, payload.body.reprocessing.data.state);
 
       setState({ reprocessing: payload.body.reprocessing });
 

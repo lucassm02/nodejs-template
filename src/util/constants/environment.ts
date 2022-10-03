@@ -34,21 +34,21 @@ export const DATABASE = {
   DB_HOST: process.env.DB_HOST || '',
   DB_USERNAME: process.env.DB_USERNAME || '',
   DB_PASSWORD: process.env.DB_PASSWORD || '',
-  DB_PORT: process.env.DB_PORT || '',
+  DB_PORT: process.env.DB_PORT || 1433,
 };
 
 export const RABBIT = {
   USER: process.env.RABBIT_USER || '',
   PASSWORD: process.env.RABBIT_PASSWORD || '',
   HOST: process.env.RABBIT_HOST || '',
-  PORT: process.env.RABBIT_PORT || '',
+  PORT: process.env.RABBIT_PORT || 5672,
 };
 
 export const MONGO = {
   USER: process.env.MONGO_DB_USER || '',
   PASSWORD: process.env.MONGO_DB_PASSWORD || '',
   HOST: process.env.MONGO_DB_HOST || '',
-  PORT: process.env.MONGO_DB_PORT || '',
+  PORT: process.env.MONGO_DB_PORT || 27017,
   NAME: process.env.MONGO_DB_NAME || '',
   AUTH_SOURCE: process.env.MONGO_DB_AUTH_SOURCE || '',
   URL() {
@@ -71,6 +71,6 @@ export const ELASTICSEARCH = {
 };
 
 export const REPROCESSING = {
-  MAX_TRIES: process.env.MAX_TRIES || '',
-  DELAYS: process.env.DELAYS || '',
+  MAX_TRIES: Number(process.env.MAX_TRIES) || 1,
+  DELAYS: process.env.DELAYS?.split(',').map(Number) || [],
 };
