@@ -58,7 +58,7 @@ export class MqSendExampleReprocessing implements SendReprocessing {
     const delayIndex = tries.current - 1;
 
     if (tries.delays.length < tries.max) {
-      const newDelay = tries.delays[delayIndex] * MINIMUM_DELAY_MULTIPLIER;
+      const newDelay = tries.delays[tries.current] * MINIMUM_DELAY_MULTIPLIER;
 
       tries.delays.push(newDelay);
     }

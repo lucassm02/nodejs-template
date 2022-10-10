@@ -33,7 +33,7 @@ export function reprocessing(options: Options) {
   ) {
     const originalMethod = descriptor.value;
 
-    descriptor.value = function (
+    descriptor.value = async function (
       ...args: [Record<string, any>, [Record<string, any>, Function], Function]
     ) {
       const delays = options.delays ?? REPROCESSING.DELAYS;
@@ -53,7 +53,7 @@ export function reprocessing(options: Options) {
           return next();
         }
 
-        return originalMethod.apply(this, args);
+        return await originalMethod.apply(this, args);
       } catch (error) {
         mqSendExampleReprocessing.reprocess({
           middleware: options.middlewareName,

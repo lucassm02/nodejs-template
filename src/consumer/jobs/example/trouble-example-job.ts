@@ -11,7 +11,7 @@ export class TroubleExampleJob implements Job {
 
   @reprocessing({
     middlewareName: Job.Middlewares.TROUBLE_EXAMPLE,
-    queueOptions: { exchange: 'example-exchange' },
+    queueOptions: { exchange: 'example-delayed' },
   })
   async handle(
     payload: Job.Payload,
@@ -29,7 +29,8 @@ export class TroubleExampleJob implements Job {
 
       return next();
     } catch (error) {
-      this.logger.log(error.err);
+      this.logger.log({ level: 'error', ...error });
+      throw error;
     }
   }
 }
