@@ -3,7 +3,7 @@ export const sanitizedParams = (params: { [key: string]: any }) => {
 
   const sanitizedEntries = entries.map(([key, value]) => {
     if (typeof value === 'string') {
-      const sanitizedValue = value.replace(/\n|\r|( {4})+/g, '');
+      const sanitizedValue = value?.replace(/\n|\r|( {4})+/g, '');
       return [key, sanitizedValue];
     }
 

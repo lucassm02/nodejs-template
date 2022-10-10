@@ -13,10 +13,10 @@ export const cli = format.printf(({ level, timestamp, ...params }) => {
         const valueToString =
           typeof value === 'object' ? JSON.stringify(value) : value;
 
-        const sanitizedValueToString = valueToString.replace(
-          /\n|\r|( {3})+/g,
-          ''
-        );
+        const sanitizedValueToString =
+          typeof valueToString === 'string'
+            ? valueToString.replace(/\n|\r|( {3})+/g, '')
+            : valueToString;
 
         if (index === 0) {
           return `${String(
