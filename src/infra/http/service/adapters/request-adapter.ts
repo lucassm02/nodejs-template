@@ -5,6 +5,7 @@ import {
 } from '@/data/protocols/http/adapters';
 import { decorator } from '@/util/observability';
 import { apmSpan } from '@/util/observability/apm';
+import Agent from 'agentkeepalive';
 import { AxiosInstance } from 'axios';
 
 const decorators = {
@@ -21,8 +22,19 @@ const decorators = {
   },
 };
 
+const AgentOptions = {
+  keepAlive: true,
+  maxSockets: 100,
+  maxFreeSockets: 10,
+  timeout: 60000,
+  freeSocketTimeout: 30000,
+};
 export class RequestAdapter implements HttpClient {
-  constructor(private readonly axios: AxiosInstance) {}
+  constructor(private readonly axios: AxiosInstance) {
+    this.axios.defaults.httpAgent = new Agent(AgentOptions);
+    this.axios.defaults.httpsAgent = new Agent.HttpsAgent(AgentOptions);
+    this.axios.interceptors.response.use(undefined, (error) => error.response);
+  }
 
   @decorator({
     options: decorators.options,
