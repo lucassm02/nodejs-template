@@ -7,3 +7,4 @@ export * from './observability';
 export * from './scheduler';
 export * from './text';
 export * from './uuid';
+export * from './comparation';
