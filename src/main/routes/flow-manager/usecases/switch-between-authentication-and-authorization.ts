@@ -1,5 +1,5 @@
 import { httpServer } from '@/infra/http/utils/http-server';
-import { adapterOptions } from '@/main/adapters';
+import { Option } from '@/main/adapters';
 import { makeNoAuthenticationController } from '@/main/factories/controllers';
 import {
   makeAuthenticateByAuthenticationMiddleware,
@@ -8,16 +8,16 @@ import {
 
 const server = httpServer();
 
-export const switchBetweenAuthenticationAndAuthorization: adapterOptions = [
+export const switchBetweenAuthenticationAndAuthorization: Option[] = [
   {
-    target: { headers: 'authorization' },
-    handle: server.adapter(makeValidateTokenMiddleware()),
+    when: 'headers.authorization',
+    handler: server.adapter(makeValidateTokenMiddleware()),
   },
   {
-    target: { headers: 'authentication' },
-    handle: server.adapter(makeAuthenticateByAuthenticationMiddleware()),
+    when: 'headers.authentication',
+    handler: server.adapter(makeAuthenticateByAuthenticationMiddleware()),
   },
   {
-    handle: server.adapter(makeNoAuthenticationController()),
+    handler: server.adapter(makeNoAuthenticationController()),
   },
 ];

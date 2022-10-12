@@ -1,102 +1,124 @@
-import { convertToLowerCase, getIn } from '@/util/object';
+import { getIn } from '@/util/object';
 
-export type adapterOptions = {
-  target?: {
-    body?: string;
-    params?: string;
-    query?: string;
-    headers?: string;
-    [key: string]: string | undefined;
-  };
-  expected?: { [key: string]: any };
-  handle: Function;
-}[];
+import makeFlow from './fow-adapter';
 
-const checkIfTestsPass = (checkArray: any[]) => {
-  const findNonComplianceResult = checkArray.find((value) => value === false);
+type RecordValue = string | number;
+
+type When = string | string[] | Record<string, RecordValue>;
+
+export type Option = {
+  when?: When;
+  targetIndex?: number;
+  strict?: boolean;
+  handler: Function;
+};
+
+const allValuesAreValid = (values: unknown[]): boolean => {
+  const findNonComplianceResult = values.find((value) => value === false);
   return findNonComplianceResult !== false;
 };
 
-const filterHttpRequestByTarget = (
-  request: { [key: string]: any },
-  target: { [key: string]: any }
-) =>
-  Object.keys(target).reduce((accumulator, key) => {
-    const [rootKey] = key.split('.');
+function coercion(value: any, type: 'string' | 'number' | 'bigint' | string) {
+  if (type === 'bigint') return BigInt(value);
+  if (type === 'number') return Number(value);
+  if (type === 'string') return String(value);
+  throw new Error('INVALID_TYPE');
+}
 
-    return {
-      ...accumulator,
-      [rootKey]: request?.[rootKey],
-    };
-  }, {});
-
-const convertTargetForLowerCaseEntities = (target: { [key: string]: any }) =>
-  Object.entries(target).map(([key, value]) => [
-    String(key).toLocaleLowerCase(),
-    String(value).toLocaleLowerCase(),
-  ]);
-
-export const flowManagerAdapter =
-  (options: adapterOptions) =>
-  (...middlewareParams: any) => {
-    const rawHttpRequest = middlewareParams?.[0];
+export function flowManagerAdapter(...options: Option[]): Function;
+export function flowManagerAdapter(
+  firstOption: Option,
+  ...restOfOptions: Option[]
+) {
+  return (...args: unknown[]) => {
+    const options = [firstOption, ...restOfOptions];
 
     for (const option of options) {
-      if (!option.target) return option.handle(...middlewareParams);
+      const targetIndex = option.targetIndex ?? 0;
 
-      const filteredHttRequest = filterHttpRequestByTarget(
-        rawHttpRequest,
-        option.target
-      );
+      const target = args?.[targetIndex];
 
-      const httpRequestToLowerCaseKeys = convertToLowerCase(filteredHttRequest);
+      if (!option.when) return option.handler(...args);
 
-      const targetEntries = convertTargetForLowerCaseEntities(option.target);
+      if (typeof option.when === 'string') {
+        const valueFound = getIn(<Object>target, option.when);
+        if (typeof valueFound !== 'boolean' && !valueFound) continue;
+        return option.handler(...args);
+      }
 
-      const expectedToLowerCaseKeys = convertToLowerCase(option.expected);
+      if (Array.isArray(option.when)) {
+        const keyPaths = option.when.filter(
+          (value) => typeof value === 'string'
+        );
 
-      const testsResults = targetEntries.map((entries) => {
-        const [targetRequestKey, targetRequestValue] = entries;
+        const valuesFound = keyPaths.map((value) => {
+          return getIn(<Object>target, value);
+        });
 
-        if (Array.isArray(targetRequestValue)) {
-          const conditionResultExtractedFromArray = (() => {
-            const testsResult = targetRequestValue.map((value) => {
-              const keyPath = `${targetRequestKey}.${value}`;
+        const result = valuesFound.map(
+          (valueFound) => !(valueFound !== 'boolean' && !valueFound)
+        );
 
-              const requestValue =
-                getIn(httpRequestToLowerCaseKeys, keyPath) ?? undefined;
+        const isValid = allValuesAreValid(result);
 
-              if (!option.expected && requestValue) return true;
+        if (!isValid) continue;
 
-              const expectedValue = expectedToLowerCaseKeys?.[value];
+        return option.handler(...args);
+      }
 
-              return requestValue === expectedValue;
-            });
+      if (typeof target !== 'object') return option.handler(...args);
 
-            return checkIfTestsPass(testsResult);
-          })();
+      const whenEntries = Object.entries(option.when);
 
-          return conditionResultExtractedFromArray;
-        }
+      const result = whenEntries.map((entries) => {
+        const [targetKey, expectedValue] = entries;
 
-        const keyPath = `${targetRequestKey}.${targetRequestValue}`;
+        const valueFound = getIn(<Object>target, targetKey);
 
-        const requestValue =
-          getIn(httpRequestToLowerCaseKeys, keyPath) ?? undefined;
+        if (typeof valueFound !== 'boolean' && !valueFound) return false;
 
-        if (typeof requestValue !== 'boolean' && !requestValue) return false;
+        if (option.strict) return valueFound === expectedValue;
 
-        if (!option.expected) return true;
+        const typeOfValue = typeof expectedValue;
 
-        const expectedValue = expectedToLowerCaseKeys?.[targetRequestValue];
+        const valueFoundAfterCoercion = coercion(valueFound, typeOfValue);
 
-        const testResult = requestValue === expectedValue;
-
-        return testResult;
+        return valueFoundAfterCoercion === expectedValue;
       });
 
-      const passedTheTest = checkIfTestsPass(testsResults);
+      const isValid = allValuesAreValid(result);
 
-      if (passedTheTest) return option.handle(...middlewareParams);
+      if (isValid) return option.handler(...args);
     }
   };
+}
+
+export const handleListHandlers = (
+  ...args: (Function | { handle: Function })[]
+) => {
+  return async (
+    request: Record<string, unknown>,
+    response: Record<string, unknown>,
+    finish: Function,
+    state: [Record<string, unknown>, Function]
+  ) => {
+    type Payload = {
+      state: Record<string, unknown>;
+      request: Record<string, unknown>;
+      response: Record<string, unknown>;
+    };
+
+    const middlewares = args.map((middleware) => {
+      return ({ state, request, response }: Payload, next: Function) => {
+        if (typeof middleware === 'function')
+          return middleware(request, response, next, state);
+
+        return middleware.handle(request, response, state, next);
+      };
+    });
+
+    await makeFlow({ state, request, response })(...middlewares)();
+    if (response.headersSent) return;
+    return finish();
+  };
+};
