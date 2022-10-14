@@ -3,13 +3,13 @@ import { getIn } from '@/util/object';
 
 import makeFlow from './fow-adapter';
 
-type RecordValue = string | number;
+type RecordValue = unknown;
 
 type When =
   | string
   | string[]
   | Record<string, RecordValue>
-  | (<Type extends unknown[]>(...args: Type) => boolean);
+  | ((...args: unknown[]) => boolean);
 
 export type Option = {
   when?: When;
