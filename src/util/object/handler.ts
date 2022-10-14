@@ -1,10 +1,12 @@
 export const getIn = (object: Object, path: string) => {
-  const splittedPath = path.split('.');
-  const targetValue = splittedPath.reduce((memo: any, key: string) => {
-    const index = <number | null>key.match(/[(\d*)]/);
+  const INDEX_PATTERN = /\[(\d+?)\]/;
 
+  const splittedPath = path.split('.');
+
+  const targetValue = splittedPath.reduce((memo: any, key: string) => {
+    const index = key.match(INDEX_PATTERN);
     if (index) {
-      return memo && memo[index] && memo[index];
+      return memo && memo[index[1]] && memo[index[1]];
     }
 
     return memo && memo[key] && memo[key];
