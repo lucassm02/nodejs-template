@@ -1,14 +1,18 @@
+import { equals } from '@/util/comparation';
 import { getIn } from '@/util/object';
 
 import makeFlow from './fow-adapter';
 
 type RecordValue = string | number;
 
-type When = string | string[] | Record<string, RecordValue>;
+type When =
+  | string
+  | string[]
+  | Record<string, RecordValue>
+  | (<Type extends unknown[]>(...args: Type) => boolean);
 
 export type Option = {
   when?: When;
-  targetIndex?: number;
   strict?: boolean;
   handler: Function;
 };
@@ -18,10 +22,14 @@ const allValuesAreValid = (values: unknown[]): boolean => {
   return findNonComplianceResult !== false;
 };
 
-function coercion(value: any, type: 'string' | 'number' | 'bigint' | string) {
+function coercion(
+  value: string | number | boolean,
+  type: 'string' | 'number' | 'bigint' | string
+) {
   if (type === 'bigint') return BigInt(value);
   if (type === 'number') return Number(value);
   if (type === 'string') return String(value);
+  if (type === 'boolean') return Boolean(value);
   throw new Error('INVALID_TYPE');
 }
 
@@ -34,14 +42,17 @@ export function flowManagerAdapter(
     const options = [firstOption, ...restOfOptions];
 
     for (const option of options) {
-      const targetIndex = option.targetIndex ?? 0;
-
-      const target = args?.[targetIndex];
-
       if (!option.when) return option.handler(...args);
 
+      if (typeof option.when === 'function') {
+        const isValid = option.when(...args);
+        if (!isValid) continue;
+        return option.handler(...args);
+      }
+
       if (typeof option.when === 'string') {
-        const valueFound = getIn(<Object>target, option.when);
+        const valueFound =
+          getIn(args, option.when) ?? getIn(<Object>args[0], option.when);
         if (typeof valueFound !== 'boolean' && !valueFound) continue;
         return option.handler(...args);
       }
@@ -52,7 +63,7 @@ export function flowManagerAdapter(
         );
 
         const valuesFound = keyPaths.map((value) => {
-          return getIn(<Object>target, value);
+          return getIn(args, value) ?? getIn(<Object>args[0], value);
         });
 
         const result = valuesFound.map(
@@ -66,16 +77,31 @@ export function flowManagerAdapter(
         return option.handler(...args);
       }
 
-      if (typeof target !== 'object') return option.handler(...args);
-
       const whenEntries = Object.entries(option.when);
 
       const result = whenEntries.map((entries) => {
         const [targetKey, expectedValue] = entries;
 
-        const valueFound = getIn(<Object>target, targetKey);
+        const valueFound =
+          getIn(args, targetKey) ?? getIn(<Object>args[0], targetKey);
 
         if (typeof valueFound !== 'boolean' && !valueFound) return false;
+
+        if (
+          option.strict &&
+          typeof valueFound === 'object' &&
+          typeof expectedValue === 'object'
+        ) {
+          return JSON.stringify(valueFound) === JSON.stringify(expectedValue);
+        }
+
+        if (
+          !option.strict &&
+          typeof valueFound === 'object' &&
+          typeof expectedValue === 'object'
+        ) {
+          return equals(valueFound, expectedValue);
+        }
 
         if (option.strict) return valueFound === expectedValue;
 
