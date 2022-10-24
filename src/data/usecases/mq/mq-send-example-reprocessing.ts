@@ -26,6 +26,12 @@ export class MqSendExampleReprocessing implements SendReprocessing {
     const MAX_TRIES = +this.maxTries;
     const DELAYS = this.delays;
 
+    if (DELAYS.length < MAX_TRIES)
+      for (let index = 0; DELAYS.length < MAX_TRIES; index += 1) {
+        const newDelay = DELAYS[DELAYS.length - 1] * MINIMUM_DELAY_MULTIPLIER;
+        DELAYS.push(newDelay);
+      }
+
     const tries = params.tries ?? {
       current: 1,
       max: MAX_TRIES,
@@ -55,24 +61,16 @@ export class MqSendExampleReprocessing implements SendReprocessing {
       return;
     }
 
-    const delayIndex = tries.current - 1;
-
-    if (tries.delays.length < tries.max) {
-      const newDelay = tries.delays[tries.current] * MINIMUM_DELAY_MULTIPLIER;
-
-      tries.delays.push(newDelay);
-    }
-
     tries.current += TRIES_SCALE;
 
-    if (tries.current >= tries.max) return;
+    if (tries.current > tries.max) return;
 
     this.publishInExchangeService.publishInExchange(
       this.queueOptions.exchange,
       newPayload,
       this.queueOptions.routingKey ?? '',
       {
-        'x-delay': tries.delays[delayIndex],
+        'x-delay': tries.delays[tries.current - 1],
       }
     );
   }
