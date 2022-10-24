@@ -16,7 +16,6 @@ const skipMiddleware = (
 };
 
 type Options = {
-  middlewareName: string;
   maxTries?: number;
   delays?: number[];
   queueOptions: {
@@ -49,14 +48,14 @@ export function reprocessing(options: Options) {
       const [payload, [state], next] = args;
 
       try {
-        if (skipMiddleware(state.reprocessing, options.middlewareName)) {
+        if (skipMiddleware(state.reprocessing, target.constructor.name)) {
           return next();
         }
 
         return await originalMethod.apply(this, args);
       } catch (error) {
         mqSendExampleReprocessing.reprocess({
-          middleware: options.middlewareName,
+          middleware: target.constructor.name,
           tries: state?.reprocessing?.tries,
           progress: { step: error?.step, total: error?.total },
           data: { state, payload },

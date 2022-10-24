@@ -10,7 +10,6 @@ export class TroubleExampleJob implements Job {
   ) {}
 
   @reprocessing({
-    middlewareName: Job.Middlewares.TROUBLE_EXAMPLE,
     queueOptions: { exchange: 'example-delayed' },
   })
   async handle(
