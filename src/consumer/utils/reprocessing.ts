@@ -45,14 +45,20 @@ export function reprocessing(options: Options) {
         delays
       );
 
-      const [payload, [state], next] = args;
+      const [payload, [state, setState], next] = args;
 
       try {
         if (skipMiddleware(state.reprocessing, target.constructor.name)) {
           return next();
         }
 
-        return await originalMethod.apply(this, args);
+        const result = await originalMethod.apply(this, args);
+
+        setState({
+          reprocessing: { ...state.reprocessing, middleware: null },
+        });
+
+        return result;
       } catch (error) {
         mqSendExampleReprocessing.reprocess({
           middleware: target.constructor.name,

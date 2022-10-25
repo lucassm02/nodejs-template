@@ -22,10 +22,6 @@ export class TroubleExampleJob implements Job {
         current: 2,
       });
 
-      setState({
-        reprocessing: { ...state.reprocessing, middleware: null },
-      });
-
       return next();
     } catch (error) {
       this.logger.log({ level: 'error', ...error });
