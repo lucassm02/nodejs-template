@@ -1,8 +1,6 @@
 import { equals } from '@/util/comparation';
 import { getIn } from '@/util/object';
 
-import makeFlow from './fow-adapter';
-
 type RecordValue = any;
 
 type When =
@@ -33,8 +31,8 @@ function coercion(
   throw new Error('INVALID_TYPE');
 }
 
-export function flowManagerAdapter(...options: Option[]): Function;
-export function flowManagerAdapter(
+export default function flowManager(...options: Option[]): Function;
+export default function flowManager(
   firstOption: Option,
   ...restOfOptions: Option[]
 ) {
@@ -118,33 +116,3 @@ export function flowManagerAdapter(
     }
   };
 }
-
-export const handleListHandlers = (
-  ...args: (Function | { handle: Function })[]
-) => {
-  return async (
-    request: Record<string, unknown>,
-    response: Record<string, unknown>,
-    finish: Function,
-    state: [Record<string, unknown>, Function]
-  ) => {
-    type Payload = {
-      state: Record<string, unknown>;
-      request: Record<string, unknown>;
-      response: Record<string, unknown>;
-    };
-
-    const middlewares = args.map((middleware) => {
-      return ({ state, request, response }: Payload, next: Function) => {
-        if (typeof middleware === 'function')
-          return middleware(request, response, next, state);
-
-        return middleware.handle(request, response, state, next);
-      };
-    });
-
-    await makeFlow({ state, request, response })(...middlewares)();
-    if (response.headersSent) return;
-    return finish();
-  };
-};

@@ -1,4 +1,4 @@
-export * from './flow-manager-adapter';
+export * from './flow-manager';
 export * from './fow-adapter';
 export * from './http-logger-adapter';
 export * from './consumer-adapter';

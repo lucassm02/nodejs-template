@@ -1,5 +1,5 @@
 import { httpServer } from '@/infra/http/utils/http-server';
-import { Option } from '@/main/adapters';
+import { Option } from '@/main/adapters/flow-manager';
 import { makeNoAuthenticationController } from '@/main/factories/controllers';
 import {
   makeAuthenticateByAuthenticationMiddleware,
