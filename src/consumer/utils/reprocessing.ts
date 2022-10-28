@@ -20,14 +20,12 @@ const normalizePayload = (
   payload: Record<string, any>,
   [state, setState]: [Record<string, any>, Function]
 ) => {
-  if (!payload.body.reprocessing) {
-    setState({ reprocessing: {} });
-    return;
-  }
+  if (!payload.body.reprocessing) return;
+
+  if (payload.body.reprocessing && !state.reprocessing)
+    setState({ reprocessing: payload.body.reprocessing });
 
   overrideState(state, payload.body.reprocessing.data.state);
-  setState({ reprocessing: payload.body.reprocessing });
-
   payload.headers = payload.body.reprocessing?.data.payload.headers;
   payload.body = payload.body.reprocessing.data.payload.body;
 };
@@ -71,11 +69,11 @@ export function reprocessing(options: Options) {
           return next();
         }
 
-        const result = await originalMethod.apply(this, args);
-
         setState({
           reprocessing: { ...state.reprocessing, middleware: null },
         });
+
+        const result = await originalMethod.apply(this, args);
 
         return result;
       } catch (error) {
