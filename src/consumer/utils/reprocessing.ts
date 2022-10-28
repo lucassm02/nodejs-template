@@ -1,4 +1,4 @@
-import { MqSendExampleReprocessing } from '@/data/usecases/mq';
+import { MqSendReprocessing } from '@/data/usecases/mq';
 import { rabbitMqServer } from '@/infra/mq/utils';
 import { REPROCESSING } from '@/util';
 
@@ -38,7 +38,7 @@ export function reprocessing(options: Options) {
       const delays = options.delays ?? REPROCESSING.DELAYS;
       const maxTries = options.maxTries ?? REPROCESSING.MAX_TRIES;
 
-      const mqSendExampleReprocessing = new MqSendExampleReprocessing(
+      const mqSendReprocessing = new MqSendReprocessing(
         mqServer,
         options.queueOptions,
         maxTries,
@@ -60,7 +60,7 @@ export function reprocessing(options: Options) {
 
         return result;
       } catch (error) {
-        mqSendExampleReprocessing.reprocess({
+        mqSendReprocessing.reprocess({
           middleware: target.constructor.name,
           tries: state?.reprocessing?.tries,
           progress: { step: error?.step, total: error?.total },

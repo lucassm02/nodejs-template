@@ -1,7 +1,7 @@
 import { PublishInExchangeService } from '@/data/protocols/mq/publish-in-exchange';
 import { SendReprocessing } from '@/domain/usecases';
 
-export class MqSendExampleReprocessing implements SendReprocessing {
+export class MqSendReprocessing implements SendReprocessing {
   constructor(
     private readonly publishInExchangeService: PublishInExchangeService,
     private readonly queueOptions: {

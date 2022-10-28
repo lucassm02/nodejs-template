@@ -1,1 +1,1 @@
-export * from './mq-send-example-reprocessing';
+export * from './mq-send-reprocessing';
