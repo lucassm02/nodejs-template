@@ -1,3 +1,4 @@
+import { overrideState } from '@/consumer/utils';
 import { MqSendReprocessing } from '@/data/usecases/mq';
 import { rabbitMqServer } from '@/infra/mq/utils';
 import { REPROCESSING } from '@/util';
@@ -13,6 +14,22 @@ const skipMiddleware = (
     reprocessingState.middleware &&
     reprocessingState.middleware !== middleware
   );
+};
+
+const normalizePayload = (
+  payload: Record<string, any>,
+  [state, setState]: [Record<string, any>, Function]
+) => {
+  if (!payload.body.reprocessing) {
+    setState({ reprocessing: {} });
+    return;
+  }
+
+  overrideState(state, payload.body.reprocessing.data.state);
+  setState({ reprocessing: payload.body.reprocessing });
+
+  payload.headers = payload.body.reprocessing?.data.payload.headers;
+  payload.body = payload.body.reprocessing.data.payload.body;
 };
 
 type Options = {
@@ -48,6 +65,8 @@ export function reprocessing(options: Options) {
       const [payload, [state, setState], next] = args;
 
       try {
+        normalizePayload(payload, [state, setState]);
+
         if (skipMiddleware(state.reprocessing, target.constructor.name)) {
           return next();
         }
