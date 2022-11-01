@@ -5,6 +5,7 @@ export interface TroubleExample {
 export namespace TroubleExample {
   export type Params = {
     current: number;
+    step: number;
   };
 
   export type Result = void;

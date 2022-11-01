@@ -13,13 +13,16 @@ export class TroubleExampleJob implements Job {
     queueOptions: { exchange: 'example-delayed' },
   })
   async handle(
-    payload: Job.Payload,
-    [state, setState]: Job.State,
+    _payload: Job.Payload,
+    [{ reprocessing }]: Job.State,
     next: Job.Next
   ): Job.Result {
     try {
+      const step = reprocessing.progress ? reprocessing.progress.step : 0;
+
       this.troubleExample.trouble({
         current: 2,
+        step,
       });
 
       return next();

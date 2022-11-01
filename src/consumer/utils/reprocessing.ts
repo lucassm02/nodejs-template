@@ -80,7 +80,10 @@ export function reprocessing(options: Options) {
         mqSendReprocessing.reprocess({
           middleware: target.constructor.name,
           tries: state?.reprocessing?.tries,
-          progress: { step: error?.step, total: error?.total },
+          progress: {
+            step: error?.step,
+            total: error?.total,
+          },
           data: { state, payload },
         });
       }
