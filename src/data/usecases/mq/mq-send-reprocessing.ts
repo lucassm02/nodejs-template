@@ -47,7 +47,7 @@ export class MqSendReprocessing implements SendReprocessing {
       },
     };
 
-    if (!reprocessing.middleware) {
+    if (!reprocessing.tries) {
       const [delay] = DELAYS;
 
       this.publishInExchangeService.publishInExchange(
