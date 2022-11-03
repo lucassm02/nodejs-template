@@ -24,7 +24,7 @@ export const cli = format.printf(({ level, timestamp, ...params }) => {
           ).toLocaleUpperCase()}: [${sanitizedValueToString}]`;
         }
 
-        return `${acc}, ${String(
+        return `${acc}${String(
           key
         ).toLocaleUpperCase()}: [${sanitizedValueToString}]`;
       },
