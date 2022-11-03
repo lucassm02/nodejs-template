@@ -1,3 +1,4 @@
+import pkg from '@/../../package.json';
 import { createMongoLog } from '@/main/facades';
 import { ELASTICSEARCH, LOGGER } from '@/util/constants';
 import ecsFormat from '@elastic/ecs-winston-format';
@@ -113,6 +114,8 @@ export class CustomLogger {
   public log(error: Error): void;
   public log(params: LogParams): void;
   public log(params: LogParams | Error): void {
+    const application = { name: pkg.name ?? 'nodejs-application' };
+
     const { traceId, transactionId } = (() => {
       if (apm) {
         const transactionId = apm.currentTransaction?.ids['transaction.id'];
@@ -131,6 +134,7 @@ export class CustomLogger {
       this.logger.log({
         traceId,
         transactionId,
+        application,
         name: params.name,
         message: params.message,
         stack: params.stack,
@@ -145,6 +149,7 @@ export class CustomLogger {
     this.logger.log({
       traceId,
       transactionId,
+      application,
       message,
       level: <string>level,
       ...any,
