@@ -42,7 +42,7 @@ Build (Homologation):
     - docker:dind
   before_script:
     - export DOCKER_BUILDKIT=1
-    - export BUILD_ARCHITECTURE=linux/amd64
+    - export BUILD_ARCHITECTURE=linux/arm64
     - apk add --no-cache --upgrade grep
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker run --privileged --rm tonistiigi/binfmt --install all
@@ -82,7 +82,7 @@ Build (Production):
     - docker:dind
   before_script:
     - export DOCKER_BUILDKIT=1
-    - export BUILD_ARCHITECTURE=linux/amr64
+    - export BUILD_ARCHITECTURE=linux/amd64
     - export NOT_ALLOWED_VERSION="^v.*-.*$"
     - apk add --no-cache --upgrade grep
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
