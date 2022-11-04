@@ -1,0 +1,118 @@
+stages:
+  - analysis
+  - build
+  - deploy
+
+variables:
+  VERSION_PATTERN: '(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(\.(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?(\+[0-9a-zA-Z-]+(\.[0-9a-zA-Z-]+)*)?$'
+  
+  DOCKER_HOST: tcp://docker:2375/
+  DOCKER_DRIVER: overlay2
+  
+  HELM_CHART_NAME: default/default-chart
+  HELM_NAME: microservice-template
+  PROJECT_GROUP: pagtel
+
+  CONFIG_REPOSITORY_BASE_URL: https://gitlab.com/api/v4/projects/28522576/repository/files
+
+sonar:
+  stage: analysis
+  image: 
+    name: sonarsource/sonar-scanner-cli:latest
+    entrypoint: [""]
+  variables:
+    SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"
+    GIT_DEPTH: "0"
+  cache:
+    key: "${CI_JOB_NAME}"
+    paths:
+      - .sonar/cache
+  script: 
+    - sonar-scanner
+  allow_failure: true
+  when: manual
+  only:
+    - /^v.*-.*$/
+
+
+Build (Homologation):
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  before_script:
+    - export DOCKER_BUILDKIT=1
+    - export BUILD_ARCHITECTURE=linux/amd64
+    - apk add --no-cache --upgrade grep
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - docker run --privileged --rm tonistiigi/binfmt --install all
+  script:
+    - export TAG=$( echo $CI_COMMIT_REF_NAME | grep -Po $VERSION_PATTERN )
+    - echo 'Building version:' $TAG
+    - docker buildx create --name custom-builder --use --bootstrap
+    - docker buildx build --cache-from type=registry,ref=$CI_REGISTRY_IMAGE:cache -t $CI_REGISTRY_IMAGE:cache --push --platform ${BUILD_ARCHITECTURE} -t $CI_REGISTRY_IMAGE:$TAG .
+  when: manual
+  only:
+    - /^v.*-.*$/
+
+Deploy (Homologation):
+  image: registry.gitlab.com/pagtel-devops/docker-imagens:helm-1.0.0
+  stage: deploy
+  before_script:
+    - echo $K8S_AWS_CLUSTER_IP kube.pagtel.com.br >> /etc/hosts
+    - mkdir -p $HOME/.kube
+    - echo $K8S_AWS_CLUSTER_CONFIG | base64 --decode > $HOME/.kube/config
+    - chown $(id -u):$(id -g) $HOME/.kube/config
+    - helm repo add default https://pagtel-devops.gitlab.io/charts-repository/default
+    - helm repo update
+  script:
+    - export TAG=$( echo $CI_COMMIT_REF_NAME | grep -Po $VERSION_PATTERN )
+    - echo 'Deploy of TAG:' $TAG
+    - kubectl apply -n homologation -f "${CONFIG_REPOSITORY_BASE_URL}%2F${PROJECT_GROUP}%2F${HELM_NAME}%2Fconfig-map.yaml/raw?private_token=$ACCESS_TOKEN_READ_REPOSITORY&ref=homologation"
+    - kubectl apply -n homologation -f "${CONFIG_REPOSITORY_BASE_URL}%2F${PROJECT_GROUP}%2F${HELM_NAME}%2Fsecret.yaml/raw?private_token=$ACCESS_TOKEN_READ_REPOSITORY&ref=homologation"
+    - helm upgrade -n homologation $HELM_NAME $HELM_CHART_NAME --set image.tag=$TAG --values ./helm/homologation-values.yaml --install
+  when: manual
+  only:
+    - /^v.*-.*$/
+
+Build (Production):
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  before_script:
+    - export DOCKER_BUILDKIT=1
+    - export BUILD_ARCHITECTURE=linux/amr64
+    - export NOT_ALLOWED_VERSION="^v.*-.*$"
+    - apk add --no-cache --upgrade grep
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - docker run --privileged --rm tonistiigi/binfmt --install all
+  script:
+    - if [[ $CI_COMMIT_TAG =~ $NOT_ALLOWED_VERSION ]]; then echo 'VERSION NOT ALLOWED.' && exit 0; fi
+    - export TAG=$( echo $CI_COMMIT_TAG | grep -Po $VERSION_PATTERN )
+    - echo 'Building version:' $TAG
+    - docker buildx create --name custom-builder --use --bootstrap
+    - docker buildx build --cache-from type=registry,ref=$CI_REGISTRY_IMAGE:cache -t $CI_REGISTRY_IMAGE:cache --push --platform ${BUILD_ARCHITECTURE} -t $CI_REGISTRY_IMAGE:$TAG .
+  when: manual
+  only:
+    - tags
+
+Deploy (Production):
+  image: registry.gitlab.com/pagtel-devops/docker-imagens:helm-1.0.0
+  stage: deploy
+  before_script:
+    - echo $K8S_VIVO_CLUSTER_IP kube.pagtel.com.br >> /etc/hosts
+    - mkdir -p $HOME/.kube
+    - echo $K8S_VIVO_CLUSTER_CONFIG | base64 --decode > $HOME/.kube/config
+    - chown $(id -u):$(id -g) $HOME/.kube/config
+    - helm repo add default https://pagtel-devops.gitlab.io/charts-repository/default
+    - helm repo update
+  script:
+    - export TAG=$( echo $CI_COMMIT_TAG | grep -Po $VERSION_PATTERN )
+    - echo 'Deploy of TAG:' $TAG
+    - kubectl apply -n production -f "${CONFIG_REPOSITORY_BASE_URL}%2F${PROJECT_GROUP}%2F${HELM_NAME}%2Fconfig-map.yaml/raw?private_token=$ACCESS_TOKEN_READ_REPOSITORY&ref=production"
+    - kubectl apply -n production -f "${CONFIG_REPOSITORY_BASE_URL}%2F${PROJECT_GROUP}%2F${HELM_NAME}%2Fsecret.yaml/raw?private_token=$ACCESS_TOKEN_READ_REPOSITORY&ref=production"
+    - helm upgrade -n production $HELM_NAME $HELM_CHART_NAME --set image.tag=$TAG --values ./helm/production-values.yaml --install
+  when: manual
+  only:
+    - tags
