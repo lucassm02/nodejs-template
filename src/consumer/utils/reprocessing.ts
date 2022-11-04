@@ -77,6 +77,7 @@ export function reprocessing(options: Options) {
 
         return result;
       } catch (error) {
+        if (!REPROCESSING.ENABLED) return;
         mqSendReprocessing.reprocess({
           middleware: target.constructor.name,
           tries: state?.reprocessing?.tries,

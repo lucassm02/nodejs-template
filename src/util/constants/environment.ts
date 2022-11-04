@@ -71,6 +71,7 @@ export const ELASTICSEARCH = {
 };
 
 export const REPROCESSING = {
-  MAX_TRIES: Number(process.env.MAX_TRIES) || 1,
-  DELAYS: process.env.DELAYS?.split(',').map(Number) || [],
+  ENABLED: stringToBoolean(process.env.REPROCESSING_ENABLED) || false,
+  MAX_TRIES: Number(process.env.REPROCESSING_MAX_TRIES) || 1,
+  DELAYS: process.env.REPROCESSING_DELAYS?.split(',').map(Number) || [],
 };
