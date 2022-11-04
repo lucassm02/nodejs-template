@@ -4,15 +4,11 @@ stages:
   - deploy
 
 variables:
-  VERSION_PATTERN: '(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(\.(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?(\+[0-9a-zA-Z-]+(\.[0-9a-zA-Z-]+)*)?$'
-  
-  DOCKER_HOST: tcp://docker:2375/
-  DOCKER_DRIVER: overlay2
-  
   HELM_CHART_NAME: default/default-chart
   HELM_NAME: microservice-template
   PROJECT_GROUP: pagtel
 
+  VERSION_PATTERN: '(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(\.(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?(\+[0-9a-zA-Z-]+(\.[0-9a-zA-Z-]+)*)?$'
   CONFIG_REPOSITORY_BASE_URL: https://gitlab.com/api/v4/projects/28522576/repository/files
 
 sonar:
@@ -36,6 +32,8 @@ sonar:
 
 
 Build (Homologation):
+  tags:
+    - arm64
   stage: build
   image: docker:latest
   services:
@@ -43,6 +41,8 @@ Build (Homologation):
   before_script:
     - export DOCKER_BUILDKIT=1
     - export BUILD_ARCHITECTURE=linux/arm64
+    - export CACHE_IMAGE_TAG=cache-arm64
+    
     - apk add --no-cache --upgrade grep
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker run --privileged --rm tonistiigi/binfmt --install all
@@ -50,7 +50,7 @@ Build (Homologation):
     - export TAG=$( echo $CI_COMMIT_REF_NAME | grep -Po $VERSION_PATTERN )
     - echo 'Building version:' $TAG
     - docker buildx create --name custom-builder --use --bootstrap
-    - docker buildx build --cache-from type=registry,ref=$CI_REGISTRY_IMAGE:cache -t $CI_REGISTRY_IMAGE:cache --push --platform ${BUILD_ARCHITECTURE} -t $CI_REGISTRY_IMAGE:$TAG .
+    - docker buildx build --cache-from type=registry,ref=$CI_REGISTRY_IMAGE:${CACHE_IMAGE_TAG} -t $CI_REGISTRY_IMAGE:${CACHE_IMAGE_TAG} --push --platform ${BUILD_ARCHITECTURE} -t $CI_REGISTRY_IMAGE:$TAG .
   when: manual
   only:
     - /^v.*-.*$/
@@ -83,7 +83,9 @@ Build (Production):
   before_script:
     - export DOCKER_BUILDKIT=1
     - export BUILD_ARCHITECTURE=linux/amd64
+    - export CACHE_IMAGE_TAG=cache-amd64
     - export NOT_ALLOWED_VERSION="^v.*-.*$"
+
     - apk add --no-cache --upgrade grep
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker run --privileged --rm tonistiigi/binfmt --install all
@@ -92,7 +94,7 @@ Build (Production):
     - export TAG=$( echo $CI_COMMIT_TAG | grep -Po $VERSION_PATTERN )
     - echo 'Building version:' $TAG
     - docker buildx create --name custom-builder --use --bootstrap
-    - docker buildx build --cache-from type=registry,ref=$CI_REGISTRY_IMAGE:cache -t $CI_REGISTRY_IMAGE:cache --push --platform ${BUILD_ARCHITECTURE} -t $CI_REGISTRY_IMAGE:$TAG .
+    - docker buildx build --cache-from type=registry,ref=$CI_REGISTRY_IMAGE:${CACHE_IMAGE_TAG} -t $CI_REGISTRY_IMAGE:${CACHE_IMAGE_TAG} --push --platform ${BUILD_ARCHITECTURE} -t $CI_REGISTRY_IMAGE:$TAG .
   when: manual
   only:
     - tags
