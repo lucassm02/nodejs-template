@@ -22,7 +22,6 @@ export class CreateEventJob implements Job {
         createdAt: new Date(),
         updateAt: new Date(),
         payload: payload.body,
-        httpRequests: [],
       });
 
       this.logger.log({

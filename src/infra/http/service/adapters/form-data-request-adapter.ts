@@ -74,42 +74,40 @@ export class FormDataRequestAdapter implements HttpClient {
       const transactionIds = getAPMTransactionIds();
 
       if (transactionIds) {
-        const document = await new Elasticsearch().getById({
+        const document: any = await new Elasticsearch().getById({
           id: transactionIds.transactionId,
           index: 'datora-event',
         });
 
         if (!document) break sendToElasticSearch;
 
-        const newDocument = merge(document, {
-          httpRequests: [
-            {
-              transactionId: generateUuid(),
-              request: {
-                url: data.url,
-                method: data.method,
-                body: (() => {
-                  if (typeof data.body === 'string') {
-                    return querystring.parse(decodeURIComponent(data.body));
-                  }
-
-                  return data.body;
-                })(),
-                headers: data.headers,
-              },
-              response: {
-                statusCode: axiosResponse.status,
-                body: axiosResponse.data,
-                headers: axiosResponse.headers,
-              },
-            },
-          ],
-        });
-
-        await new Elasticsearch().update({
+        await new Elasticsearch().create({
           id: transactionIds.transactionId,
-          index: 'datora-event',
-          data: newDocument,
+          index: 'datora-http-request',
+          data: {
+            event: document.event,
+            mvno: document.mvno,
+            traceId: transactionIds.traceId,
+            eventId: transactionIds.transactionId,
+            request: {
+              url: data.url,
+              method: data.method,
+              body: (() => {
+                if (typeof data.body === 'string') {
+                  return querystring.parse(decodeURIComponent(data.body));
+                }
+
+                return data.body;
+              })(),
+              headers: data.headers,
+            },
+            response: {
+              statusCode: axiosResponse.status,
+              body: axiosResponse.data ?? {},
+              headers: axiosResponse.headers,
+            },
+            createdAt: new Date(),
+          },
         });
       }
     }
