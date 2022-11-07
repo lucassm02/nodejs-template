@@ -1,10 +1,14 @@
 import { Job } from '@/consumer/protocols';
 import { overrideState } from '@/consumer/utils';
 import { Logger } from '@/data/protocols/utils';
+import { ErrorHandler } from '@/data/usecases/exception';
 import { ReprocessingData } from '@/domain/models';
 
 export class NormalizeReprocessingPayloadJob implements Job {
-  constructor(private readonly logger: Logger) {}
+  constructor(
+    private readonly logger: Logger,
+    private readonly errorHandler: ErrorHandler
+  ) {}
   async handle(
     payload: Job.Payload<{
       reprocessing?: ReprocessingData;
@@ -27,7 +31,7 @@ export class NormalizeReprocessingPayloadJob implements Job {
 
       return next();
     } catch (error) {
-      this.logger.log(error);
+      this.errorHandler.handle(error);
     }
   }
 }

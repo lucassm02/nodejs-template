@@ -3,6 +3,8 @@ import { PlanRepository } from '@/infra/db/mssql/plan/plan-repository';
 import { GetPlanByIdentifierMiddleware } from '@/presentation/middlewares/plan';
 import { logger } from '@/util';
 
+import { makeErrorHandler } from '../../usecases';
+
 export const makeGetPlanByIdentifierMiddleware = () => {
   const verifyPlanRepository = new PlanRepository();
 
@@ -11,5 +13,9 @@ export const makeGetPlanByIdentifierMiddleware = () => {
     verifyPlanRepository
   );
 
-  return new GetPlanByIdentifierMiddleware(dbGetPlanByIdentifier, logger);
+  return new GetPlanByIdentifierMiddleware(
+    dbGetPlanByIdentifier,
+    logger,
+    makeErrorHandler()
+  );
 };

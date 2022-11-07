@@ -1,4 +1,5 @@
 import { Logger } from '@/data/protocols/utils';
+import { ErrorHandler } from '@/data/usecases/exception';
 import { GetPlansBySourceAndMvno } from '@/domain/usecases/plan';
 import { Middleware } from '@/presentation/protocols';
 import { notFound, serverError, stateDependencies } from '@/presentation/utils';
@@ -7,7 +8,8 @@ import { DICTIONARY } from '@/util';
 export class GetPlansBySourceAndMvnoMiddleware implements Middleware {
   constructor(
     private readonly listPlansBySourceMvnoId: GetPlansBySourceAndMvno,
-    private readonly logger: Logger
+    private readonly logger: Logger,
+    private readonly errorHandler: ErrorHandler
   ) {}
 
   @stateDependencies(['validateToken'])
@@ -32,7 +34,7 @@ export class GetPlansBySourceAndMvnoMiddleware implements Middleware {
 
       return next();
     } catch (error) {
-      this.logger.log(error);
+      this.errorHandler.handle(error);
       switch (error.message) {
         case GetPlansBySourceAndMvno.Exceptions.PLANS_NOT_FOUND:
           return notFound(DICTIONARY.RESPONSE.MESSAGE.NONE_WAS_FOUND, 'plano');

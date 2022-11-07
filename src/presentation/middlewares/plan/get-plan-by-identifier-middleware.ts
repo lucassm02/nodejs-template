@@ -1,4 +1,5 @@
 import { Logger } from '@/data/protocols/utils';
+import { ErrorHandler } from '@/data/usecases/exception';
 import { GetPlanByIdentifier } from '@/domain/usecases';
 import { Middleware } from '@/presentation/protocols/middleware';
 import { notFound, serverError } from '@/presentation/utils';
@@ -8,7 +9,8 @@ import { template } from '@/util/formatters';
 export class GetPlanByIdentifierMiddleware implements Middleware {
   constructor(
     private readonly getPlanByIdentifier: GetPlanByIdentifier,
-    private readonly logger: Logger
+    private readonly logger: Logger,
+    private readonly errorHandler: ErrorHandler
   ) {}
 
   async handle(
@@ -31,7 +33,7 @@ export class GetPlanByIdentifierMiddleware implements Middleware {
 
       return next();
     } catch (error) {
-      this.logger.log(error);
+      this.errorHandler.handle(error);
       switch (error.message) {
         case GetPlanByIdentifier.Exceptions.PLAN_NOT_FOUND:
           return notFound(

@@ -1,11 +1,13 @@
 import { Job } from '@/consumer/protocols';
 import { Logger } from '@/data/protocols/utils';
 import { EsCreateEvent } from '@/data/usecases/elasticsearch';
+import { ErrorHandler } from '@/data/usecases/exception';
 
 export class CreateEventJob implements Job {
   constructor(
     private createEvent: EsCreateEvent,
-    private readonly logger: Logger
+    private readonly logger: Logger,
+    private readonly errorHandler: ErrorHandler
   ) {}
   async handle(
     payload: Job.Payload,
@@ -33,7 +35,7 @@ export class CreateEventJob implements Job {
 
       return next();
     } catch (error) {
-      this.logger.log(error);
+      this.errorHandler.handle(error);
     }
   }
 }

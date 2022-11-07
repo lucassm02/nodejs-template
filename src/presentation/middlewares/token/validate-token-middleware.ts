@@ -1,4 +1,5 @@
 import { Logger } from '@/data/protocols/utils';
+import { ErrorHandler } from '@/data/usecases/exception';
 import { ValidateToken } from '@/domain/usecases/token';
 import { Middleware } from '@/presentation/protocols/middleware';
 import { serverError, unauthorized } from '@/presentation/utils';
@@ -8,7 +9,8 @@ import { makeErrorDescription } from '@/util/formatters';
 export class ValidateTokenMiddleware implements Middleware {
   constructor(
     private readonly validateToken: ValidateToken,
-    private readonly logger: Logger
+    private readonly logger: Logger,
+    private readonly errorHandler: ErrorHandler
   ) {}
 
   async handle(
@@ -33,7 +35,7 @@ export class ValidateTokenMiddleware implements Middleware {
 
       return next();
     } catch (error) {
-      this.logger.log(error);
+      this.errorHandler.handle(error);
       switch (error.message) {
         case ValidateToken.Exceptions.ERROR_ON_DECRYPTING:
         case ValidateToken.Exceptions.INVALID_TOKEN:

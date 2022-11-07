@@ -6,6 +6,8 @@ import { httpAuthenticator } from '@/infra/http/service/utils/http-authenticatio
 import { ValidateTokenMiddleware } from '@/presentation/middlewares';
 import { logger } from '@/util';
 
+import { makeErrorHandler } from '../../usecases';
+
 export const makeValidateTokenMiddleware = () => {
   const httpClient = new RequestAdapter(httpAuthenticator);
   const validateTokenService = new ValidateTokenService(httpClient);
@@ -17,5 +19,9 @@ export const makeValidateTokenMiddleware = () => {
     validateTokenService
   );
 
-  return new ValidateTokenMiddleware(httpValidateToken, logger);
+  return new ValidateTokenMiddleware(
+    httpValidateToken,
+    logger,
+    makeErrorHandler()
+  );
 };

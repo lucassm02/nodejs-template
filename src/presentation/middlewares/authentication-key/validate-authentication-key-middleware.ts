@@ -1,4 +1,5 @@
 import { Logger } from '@/data/protocols/utils';
+import { ErrorHandler } from '@/data/usecases/exception';
 import { ValidateAuthenticationKey } from '@/domain/usecases/authentication-key/validate-authentication-key';
 import { Middleware } from '@/presentation/protocols/middleware';
 import { serverError } from '@/presentation/utils';
@@ -6,7 +7,8 @@ import { serverError } from '@/presentation/utils';
 export class ValidateAuthenticationKeyMiddleware implements Middleware {
   constructor(
     private readonly validateAuthenticationKey: ValidateAuthenticationKey,
-    private readonly logger: Logger
+    private readonly logger: Logger,
+    private readonly errorHandler: ErrorHandler
   ) {}
 
   async handle(
@@ -33,7 +35,7 @@ export class ValidateAuthenticationKeyMiddleware implements Middleware {
 
       return next();
     } catch (error) {
-      this.logger.log(error);
+      this.errorHandler.handle(error);
       switch (error.message) {
         default:
           return serverError(error);

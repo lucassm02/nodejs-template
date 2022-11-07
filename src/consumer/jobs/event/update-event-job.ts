@@ -1,11 +1,13 @@
 import { Job } from '@/consumer/protocols';
 import { Logger } from '@/data/protocols/utils';
 import { EsUpdateEvent } from '@/data/usecases/elasticsearch';
+import { ErrorHandler } from '@/data/usecases/exception';
 
 export class UpdateEventJob implements Job {
   constructor(
     private updateEvent: EsUpdateEvent,
-    private readonly logger: Logger
+    private readonly logger: Logger,
+    private readonly errorHandler: ErrorHandler
   ) {}
   async handle(
     _payload: Job.Payload,
@@ -26,7 +28,7 @@ export class UpdateEventJob implements Job {
 
       return next();
     } catch (error) {
-      this.logger.log(error);
+      this.errorHandler.handle(error);
     }
   }
 }
