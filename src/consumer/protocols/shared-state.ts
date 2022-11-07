@@ -1,6 +1,7 @@
 import { ReprocessingData, ValidateTokenModel } from '@/domain/models';
 
 export type SharedState = {
-  validateToken?: ValidateTokenModel;
+  createEvent: { id: string };
+  validateToken: ValidateTokenModel;
   reprocessing: ReprocessingData;
 };

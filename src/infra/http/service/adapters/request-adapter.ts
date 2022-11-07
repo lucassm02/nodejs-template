@@ -3,8 +3,10 @@ import {
   HttpRequest,
   HttpResponse,
 } from '@/data/protocols/http/adapters';
+import { Elasticsearch } from '@/infra/service';
+import { generateUuid, merge } from '@/util';
 import { decorator } from '@/util/observability';
-import { apmSpan } from '@/util/observability/apm';
+import { apmSpan, getAPMTransactionIds } from '@/util/observability/apm';
 import Agent from 'agentkeepalive';
 import { AxiosInstance } from 'axios';
 
@@ -55,6 +57,44 @@ export class RequestAdapter implements HttpClient {
     });
 
     if (!axiosResponse) throw new Error('REQUEST_ERROR');
+
+    sendToElasticSearch: {
+      const transactionIds = getAPMTransactionIds();
+
+      if (transactionIds) {
+        const document = new Elasticsearch().getById({
+          id: transactionIds.transactionId,
+          index: 'datora-event',
+        });
+
+        if (!document) break sendToElasticSearch;
+
+        const newDocument = merge(document, {
+          httpRequests: [
+            {
+              transactionId: generateUuid(),
+              request: {
+                url: data.url,
+                method: data.method,
+                body: data.body,
+                headers: data.headers,
+              },
+              response: {
+                statusCode: axiosResponse.status,
+                body: axiosResponse.data,
+                headers: axiosResponse.headers,
+              },
+            },
+          ],
+        });
+
+        new Elasticsearch().update({
+          id: transactionIds.transactionId,
+          index: 'datora-event',
+          data: newDocument,
+        });
+      }
+    }
 
     return {
       statusCode: axiosResponse.status,

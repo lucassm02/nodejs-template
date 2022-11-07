@@ -21,6 +21,9 @@
     "prettier"
   ],
   "rules": {
+    "no-labels": "off",
+    "no-unused-labels": "off",
+    "no-underscore-dangle": "off",
     "no-throw-literal": "off",
     "no-continue": "off",
     "no-restricted-syntax": "off",

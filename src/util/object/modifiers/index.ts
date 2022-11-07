@@ -5,3 +5,4 @@ export * from './process-value';
 export * from './rename-keys';
 export * from './tree-object';
 export * from './override-attribute-value';
+export * from './merge';
