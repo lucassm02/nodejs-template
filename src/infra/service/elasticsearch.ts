@@ -45,7 +45,7 @@ export class Elasticsearch
     const response = await this.client.update({
       index: params.index,
       id: params.id,
-      _source: convertCamelCaseKeysToSnakeCase(params.data),
+      doc: convertCamelCaseKeysToSnakeCase(params.data),
     });
 
     return { id: response._id };
