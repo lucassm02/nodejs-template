@@ -9,6 +9,7 @@ import { decorator } from '@/util/observability';
 import { apmSpan, getAPMTransactionIds } from '@/util/observability/apm';
 import Agent from 'agentkeepalive';
 import { AxiosInstance } from 'axios';
+import querystring from 'querystring';
 
 const decorators = {
   options: { subType: 'http', name: 'Http Request' },
@@ -62,7 +63,7 @@ export class RequestAdapter implements HttpClient {
       const transactionIds = getAPMTransactionIds();
 
       if (transactionIds) {
-        const document = new Elasticsearch().getById({
+        const document = await new Elasticsearch().getById({
           id: transactionIds.transactionId,
           index: 'datora-event',
         });
@@ -76,19 +77,25 @@ export class RequestAdapter implements HttpClient {
               request: {
                 url: data.url,
                 method: data.method,
-                body: data.body,
+                body: (() => {
+                  if (typeof data.body === 'string') {
+                    return querystring.parse(decodeURIComponent(data.body));
+                  }
+
+                  return data.body;
+                })(),
                 headers: data.headers,
               },
               response: {
                 statusCode: axiosResponse.status,
-                body: axiosResponse.data,
+                body: axiosResponse.data ?? {},
                 headers: axiosResponse.headers,
               },
             },
           ],
         });
 
-        new Elasticsearch().update({
+        await new Elasticsearch().update({
           id: transactionIds.transactionId,
           index: 'datora-event',
           data: newDocument,

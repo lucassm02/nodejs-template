@@ -10,6 +10,7 @@ import { apmSpan, getAPMTransactionIds } from '@/util/observability/apm';
 import Agent from 'agentkeepalive';
 import { AxiosInstance } from 'axios';
 import FormData from 'form-data';
+import querystring from 'querystring';
 
 const decorators = {
   options: { subType: 'http', name: 'Http Request' },
@@ -73,7 +74,7 @@ export class FormDataRequestAdapter implements HttpClient {
       const transactionIds = getAPMTransactionIds();
 
       if (transactionIds) {
-        const document = new Elasticsearch().getById({
+        const document = await new Elasticsearch().getById({
           id: transactionIds.transactionId,
           index: 'datora-event',
         });
@@ -87,7 +88,13 @@ export class FormDataRequestAdapter implements HttpClient {
               request: {
                 url: data.url,
                 method: data.method,
-                body: data.body,
+                body: (() => {
+                  if (typeof data.body === 'string') {
+                    return querystring.parse(decodeURIComponent(data.body));
+                  }
+
+                  return data.body;
+                })(),
                 headers: data.headers,
               },
               response: {
@@ -99,7 +106,7 @@ export class FormDataRequestAdapter implements HttpClient {
           ],
         });
 
-        new Elasticsearch().update({
+        await new Elasticsearch().update({
           id: transactionIds.transactionId,
           index: 'datora-event',
           data: newDocument,
