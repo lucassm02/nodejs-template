@@ -33,9 +33,9 @@ const { combine, timestamp, colorize } = format;
 const defaultTimestamp = timestamp({ format: 'YYYY-MM-DD HH:mm:ss' });
 
 const esTemplate = {
-  index_patterns: ['logs-*'],
+  index_patterns: ['log-*'],
   settings: {
-    number_of_shards: 1,
+    number_of_shards: 3,
     number_of_replicas: 0,
     index: {
       refresh_interval: '5s',
@@ -82,7 +82,7 @@ export class CustomLogger {
           apm,
           level: 'verbose',
           indexTemplate: esTemplate,
-          indexPrefix: 'logs',
+          indexPrefix: 'log',
           format: ecsFormat({
             apmIntegration: true,
             convertErr: true,
