@@ -4,12 +4,11 @@ import {
   HttpResponse,
 } from '@/data/protocols/http/adapters';
 import { Elasticsearch } from '@/infra/service';
-import { generateUuid, merge } from '@/util';
+import { generateUuid } from '@/util';
 import { decorator } from '@/util/observability';
 import { apmSpan, getAPMTransactionIds } from '@/util/observability/apm';
 import Agent from 'agentkeepalive';
 import { AxiosInstance } from 'axios';
-import querystring from 'querystring';
 
 const decorators = {
   options: { subType: 'http', name: 'Http Request' },
@@ -70,8 +69,17 @@ export class RequestAdapter implements HttpClient {
 
         if (!document) break sendToElasticSearch;
 
+        const requestBody =
+          typeof data.body === 'object'
+            ? { body: data.body }
+            : { rawBody: String(data.body) };
+
+        const responseBody =
+          typeof axiosResponse.data === 'object'
+            ? { body: axiosResponse.data }
+            : { rawBody: String(axiosResponse.data) };
+
         await new Elasticsearch().create({
-          id: transactionIds.transactionId,
           index: 'datora-http-request',
           data: {
             event: document.event,
@@ -79,20 +87,15 @@ export class RequestAdapter implements HttpClient {
             traceId: transactionIds.traceId,
             eventId: transactionIds.transactionId,
             request: {
+              transactionId: generateUuid(),
               url: data.url,
               method: data.method,
-              body: (() => {
-                if (typeof data.body === 'string') {
-                  return querystring.parse(decodeURIComponent(data.body));
-                }
-
-                return data.body;
-              })(),
+              ...requestBody,
               headers: data.headers,
             },
             response: {
               statusCode: axiosResponse.status,
-              body: axiosResponse.data ?? {},
+              ...responseBody,
               headers: axiosResponse.headers,
             },
             createdAt: new Date(),
