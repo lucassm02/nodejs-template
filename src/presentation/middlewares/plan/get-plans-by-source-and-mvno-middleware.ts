@@ -1,5 +1,5 @@
 import { Logger } from '@/data/protocols/utils';
-import { ErrorHandler } from '@/data/usecases/exception';
+import { ErrorHandler } from '@/domain/usecases';
 import { GetPlansBySourceAndMvno } from '@/domain/usecases/plan';
 import { Middleware } from '@/presentation/protocols';
 import { notFound, serverError, stateDependencies } from '@/presentation/utils';

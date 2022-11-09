@@ -4,3 +4,4 @@ export * from './example';
 export * from './plan';
 export * from './reprocessing';
 export * from './token';
+export * from './error';

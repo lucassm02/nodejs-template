@@ -1,1 +1,1 @@
-export type ErrorHandler = (error: Error) => void;
+export type ErrorHandlerProtocol = (error: Error) => void;

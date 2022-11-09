@@ -1,5 +1,5 @@
 import { Logger } from '@/data/protocols/utils';
-import { ErrorHandler } from '@/data/usecases/exception';
+import { ErrorHandler } from '@/domain/usecases';
 import { ValidateToken } from '@/domain/usecases/token';
 import { Middleware } from '@/presentation/protocols/middleware';
 import { serverError, unauthorized } from '@/presentation/utils';

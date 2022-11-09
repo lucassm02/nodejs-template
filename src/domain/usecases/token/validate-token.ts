@@ -1,7 +1,7 @@
 import {
   AccountTokenModel,
-  SystemTokenModel,
   ManagementTokenModel,
+  SystemTokenModel,
 } from '@/domain/models/token';
 
 export interface ValidateToken {

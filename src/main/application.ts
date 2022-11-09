@@ -7,7 +7,7 @@ import express from 'express';
 import helmet from 'helmet';
 import path from 'path';
 
-import { createHttpRequestLog } from './facades/create-http-request-log';
+import { createHttpRequestLog } from './facades';
 
 elasticAPM();
 

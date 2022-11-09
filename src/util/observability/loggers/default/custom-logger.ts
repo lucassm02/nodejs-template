@@ -7,7 +7,7 @@ import { createLogger, format, Logger, transports } from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import { ElasticsearchTransport } from 'winston-elasticsearch';
 
-import { elasticAPM } from '../../apm';
+import { elasticAPM, getAPMTransactionIds } from '../../apm';
 import { cli, standard } from './formats';
 import { GenericTransport } from './transports';
 
@@ -116,15 +116,7 @@ export class CustomLogger {
   public log(params: LogParams | Error): void {
     const application = { name: pkg.name ?? 'nodejs-application' };
 
-    const { traceId, transactionId } = (() => {
-      if (apm) {
-        const transactionId = apm.currentTransaction?.ids['transaction.id'];
-        const traceId = apm.currentTransaction?.ids['trace.id'];
-        return { transactionId, traceId };
-      }
-
-      return { transactionId: undefined, traceId: undefined };
-    })();
+    const ids = getAPMTransactionIds();
 
     if (params instanceof Error) {
       if (apm) {
@@ -132,8 +124,8 @@ export class CustomLogger {
       }
 
       this.logger.log({
-        traceId,
-        transactionId,
+        traceId: ids?.traceId,
+        transactionId: ids?.transactionId,
         application,
         name: params.name,
         message: params.message,
@@ -147,8 +139,8 @@ export class CustomLogger {
     const { level, message, ...any } = params;
 
     this.logger.log({
-      traceId,
-      transactionId,
+      traceId: ids?.traceId,
+      transactionId: ids?.transactionId,
       application,
       message,
       level: <string>level,

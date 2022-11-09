@@ -1,6 +1,6 @@
 import {
-  GetPlansBySourceAndMvnoRepository,
   GetPlanDetailsByPlanIdRepository,
+  GetPlansBySourceAndMvnoRepository,
 } from '@/data/protocols/db/plan';
 import { GetPlansBySourceAndMvno } from '@/domain/usecases/plan';
 

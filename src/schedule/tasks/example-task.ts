@@ -1,5 +1,5 @@
 import { Logger } from '@/data/protocols/utils';
-import { ErrorHandler } from '@/data/usecases/exception';
+import { ErrorHandler } from '@/domain/usecases';
 import { Task } from '@/schedule/protocols';
 
 export class ExampleTask implements Task {

@@ -1,6 +1,5 @@
 import { Logger } from '@/data/protocols/utils';
-import { ErrorHandler } from '@/data/usecases/exception';
-import { GetPlanByIdentifier } from '@/domain/usecases';
+import { ErrorHandler, GetPlanByIdentifier } from '@/domain/usecases';
 import { Middleware } from '@/presentation/protocols/middleware';
 import { notFound, serverError } from '@/presentation/utils';
 import { DICTIONARY } from '@/util';

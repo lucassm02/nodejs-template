@@ -1,7 +1,7 @@
 import { Job } from '@/consumer/protocols';
 import { Logger } from '@/data/protocols/utils';
 import { EsUpdateEvent } from '@/data/usecases/elasticsearch';
-import { ErrorHandler } from '@/data/usecases/exception';
+import { ErrorHandler } from '@/domain/usecases';
 
 export class UpdateEventJob implements Job {
   constructor(

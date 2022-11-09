@@ -1,6 +1,6 @@
-import { searchLabels, getType, labelParamsToString, getName } from '.';
+import { getName, getType, labelParamsToString, searchLabels } from '.';
 import { elasticAPM } from '../../factory';
-import { traceLabels, SpanOptions } from './trace-protocols';
+import { SpanOptions, traceLabels } from './trace-protocols';
 
 type TraceParams = {
   options: SpanOptions;
