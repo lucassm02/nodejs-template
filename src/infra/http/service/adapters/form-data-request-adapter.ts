@@ -3,10 +3,11 @@ import {
   HttpRequest,
   HttpResponse,
 } from '@/data/protocols/http/adapters';
-import { Elasticsearch } from '@/infra/service';
-import { generateUuid } from '@/util';
-import { decorator } from '@/util/observability';
-import { apmSpan, getAPMTransactionIds } from '@/util/observability/apm';
+import { apmSpan } from '@/util/observability/apm';
+import {
+  datoraHttpLogger,
+  logger,
+} from '@/util/observability/loggers/decorators';
 import Agent from 'agentkeepalive';
 import { AxiosInstance } from 'axios';
 import FormData from 'form-data';
@@ -40,7 +41,8 @@ export class FormDataRequestAdapter implements HttpClient {
     this.axios.interceptors.response.use(undefined, (error) => error.response);
   }
 
-  @decorator({
+  @datoraHttpLogger()
+  @logger({
     options: decorators.options,
     input: decorators.params,
     output: decorators.result,
@@ -68,52 +70,6 @@ export class FormDataRequestAdapter implements HttpClient {
     });
 
     if (!axiosResponse) throw new Error('REQUEST_ERROR');
-
-    sendToElasticSearch: {
-      const transactionIds = getAPMTransactionIds();
-
-      if (transactionIds) {
-        const document: any = await new Elasticsearch().getById({
-          id: transactionIds.transactionId,
-          index: 'datora-event',
-        });
-
-        if (!document) break sendToElasticSearch;
-
-        const requestBody =
-          typeof data.body === 'object'
-            ? { body: data.body }
-            : { rawBody: String(data.body) };
-
-        const responseBody =
-          typeof axiosResponse.data === 'object'
-            ? { body: axiosResponse.data }
-            : { rawBody: String(axiosResponse.data) };
-
-        await new Elasticsearch().create({
-          index: 'datora-http-request',
-          data: {
-            event: document.event,
-            mvno: document.mvno,
-            traceId: transactionIds.traceId,
-            eventId: transactionIds.transactionId,
-            request: {
-              transactionId: generateUuid(),
-              url: data.url,
-              method: data.method,
-              ...requestBody,
-              headers: data.headers,
-            },
-            response: {
-              statusCode: axiosResponse.status,
-              ...responseBody,
-              headers: axiosResponse.headers,
-            },
-            createdAt: new Date(),
-          },
-        });
-      }
-    }
 
     return {
       statusCode: axiosResponse.status,

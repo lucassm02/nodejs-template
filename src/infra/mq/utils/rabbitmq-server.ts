@@ -3,9 +3,9 @@ import {
   convertCamelCaseKeysToSnakeCase,
   convertSnakeCaseKeysToCamelCase,
 } from '@/util';
+import { logger } from '@/util/observability';
 import { apmSpan, apmTransaction } from '@/util/observability/apm';
-import { decorator } from '@/util/observability/loggers/decorator';
-import { logger } from '@/util/observability/loggers/default';
+import { logger as loggerDecorator } from '@/util/observability/loggers/decorators';
 import { Channel, connect, Connection, Message } from 'amqplib';
 
 type Credentials = {
@@ -66,7 +66,7 @@ export class RabbitMqServer {
     await this.connection.close();
   }
 
-  @decorator({
+  @loggerDecorator({
     options: { name: 'Publish message in queue', subType: 'rabbitmq' },
     input: { queue: 0, message: 1, headers: 2 },
   })
@@ -84,7 +84,7 @@ export class RabbitMqServer {
       headers,
     });
   }
-  @decorator({
+  @loggerDecorator({
     options: { name: 'Publish message in exchange', subType: 'rabbitmq' },
     input: { exchange: 0, message: 1, routingKey: 2, headers: 3 },
   })

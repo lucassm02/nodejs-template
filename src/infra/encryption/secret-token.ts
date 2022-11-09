@@ -1,16 +1,8 @@
 import { DecryptToken } from '@/data/protocols/encryption/decrypt-token';
 import { ENCRYPTION } from '@/util/constants';
-import { decorator } from '@/util/observability';
-import { apmSpan } from '@/util/observability/apm';
 import { createDecipheriv } from 'crypto';
 
-const decoratorOptions = {
-  options: { name: 'Decrypt token', subType: 'aes-256' },
-};
-
 export class SecretToken implements DecryptToken {
-  @decorator(decoratorOptions)
-  @apmSpan(decoratorOptions)
   async decrypt(data: string): DecryptToken.Result {
     const encryptedText = Buffer.from(data, 'base64');
 
