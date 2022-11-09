@@ -15,14 +15,16 @@ export const datoraHttpLogger = () => {
       const EVENT_INDEX = 'datora-event';
       const HTTP_REQUEST_INDEX = 'datora-http-request';
 
-      const URL_TO_WATCH = ['/Partner', '/hlr'];
+      const TEXT_TO_WATCH = ['PORTAONE', 'HLR'];
 
       const methodResult = await originalMethod.apply(this, args);
 
-      for (const item of URL_TO_WATCH) {
-        if (!String(requestOptions.url).includes(item)) {
-          return methodResult;
+      for (const item of TEXT_TO_WATCH) {
+        if (String(requestOptions.url).toUpperCase().includes(item)) {
+          break;
         }
+
+        return methodResult;
       }
 
       const transactionIds = getAPMTransactionIds();
@@ -37,21 +39,30 @@ export const datoraHttpLogger = () => {
 
         if (!document) return methodResult;
 
-        const request =
-          typeof requestOptions.body === 'object'
-            ? {
-                body: requestOptions.body,
-                rawBody: JSON.stringify(requestOptions.body),
-              }
-            : { rawBody: String(requestOptions.body) };
+        const requestData = (() => {
+          if (typeof requestOptions.body === 'object') {
+            return {
+              body: requestOptions.body,
+              rawBody: JSON.stringify(requestOptions.body),
+            };
+          }
 
-        const response =
-          typeof methodResult.data === 'object'
-            ? {
-                body: methodResult.data,
-                rawBody: JSON.stringify(requestOptions.body),
-              }
-            : { rawBody: String(methodResult.data) };
+          if (requestOptions.body === undefined) return {};
+
+          return { rawBody: String(requestOptions.body) };
+        })();
+        const responseData = (() => {
+          if (typeof methodResult.body === 'object') {
+            return {
+              body: methodResult.body,
+              rawBody: JSON.stringify(requestOptions.body),
+            };
+          }
+
+          if (methodResult.body === undefined) return {};
+
+          return { rawBody: String(methodResult.body) };
+        })();
 
         await elasticsearch.create({
           index: HTTP_REQUEST_INDEX,
@@ -64,12 +75,12 @@ export const datoraHttpLogger = () => {
               transactionId: generateUuid(),
               url: requestOptions.url,
               method: requestOptions.method,
-              ...request,
+              ...requestData,
               headers: requestOptions.headers,
             },
             response: {
               statusCode: methodResult.status,
-              ...response,
+              ...responseData,
               headers: methodResult.headers,
             },
             createdAt: new Date(),
