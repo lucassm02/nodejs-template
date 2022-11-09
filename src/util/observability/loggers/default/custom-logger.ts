@@ -1,4 +1,4 @@
-import pkg from '@/../../package.json';
+import pkg from '@/../package.json';
 import { createMongoLog } from '@/main/facades';
 import { ELASTICSEARCH, LOGGER } from '@/util/constants';
 import ecsFormat from '@elastic/ecs-winston-format';

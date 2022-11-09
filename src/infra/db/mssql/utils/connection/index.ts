@@ -1,4 +1,4 @@
-import pkg from '@/../../package.json';
+import pkg from '@/../package.json';
 import { DB } from '@/util/constants';
 import knex from 'knex';
 
