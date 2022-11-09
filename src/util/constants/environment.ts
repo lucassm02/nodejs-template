@@ -2,14 +2,13 @@ import 'dotenv/config';
 import { stringToBoolean } from '../text';
 
 export const SERVER = {
-  PORT: process.env.PORT || 3000,
-  NODE_ENV: process.env.NODE_ENV || 'development',
-  BASE_URI: process.env.BASE_URI || '',
+  PORT: process.env.SERVER_PORT || 3000,
+  BASE_URI: process.env.SERVER_BASE_URI || '',
 };
 
 export const LOGGER = {
-  DATABASE: {
-    ENABLED: stringToBoolean(process.env.ENABLE_DATABASE_LOGS) || false,
+  DB: {
+    ENABLED: stringToBoolean(process.env.LOGGER_DB_ENABLED) || false,
   },
   CONSOLE: { LEVEL: process.env.LOGGER_CONSOLE_LEVEL || 'info' },
 };
@@ -17,11 +16,9 @@ export const LOGGER = {
 export const ENCRYPTION = {
   KEY: process.env.ENCRYPTION_KEY || '',
   IV: process.env.ENCRYPTION_IV || '',
-  PAYLOAD_KEY: process.env.PAYLOAD_ENCRYPTION_KEY || '',
-  PAYLOAD_IV: process.env.PAYLOAD_ENCRYPTION_IV || '',
 };
 
-export const APIS = {
+export const API = {
   AUTHENTICATOR: process.env.API_AUTHENTICATOR || '',
   CARD_MANAGEMENT: process.env.API_CARD_MANAGEMENT || '',
   TRANSACTION_MANAGEMENT: process.env.API_TRANSACTION_MANAGEMENT || '',
@@ -29,12 +26,12 @@ export const APIS = {
   TELECALL: process.env.API_TELECALL || '',
 };
 
-export const DATABASE = {
-  DB_DIALECT: process.env.DB_DIALECT || 'mssql',
-  DB_HOST: process.env.DB_HOST || '',
-  DB_USERNAME: process.env.DB_USERNAME || '',
-  DB_PASSWORD: process.env.DB_PASSWORD || '',
-  DB_PORT: process.env.DB_PORT || 1433,
+export const DB = {
+  DIALECT: process.env.DB_DIALECT || 'mssql',
+  HOST: process.env.DB_HOST || '',
+  USERNAME: process.env.DB_USERNAME || '',
+  PASSWORD: process.env.DB_PASSWORD || '',
+  PORT: process.env.DB_PORT || 1433,
 };
 
 export const RABBIT = {
@@ -45,26 +42,26 @@ export const RABBIT = {
 };
 
 export const MONGO = {
-  USER: process.env.MONGO_DB_USER || '',
-  PASSWORD: process.env.MONGO_DB_PASSWORD || '',
-  HOST: process.env.MONGO_DB_HOST || '',
-  PORT: process.env.MONGO_DB_PORT || 27017,
-  NAME: process.env.MONGO_DB_NAME || '',
-  AUTH_SOURCE: process.env.MONGO_DB_AUTH_SOURCE || '',
+  USER: process.env.MONGO_USER || '',
+  PASSWORD: process.env.MONGO_PASSWORD || '',
+  HOST: process.env.MONGO_HOST || '',
+  PORT: process.env.MONGO_PORT || 27017,
+  NAME: process.env.MONGO_NAME || '',
+  AUTH_SOURCE: process.env.MONGO_AUTH_SOURCE || '',
   URL() {
     return `mongodb://${this?.USER}:${this.PASSWORD}@${this.HOST}:${this.PORT}`;
   },
 };
 
 export const APM = {
-  ENABLED: stringToBoolean(process.env.ENABLE_APM) || false,
+  ENABLED: stringToBoolean(process.env.APM_ENABLED) || false,
   SECRET_TOKEN: process.env.APM_SECRET_TOKEN || '',
   SERVER_URL: process.env.APM_SERVER_URL || '',
   ENVIRONMENT: process.env.APM_ENVIRONMENT || '',
 };
 
 export const ELASTICSEARCH = {
-  ENABLED: stringToBoolean(process.env.ENABLE_ELASTICSEARCH) || false,
+  ENABLED: stringToBoolean(process.env.ELASTICSEARCH_ENABLED) || false,
   USERNAME: process.env.ELASTICSEARCH_USERNAME || '',
   PASSWORD: process.env.ELASTICSEARCH_PASSWORD || '',
   SERVER_URL: process.env.ELASTICSEARCH_SERVER_URL || '',

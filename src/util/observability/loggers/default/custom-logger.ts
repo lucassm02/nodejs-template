@@ -92,7 +92,7 @@ export class CustomLogger {
       );
     }
 
-    if (LOGGER.DATABASE.ENABLED) {
+    if (LOGGER.DB.ENABLED) {
       this.logger.add(
         new GenericTransport({
           level: 'verbose',

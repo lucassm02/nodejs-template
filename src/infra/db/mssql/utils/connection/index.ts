@@ -1,14 +1,14 @@
 import pkg from '@/../../package.json';
-import { DATABASE } from '@/util/constants';
+import { DB } from '@/util/constants';
 import knex from 'knex';
 
 const config = {
-  client: DATABASE.DB_DIALECT,
+  client: DB.DIALECT,
   connection: {
-    host: DATABASE.DB_HOST,
-    port: +DATABASE.DB_PORT,
-    user: DATABASE.DB_USERNAME,
-    password: DATABASE.DB_PASSWORD,
+    host: DB.HOST,
+    port: +DB.PORT,
+    user: DB.USERNAME,
+    password: DB.PASSWORD,
     options: {
       encrypt: false,
       enableArithAbort: false,

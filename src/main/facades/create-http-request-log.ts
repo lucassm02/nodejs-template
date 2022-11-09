@@ -4,7 +4,7 @@ import { elasticAPM, LOGGER } from '@/util';
 type Params = { url: string; request: object; response: object };
 
 export const createHttpRequestLog = async (params: Params): Promise<void> => {
-  if (!LOGGER.DATABASE.ENABLED) return;
+  if (!LOGGER.DB.ENABLED) return;
 
   const { traceId, transactionId } = (() => {
     const apm = elasticAPM().getAPM();

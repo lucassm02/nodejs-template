@@ -2,7 +2,7 @@ import { InputAndOutputLogRepository } from '@/infra/db/mongodb/input-and-output
 import { elasticAPM, LOGGER } from '@/util';
 
 export const createAmqpLog = async (payload: object): Promise<void> => {
-  if (!LOGGER.DATABASE.ENABLED) return;
+  if (!LOGGER.DB.ENABLED) return;
   const { traceId, transactionId } = (() => {
     const apm = elasticAPM().getAPM();
 
