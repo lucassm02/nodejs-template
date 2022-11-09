@@ -1,6 +1,6 @@
-import { APIS } from '@/util/constants';
+import { API } from '@/util/constants';
 import axios from 'axios';
 
 export const httpAuthenticator = axios.create({
-  baseURL: APIS.AUTHENTICATOR,
+  baseURL: API.AUTHENTICATOR,
 });

@@ -24,14 +24,14 @@ export const cli = format.printf(({ level, timestamp, ...params }) => {
           ).toLocaleUpperCase()}: [${sanitizedValueToString}]`;
         }
 
-        return `${acc}${String(
+        return `${acc}, ${String(
           key
         ).toLocaleUpperCase()}: [${sanitizedValueToString}]`;
       },
       ''
     );
 
-    return `${baseText}, ${paramsToString}`;
+    return `${baseText}${paramsToString}`;
   }
 
   return baseText;

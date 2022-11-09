@@ -68,8 +68,8 @@ Deploy (Homologation):
   script:
     - export TAG=$( echo $CI_COMMIT_REF_NAME | grep -Po $VERSION_PATTERN )
     - echo 'Deploy of TAG:' $TAG
-    - kubectl apply -n homologation -f "${CONFIG_REPOSITORY_BASE_URL}%2F${PROJECT_GROUP}%2F${HELM_NAME}%2Fconfig-map.yaml/raw?private_token=$ACCESS_TOKEN_READ_REPOSITORY&ref=homologation"
-    - kubectl apply -n homologation -f "${CONFIG_REPOSITORY_BASE_URL}%2F${PROJECT_GROUP}%2F${HELM_NAME}%2Fsecret.yaml/raw?private_token=$ACCESS_TOKEN_READ_REPOSITORY&ref=homologation"
+    - kubectl apply -n homologation -f "${CONFIG_REPOSITORY_BASE_URL}/${PROJECT_GROUP}%2F${HELM_NAME}%2Fconfig-map.yaml/raw?private_token=$ACCESS_TOKEN_READ_REPOSITORY&ref=homologation"
+    - kubectl apply -n homologation -f "${CONFIG_REPOSITORY_BASE_URL}/${PROJECT_GROUP}%2F${HELM_NAME}%2Fsecret.yaml/raw?private_token=$ACCESS_TOKEN_READ_REPOSITORY&ref=homologation"
     - helm upgrade -n homologation $HELM_NAME $HELM_CHART_NAME --set image.tag=$TAG --values ./helm/homologation-values.yaml --install
   when: manual
   only:
@@ -112,8 +112,8 @@ Deploy (Production):
   script:
     - export TAG=$( echo $CI_COMMIT_TAG | grep -Po $VERSION_PATTERN )
     - echo 'Deploy of TAG:' $TAG
-    - kubectl apply -n production -f "${CONFIG_REPOSITORY_BASE_URL}%2F${PROJECT_GROUP}%2F${HELM_NAME}%2Fconfig-map.yaml/raw?private_token=$ACCESS_TOKEN_READ_REPOSITORY&ref=production"
-    - kubectl apply -n production -f "${CONFIG_REPOSITORY_BASE_URL}%2F${PROJECT_GROUP}%2F${HELM_NAME}%2Fsecret.yaml/raw?private_token=$ACCESS_TOKEN_READ_REPOSITORY&ref=production"
+    - kubectl apply -n production -f "${CONFIG_REPOSITORY_BASE_URL}/${PROJECT_GROUP}%2F${HELM_NAME}%2Fconfig-map.yaml/raw?private_token=$ACCESS_TOKEN_READ_REPOSITORY&ref=production"
+    - kubectl apply -n production -f "${CONFIG_REPOSITORY_BASE_URL}/${PROJECT_GROUP}%2F${HELM_NAME}%2Fsecret.yaml/raw?private_token=$ACCESS_TOKEN_READ_REPOSITORY&ref=production"
     - helm upgrade -n production $HELM_NAME $HELM_CHART_NAME --set image.tag=$TAG --values ./helm/production-values.yaml --install
   when: manual
   only:
