@@ -1,3 +1,4 @@
+import pkg from '@/../../package.json';
 import { DATABASE } from '@/util/constants';
 import knex from 'knex';
 
@@ -11,7 +12,7 @@ const config = {
     options: {
       encrypt: false,
       enableArithAbort: false,
-      appName: 'telecall-portability-gateway',
+      appName: pkg.name,
       validateBulkLoadParameters: false,
     },
   },
