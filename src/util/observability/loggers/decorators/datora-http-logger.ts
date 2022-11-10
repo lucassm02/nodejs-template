@@ -15,7 +15,7 @@ export const datoraHttpLogger = () => {
       const EVENT_INDEX = 'datora-event';
       const HTTP_REQUEST_INDEX = 'datora-http-request';
 
-      const TEXT_TO_WATCH = ['PORTAONE', 'HLR'];
+      const TEXT_TO_WATCH = ['PORTAONE', 'HLR', 'PARTNER/NP'];
 
       const methodResult = await originalMethod.apply(this, args);
 
