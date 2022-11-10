@@ -34,7 +34,7 @@ export class GetPlansBySourceAndMvnoMiddleware implements Middleware {
 
       return next();
     } catch (error) {
-      this.errorHandler.handle(error);
+      await this.errorHandler.handle(error);
       switch (error.message) {
         case GetPlansBySourceAndMvno.Exceptions.PLANS_NOT_FOUND:
           return notFound(DICTIONARY.RESPONSE.MESSAGE.NONE_WAS_FOUND, 'plano');

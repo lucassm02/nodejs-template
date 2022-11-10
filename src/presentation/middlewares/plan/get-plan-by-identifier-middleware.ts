@@ -32,7 +32,7 @@ export class GetPlanByIdentifierMiddleware implements Middleware {
 
       return next();
     } catch (error) {
-      this.errorHandler.handle(error);
+      await this.errorHandler.handle(error);
       switch (error.message) {
         case GetPlanByIdentifier.Exceptions.PLAN_NOT_FOUND:
           return notFound(

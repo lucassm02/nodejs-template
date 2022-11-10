@@ -1,3 +1,3 @@
 export interface ErrorHandler {
-  handle(error: Error): void;
+  handle(error: Error): Promise<void>;
 }

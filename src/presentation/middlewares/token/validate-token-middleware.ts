@@ -35,7 +35,7 @@ export class ValidateTokenMiddleware implements Middleware {
 
       return next();
     } catch (error) {
-      this.errorHandler.handle(error);
+      await this.errorHandler.handle(error);
       switch (error.message) {
         case ValidateToken.Exceptions.ERROR_ON_DECRYPTING:
         case ValidateToken.Exceptions.INVALID_TOKEN:

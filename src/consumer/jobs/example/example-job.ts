@@ -16,7 +16,7 @@ export class ExampleJob implements Job {
       this.logger.log({ level: 'info', message: "Hello i'm a task" });
       next();
     } catch (error) {
-      this.errorHandler.handle(error);
+      await this.errorHandler.handle(error);
     }
   }
 }

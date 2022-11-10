@@ -34,7 +34,7 @@ export class CreateEventJob implements Job {
 
       return next();
     } catch (error) {
-      this.errorHandler.handle(error);
+      await this.errorHandler.handle(error);
     }
   }
 }

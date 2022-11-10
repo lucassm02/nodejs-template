@@ -35,7 +35,7 @@ export class ValidateAuthenticationKeyMiddleware implements Middleware {
 
       return next();
     } catch (error) {
-      this.errorHandler.handle(error);
+      await this.errorHandler.handle(error);
       switch (error.message) {
         default:
           return serverError(error);
