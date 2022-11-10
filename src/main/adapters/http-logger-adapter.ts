@@ -1,11 +1,9 @@
 import { NextFunction, Request, Response } from 'express';
 
-type GenericObject = { [key: string]: any };
-
 type LoggerParams = {
   url: string;
-  request: GenericObject;
-  response: GenericObject;
+  request: Record<string, unknown>;
+  response: Record<string, unknown>;
 };
 
 type Logger = (params: LoggerParams) => Promise<void> | void;

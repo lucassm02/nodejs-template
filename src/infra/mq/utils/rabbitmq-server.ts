@@ -20,10 +20,6 @@ type Payload = {
   headers: object;
 };
 
-type GenericObject = {
-  [key: string]: any;
-};
-
 export class RabbitMqServer {
   private connection!: Connection;
   private channel!: Channel;
@@ -107,7 +103,7 @@ export class RabbitMqServer {
     );
   }
 
-  private messageFromBuffer(message: GenericObject): Buffer {
+  private messageFromBuffer(message: Record<string, unknown>): Buffer {
     const string = JSON.stringify(message);
     return Buffer.from(string);
   }
@@ -126,16 +122,12 @@ export class RabbitMqServer {
     options: { nameByParameter: 0, type: 'rabbitmq' },
     params: { message: 1 },
   })
-  private async handleMessage(
-    queue: string,
+  private async startTransaction(
+    _queue: string,
     payload: Payload,
     callback: Function
   ): Promise<void> {
-    try {
-      return await callback(payload);
-    } catch (error) {
-      logger.log(error);
-    }
+    return callback(payload);
   }
 
   public async consume(queue: string, callback: (payload: Payload) => void) {
@@ -146,10 +138,11 @@ export class RabbitMqServer {
       try {
         const payload = {
           body: this.messageToJson(message),
-          headers: message?.properties?.headers,
+          headers: message.properties.headers,
+          properties: { queue, ...message.fields },
         };
 
-        await this.handleMessage(queue, payload, callback);
+        await this.startTransaction(queue, payload, callback);
 
         this.channel.ack(message);
       } catch (error) {
@@ -160,7 +153,8 @@ export class RabbitMqServer {
             message: 'UNABLE_TO_CONVERT_MESSAGE_TO_JSON',
             payload: {
               message: message.content.toString(),
-              headers: message?.properties?.headers,
+              headers: message.properties.headers,
+              properties: { queue, ...message.fields },
             },
           });
         }

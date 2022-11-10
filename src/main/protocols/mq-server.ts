@@ -1,3 +1,6 @@
 export interface MqServer {
-  consume(queue: string, callback: (message: object) => void): void;
+  consume(
+    queue: string,
+    callback: (message: Record<string, unknown>) => void
+  ): void;
 }

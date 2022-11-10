@@ -1,11 +1,14 @@
 import { PublishInExchangeService } from '@/data/protocols/mq/publish-in-exchange';
+import { PublishInQueueService } from '@/data/protocols/mq/publish-in-queue';
 import { SendReprocessing } from '@/domain/usecases';
 
 export class MqSendReprocessing implements SendReprocessing {
   constructor(
     private readonly publishInExchangeService: PublishInExchangeService,
+    private readonly publishInQueueService: PublishInQueueService,
     private readonly queueOptions: {
-      exchange: string;
+      queue: string;
+      exchange?: string;
       routingKey?: string;
     },
     private readonly maxTries: number,
@@ -50,11 +53,23 @@ export class MqSendReprocessing implements SendReprocessing {
     if (!reprocessing.tries) {
       const [delay] = DELAYS;
 
+      if (!this.queueOptions.exchange) {
+        this.publishInQueueService.publishInQueue(
+          this.queueOptions.queue,
+          newPayload,
+          {
+            ...payload.headers,
+          }
+        );
+        return;
+      }
+
       this.publishInExchangeService.publishInExchange(
         this.queueOptions.exchange,
         newPayload,
         this.queueOptions.routingKey ?? '',
         {
+          ...payload.headers,
           'x-delay': delay,
         }
       );
@@ -65,11 +80,23 @@ export class MqSendReprocessing implements SendReprocessing {
 
     if (tries.current > tries.max) return;
 
+    if (!this.queueOptions.exchange) {
+      this.publishInQueueService.publishInQueue(
+        this.queueOptions.queue,
+        newPayload,
+        {
+          ...payload.headers,
+        }
+      );
+      return;
+    }
+
     this.publishInExchangeService.publishInExchange(
       this.queueOptions.exchange,
       newPayload,
       this.queueOptions.routingKey ?? '',
       {
+        ...payload.headers,
         'x-delay': tries.delays[tries.current - 1],
       }
     );

@@ -10,8 +10,7 @@ import {
 
 import { Route as RouteClass } from './route';
 
-export type GenericObject = { [key: string]: any };
-export type Callback = () => any | Promise<any>;
+export type Callback = () => unknown | Promise<unknown>;
 
 export type ExpressRoute = IRouterMatcher<IRouter> & IRouterHandler<IRouter>;
 
@@ -25,7 +24,7 @@ export type CallbackWithStateHook = (
   req: Request,
   res: Response,
   next: NextFunction,
-  stateHook: [GenericObject, Function]
+  stateHook: [Record<string, unknown>, Function]
 ) => void;
 
 export type RouteMiddleware =

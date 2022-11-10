@@ -4,7 +4,7 @@ export class ExampleTrouble implements TroubleExample {
   trouble({ current, step }: TroubleExample.Params): TroubleExample.Result {
     if (current === 1) throw new Error('Example Error');
 
-    const troubleArray = [{ name: 'ok' }, { name: 'ok' }, { name: 'ok' }];
+    const troubleArray = [{ name: 'ok' }, { name: 'trouble' }, { name: 'ok' }];
     let continueProgress = false;
 
     for (const [index, obj] of troubleArray.entries()) {
