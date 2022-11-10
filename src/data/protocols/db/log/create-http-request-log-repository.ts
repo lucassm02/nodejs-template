@@ -5,11 +5,9 @@ export interface CreateInputAndOutputLogRepositoryRepository {
 }
 
 export namespace CreateInputAndOutputLogRepositoryRepository {
-  type GenericObject = { [key: string]: any };
-
   export type Params = {
     type: string;
-    [key: string]: any;
+    [key: string]: unknown;
   };
 
   export type Result = Promise<void>;

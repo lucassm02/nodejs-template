@@ -33,11 +33,13 @@ const normalizePayload = (
 type Options = {
   maxTries?: number;
   delays?: number[];
-  queueOptions: {
+  queueOptions?: {
     exchange: string;
     routingKey?: string;
   };
 };
+
+type Args = [Record<string, any>, [Record<string, any>, Function], Function];
 
 export function reprocessing(options: Options) {
   return function (
@@ -47,20 +49,24 @@ export function reprocessing(options: Options) {
   ) {
     const originalMethod = descriptor.value;
 
-    descriptor.value = async function (
-      ...args: [Record<string, any>, [Record<string, any>, Function], Function]
-    ) {
+    descriptor.value = async function (...args: Args) {
+      const [payload, [state, setState], next] = args;
+
       const delays = options.delays ?? REPROCESSING.DELAYS;
       const maxTries = options.maxTries ?? REPROCESSING.MAX_TRIES;
 
+      const queueOptions = options.queueOptions ?? {
+        exchange: payload.properties.exchange,
+        routingKey: payload.properties.routingKey,
+      };
+
       const mqSendReprocessing = new MqSendReprocessing(
         mqServer,
-        options.queueOptions,
+        mqServer,
+        { queue: payload.properties.queue, ...queueOptions },
         maxTries,
         delays
       );
-
-      const [payload, [state, setState], next] = args;
 
       try {
         normalizePayload(payload, [state, setState]);

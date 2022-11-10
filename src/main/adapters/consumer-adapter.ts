@@ -4,17 +4,12 @@ import makeFlow from './fow-adapter';
 
 const STATE_KEY = Symbol('STATE');
 
-export const consumerAdapter = (...jobs: (Job | Function)[]) => {
-  type State = Record<string, unknown>;
+type State = Record<string, unknown>;
+type Payload = Job.Payload & { [key: string | symbol]: State };
 
+export const consumerAdapter = (...jobs: (Job | Function)[]) => {
   const adaptedJobs = jobs.map((job) => {
-    return (
-      {
-        [STATE_KEY]: state,
-        ...payload
-      }: Job.Payload & { [key: string | symbol]: State },
-      next: Job.Next
-    ) => {
+    return ({ [STATE_KEY]: state, ...payload }: Payload, next: Job.Next) => {
       const setState = (data: State) => {
         for (const key in data) {
           if (typeof key === 'string' || typeof key === 'number')
@@ -31,6 +26,9 @@ export const consumerAdapter = (...jobs: (Job | Function)[]) => {
   });
 
   return (payload: object) => {
-    return makeFlow({ ...payload, [STATE_KEY]: {} })(...adaptedJobs)();
+    return makeFlow({
+      ...payload,
+      [STATE_KEY]: {},
+    })(...adaptedJobs)();
   };
 };
