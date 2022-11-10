@@ -3,8 +3,8 @@ import { ENCRYPTION } from '@/util/constants';
 import { createDecipheriv } from 'crypto';
 
 export class SecretToken implements DecryptToken {
-  async decrypt(data: string): DecryptToken.Result {
-    const encryptedText = Buffer.from(data, 'base64');
+  decrypt(params: string): DecryptToken.Result {
+    const encryptedText = Buffer.from(params, 'base64');
 
     const decipher = createDecipheriv(
       'aes-256-cbc',

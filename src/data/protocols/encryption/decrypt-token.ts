@@ -10,7 +10,7 @@ export interface DecryptToken {
 
 export namespace DecryptToken {
   export type Params = string;
-  export type Result = Promise<
-    AccountTokenModel & ManagementTokenModel & SystemTokenModel
-  >;
+  export type Result = AccountTokenModel &
+    ManagementTokenModel &
+    SystemTokenModel;
 }

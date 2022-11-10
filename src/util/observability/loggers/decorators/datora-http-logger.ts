@@ -79,7 +79,7 @@ export const datoraHttpLogger = () => {
               headers: requestOptions.headers,
             },
             response: {
-              statusCode: methodResult.status,
+              statusCode: methodResult.statusCode,
               ...responseData,
               headers: methodResult.headers,
             },
