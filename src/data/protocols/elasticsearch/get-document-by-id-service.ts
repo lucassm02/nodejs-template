@@ -4,5 +4,5 @@ export interface GetDocumentByIdService {
 
 export namespace GetDocumentByIdService {
   export type Params = { id: string; index: string };
-  export type Result = Promise<unknown>;
+  export type Result = Promise<unknown | undefined>;
 }

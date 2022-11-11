@@ -54,11 +54,15 @@ export class Elasticsearch
   async getById(
     params: GetDocumentByIdService.Params
   ): GetDocumentByIdService.Result {
-    const response = await this.client.get({
-      index: params.index,
-      id: params.id,
-    });
+    try {
+      const response = await this.client.get({
+        index: params.index,
+        id: params.id,
+      });
 
-    return convertSnakeCaseKeysToCamelCase(response._source);
+      return convertSnakeCaseKeysToCamelCase(response._source);
+    } catch (error) {
+      return undefined;
+    }
   }
 }
