@@ -9,9 +9,7 @@ export class TroubleExampleJob implements Job {
     private readonly logger: Logger
   ) {}
 
-  @reprocessing({
-    queueOptions: { exchange: 'example-delayed' },
-  })
+  @reprocessing()
   async handle(
     _payload: Job.Payload,
     [{ reprocessing }]: Job.State,

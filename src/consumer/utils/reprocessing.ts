@@ -41,7 +41,7 @@ type Options = {
 
 type Args = [Record<string, any>, [Record<string, any>, Function], Function];
 
-export function reprocessing(options: Options) {
+export function reprocessing(options: Options = {}) {
   return function (
     target: Object,
     key: string | symbol,
