@@ -19,12 +19,14 @@ export const datoraHttpLogger = () => {
 
       const methodResult = await originalMethod.apply(this, args);
 
-      for (const item of TEXT_TO_WATCH) {
+      for (const [index, item] of TEXT_TO_WATCH.entries()) {
         if (String(requestOptions.url).toUpperCase().includes(item)) {
           break;
         }
 
-        return methodResult;
+        if (TEXT_TO_WATCH.length === index + 1) {
+          return methodResult;
+        }
       }
 
       const transactionIds = getAPMTransactionIds();
