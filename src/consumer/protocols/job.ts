@@ -12,7 +12,7 @@ export namespace Job {
     routingKey: string;
   };
 
-  export type Payload<B = object, H = object> = {
+  export type Payload<B = any, H = any> = {
     body: B;
     headers: H;
     properties: Properties;
