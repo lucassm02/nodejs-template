@@ -183,7 +183,11 @@ export class HttpServer {
     const ignoreIfIncludes = ['.MAP.', '.SPEC.', '.TEST.'];
 
     const baseUrl = typeof arg1 === 'string' ? arg1 : this.baseUrl;
-    const middlewares = typeof arg1 === 'function' ? [arg1, ...args] : args;
+
+    const middlewares =
+      typeof arg1 !== 'string' && arg1 !== undefined && !(arg1 instanceof Route)
+        ? [arg1, ...args]
+        : args;
 
     const files = readdirSync(path);
 
