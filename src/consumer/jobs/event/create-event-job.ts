@@ -2,6 +2,7 @@ import { Job } from '@/consumer/protocols';
 import { Logger } from '@/data/protocols/utils';
 import { EsCreateEvent } from '@/data/usecases/elasticsearch';
 import { ErrorHandler } from '@/domain/usecases';
+import { ELASTICSEARCH } from '@/util';
 
 export class CreateEventJob implements Job {
   constructor(
@@ -15,6 +16,8 @@ export class CreateEventJob implements Job {
     next: Job.Next
   ): Job.Result {
     try {
+      if (!ELASTICSEARCH.ENABLED) return await next();
+
       const event = await this.createEvent.create({
         event: '',
         mvno: '',

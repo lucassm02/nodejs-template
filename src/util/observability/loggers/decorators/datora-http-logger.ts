@@ -1,5 +1,5 @@
 import { Elasticsearch } from '@/infra/service';
-import { generateUuid, getAPMTransactionIds } from '@/util';
+import { ELASTICSEARCH, generateUuid, getAPMTransactionIds } from '@/util';
 
 export const datoraHttpLogger = () => {
   return function (
@@ -18,6 +18,8 @@ export const datoraHttpLogger = () => {
       const TEXT_TO_WATCH = ['PORTAONE', 'HLR', 'PARTNER/NP'];
 
       const methodResult = await originalMethod.apply(this, args);
+
+      if (!ELASTICSEARCH.ENABLED) return methodResult;
 
       for (const [index, item] of TEXT_TO_WATCH.entries()) {
         if (String(requestOptions.url).toUpperCase().includes(item)) {
