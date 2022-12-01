@@ -1,7 +1,7 @@
 import { UpdateEventJob } from '@/consumer/jobs/event';
 import { EsUpdateEvent } from '@/data/usecases/elasticsearch';
 import { Elasticsearch } from '@/infra/service';
-import { getAPMTransactionIds, logger, merge } from '@/util';
+import { formatDate, getAPMTransactionIds, logger, merge } from '@/util';
 
 import { makeErrorHandler } from '../../usecases';
 
@@ -11,7 +11,8 @@ export const makeUpdateEventJob = () => {
     elasticsearch,
     elasticsearch,
     getAPMTransactionIds,
-    merge
+    merge,
+    formatDate
   );
   return new UpdateEventJob(esUpdateEvent, logger, makeErrorHandler());
 };

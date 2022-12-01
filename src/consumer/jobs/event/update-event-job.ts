@@ -20,7 +20,6 @@ export class UpdateEventJob implements Job {
 
       const event = await this.updateEvent.update({
         status: 'SUCCESS',
-        updateAt: new Date(),
       });
 
       this.logger.log({

@@ -1,5 +1,10 @@
 import { Elasticsearch } from '@/infra/service';
-import { ELASTICSEARCH, generateUuid, getAPMTransactionIds } from '@/util';
+import {
+  ELASTICSEARCH,
+  formatDate,
+  generateUuid,
+  getAPMTransactionIds,
+} from '@/util';
 
 export const datoraHttpLogger = () => {
   return function (
@@ -73,10 +78,11 @@ export const datoraHttpLogger = () => {
           data: {
             event: document.event,
             mvno: document.mvno,
+            transactionId: transactionIds.transactionId,
             traceId: transactionIds.traceId,
             eventId: transactionIds.transactionId,
             request: {
-              transactionId: generateUuid(),
+              requestId: generateUuid(),
               url: requestOptions.url,
               method: requestOptions.method,
               ...requestData,
@@ -87,7 +93,7 @@ export const datoraHttpLogger = () => {
               ...responseData,
               headers: methodResult.headers,
             },
-            createdAt: new Date(),
+            createdAt: formatDate(new Date(), 'yyyy-MM-dd HH:mm:ss'),
           },
         });
       }

@@ -22,8 +22,6 @@ export class CreateEventJob implements Job {
         event: '',
         mvno: '',
         status: 'CREATED',
-        createdAt: new Date(),
-        updateAt: new Date(),
         payload: payload.body,
       });
 

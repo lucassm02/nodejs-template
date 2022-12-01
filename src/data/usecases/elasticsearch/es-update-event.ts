@@ -3,7 +3,7 @@ import {
   GetDocumentByIdService,
   UpdateDocumentService,
 } from '@/data/protocols/elasticsearch';
-import { Merge } from '@/data/protocols/utils';
+import { FormatDate, Merge } from '@/data/protocols/utils';
 import { UpdateEvent } from '@/domain/usecases/event';
 
 export class EsUpdateEvent implements UpdateEvent {
@@ -11,7 +11,8 @@ export class EsUpdateEvent implements UpdateEvent {
     private readonly updateDocumentService: UpdateDocumentService,
     private readonly getDocumentByIdService: GetDocumentByIdService,
     private readonly getAPMTransactionIds: GetAPMTransactionIds,
-    private readonly merge: Merge
+    private readonly merge: Merge,
+    private readonly formatDate: FormatDate
   ) {}
 
   async update(params: UpdateEvent.Params): UpdateEvent.Result {
@@ -26,7 +27,12 @@ export class EsUpdateEvent implements UpdateEvent {
       id: ids.transactionId,
     });
 
-    const newDocument = this.merge(document, params);
+    const now = new Date();
+    const nowToString = this.formatDate(now, 'yyyy-MM-dd HH:mm:ss');
+
+    const newDocument = this.merge(document, params, {
+      updatedAt: nowToString,
+    });
 
     return this.updateDocumentService.update({
       id: ids.transactionId,
