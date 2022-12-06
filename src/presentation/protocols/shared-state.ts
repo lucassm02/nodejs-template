@@ -1,12 +1,14 @@
 import {
   ValidateTokenModel,
   AuthenticationModel,
-  PlanWithDetailsModel,
+  ExampleModel,
 } from '@/domain/models';
+import { Transaction } from '@/domain/models/transaction';
 
 export type SharedState = {
   validateToken: ValidateTokenModel;
   validateAuthenticationKey: AuthenticationModel;
-  getPlanByIdentifier: PlanWithDetailsModel;
-  getPlansBySourceAndMvno: PlanWithDetailsModel[];
+  getExample: ExampleModel[];
+  createExample: ExampleModel;
+  transaction: Transaction[];
 };
