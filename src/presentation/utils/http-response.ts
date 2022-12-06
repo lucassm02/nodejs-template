@@ -41,7 +41,7 @@ export const conflict = (message: string, error?: any) => ({
 export const badRequest = (error?: any) => ({
   statusCode: 400,
   body: {
-    message: 'Ops, ocorreram alguns erros de validações',
+    message: 'Ops! Ocorreram alguns erros de validação',
     payload: {},
     error,
   },
