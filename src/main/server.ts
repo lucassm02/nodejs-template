@@ -1,4 +1,4 @@
-import { sqlConnection } from '@/infra/db/mssql/utils/connection';
+import { sqlConnection } from '@/infra/db/mssql/util/connection';
 import { logger } from '@/util';
 import { MONGO, SERVER } from '@/util/constants';
 import mongoose from 'mongoose';

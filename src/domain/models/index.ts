@@ -1,4 +1,4 @@
 export * from './authentication-key';
-export * from './plan';
+export * from './example';
 export * from './token';
 export * from './utils';
