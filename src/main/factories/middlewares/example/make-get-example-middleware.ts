@@ -5,8 +5,11 @@ import { logger } from '@/util';
 
 import { makeErrorHandler } from '../../usecases';
 
-export const makeGetExampleMiddleware = () => {
-  const exampleRepository = new ExampleRepository();
+type Params = { useTransaction: boolean };
+export const makeGetExampleMiddleware = (
+  { useTransaction }: Params = { useTransaction: false }
+) => {
+  const exampleRepository = new ExampleRepository(useTransaction);
   const dbGetExample = new DbGetExample(exampleRepository);
   return new GetExampleMiddleware(dbGetExample, logger, makeErrorHandler());
 };

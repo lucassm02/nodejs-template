@@ -2,11 +2,11 @@ import {
   CreateExampleRepository,
   GetExampleRepository,
 } from '@/data/protocols/db/example';
-import { EXAMPLE_DB, sqlConnection } from '@/infra/db/mssql/util';
+import { EXAMPLE_DB, Repository } from '@/infra/db/mssql/util';
 import {
   convertCamelCaseKeysToSnakeCase,
   filterKeys,
-  pipe,
+  transform,
 } from '@/util/object';
 
 const {
@@ -14,10 +14,13 @@ const {
 } = EXAMPLE_DB;
 
 export class ExampleRepository
+  extends Repository
   implements CreateExampleRepository, GetExampleRepository
 {
   async get(): GetExampleRepository.Result {
-    return sqlConnection(EXAMPLE.TABLE)
+    const connection = await this.getConnection();
+
+    return connection(EXAMPLE.TABLE)
       .select({
         exampleId: EXAMPLE.COLUMNS.EXAMPLE_ID,
         value: EXAMPLE.COLUMNS.VALUE,
@@ -30,28 +33,20 @@ export class ExampleRepository
   async create(
     params: CreateExampleRepository.Params
   ): CreateExampleRepository.Result {
-    const transaction = await sqlConnection.transaction();
+    const connection = await this.getConnection();
 
-    const data = pipe(params)(
-      (value) => filterKeys(value, ['description', 'value']),
-      convertCamelCaseKeysToSnakeCase
-    );
+    const data = transform(params)
+      .pipe((value) => filterKeys(value, ['description', 'value']))
+      .pipe(convertCamelCaseKeysToSnakeCase);
 
-    const [record] = await transaction(EXAMPLE.TABLE)
+    const [record] = await connection(EXAMPLE.TABLE)
       .insert(data)
       .whereNotNull(EXAMPLE.COLUMNS.DELETED_AT)
       .returning('*');
 
     return {
       record,
-      transaction: {
-        commit: async () => {
-          transaction.commit();
-        },
-        rollback: async () => {
-          transaction.rollback();
-        },
-      },
+      transaction: this.transactionAdapter(connection),
     };
   }
 }

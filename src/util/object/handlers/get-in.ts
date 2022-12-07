@@ -14,8 +14,3 @@ export const getIn = (object: Object, path: string) => {
 
   return targetValue;
 };
-
-export const pipe =
-  <Type>(value: Type) =>
-  (...functions: ((value: Type) => any)[]) =>
-    functions.reduce((value, fn) => fn(value), value);

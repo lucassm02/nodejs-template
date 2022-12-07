@@ -5,5 +5,5 @@ export interface Transaction {
 
 export type Wrapper<Record = unknown> = {
   record: Record;
-  transaction: Transaction;
+  transaction: Transaction | null;
 };
