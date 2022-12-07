@@ -4,13 +4,13 @@ type Options<T> = {
   columns: readonly T[];
 };
 
-type MakeTableOptions = {
+type BuilderOptions = {
   database: string;
   tablePrefix?: string;
 };
 
-export const makeTable =
-  ({ database, tablePrefix }: MakeTableOptions) =>
+export const makeTableBuilder =
+  ({ database, tablePrefix }: BuilderOptions) =>
   <T extends string>(options: Options<T>) => {
     const table = `[${database}].${options.table}`;
 

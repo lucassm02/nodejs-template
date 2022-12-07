@@ -1,6 +1,6 @@
-import { makeTable } from '../../query';
+import { makeTableBuilder } from '../../schema';
 
-const builder = makeTable({
+const builder = makeTableBuilder({
   database: 'Example',
   tablePrefix: 'tb_',
 });
