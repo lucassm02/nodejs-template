@@ -1,8 +1,7 @@
 import { Logger } from '@/data/protocols/utils';
-import { ErrorHandler, CreateExample } from '@/domain/usecases';
+import { CreateExample, ErrorHandler } from '@/domain/usecases';
 import { Middleware } from '@/presentation/protocols';
-import { notFound, serverError, stateDependencies } from '@/presentation/utils';
-import { DICTIONARY } from '@/util';
+import { serverError, stateDependencies } from '@/presentation/utils';
 
 export class CreateExampleMiddleware implements Middleware {
   constructor(
@@ -13,7 +12,7 @@ export class CreateExampleMiddleware implements Middleware {
 
   @stateDependencies(['validateToken'])
   async handle(
-    httpRequest: Middleware.HttpRequest,
+    _httpRequest: Middleware.HttpRequest,
     [state, setState]: Middleware.State,
     next: Middleware.Next
   ): Middleware.Result {

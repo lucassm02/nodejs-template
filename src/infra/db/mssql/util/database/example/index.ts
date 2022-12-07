@@ -1,14 +1,14 @@
 import { makeTable } from '../../query';
 
 const builder = makeTable({
-  database: 'RechargeTelecall',
+  database: 'Example',
   tablePrefix: 'tb_',
 });
 
 export const EXAMPLE_DB = {
   EXAMPLE: {
     EXAMPLE: builder({
-      table: '[plan].[tb_plan]',
+      table: '[example].[tb_example]',
       columns: <const>[
         'example_id',
         'external_id',
