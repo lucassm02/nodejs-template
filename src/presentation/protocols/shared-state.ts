@@ -10,5 +10,5 @@ export type SharedState = {
   validateAuthenticationKey: AuthenticationModel;
   getExample: ExampleModel[];
   createExample: ExampleModel;
-  transaction: Transaction[];
+  transactions: Transaction[];
 };

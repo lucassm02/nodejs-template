@@ -1,7 +1,7 @@
 import { DbCreateExample } from '@/data/usecases/db/example';
 import { ExampleRepository } from '@/infra/db/mssql/example-database';
 import { CreateExampleMiddleware } from '@/presentation/middlewares';
-import { logger } from '@/util';
+import { logger, rollbackAll } from '@/util';
 
 import { makeErrorHandler } from '../../usecases';
 
@@ -15,6 +15,11 @@ export const makeCreateExampleMiddleware = (
   return new CreateExampleMiddleware(
     dbCreateExample,
     logger,
-    makeErrorHandler()
+    makeErrorHandler([
+      async (_error, transactions) => {
+        if (!transactions) return;
+        await rollbackAll(transactions);
+      },
+    ])
   );
 };

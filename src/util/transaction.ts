@@ -18,12 +18,14 @@ export const mergeTransactions = (transactions: (Transaction | null)[]) => {
   return { commit, rollback };
 };
 
-export const rollbackAll = (transactions: (Transaction | null)[]) => {
-  transactions
-    .reverse()
-    .forEach(async (transaction) => transaction?.rollback());
+export const rollbackAll = async (transactions: (Transaction | null)[]) => {
+  for await (const transaction of transactions.reverse()) {
+    await transaction?.rollback();
+  }
 };
 
-export const commitAll = (transactions: (Transaction | null)[]) => {
-  transactions.reverse().forEach(async (transaction) => transaction?.commit());
+export const commitAll = async (transactions: (Transaction | null)[]) => {
+  for await (const transaction of transactions) {
+    await transaction?.commit();
+  }
 };
