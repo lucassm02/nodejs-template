@@ -1,7 +1,13 @@
+import { Knex } from 'knex';
+
 import { sqlConnection } from '../connection';
 
 export class Repository {
-  constructor(private readonly useTransaction: boolean) {}
+  protected connection!: Knex;
+
+  constructor(private readonly useTransaction: boolean) {
+    this.connection = sqlConnection;
+  }
 
   protected async getConnection() {
     if (this.useTransaction) {

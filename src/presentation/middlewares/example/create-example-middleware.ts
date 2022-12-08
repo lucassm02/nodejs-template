@@ -18,8 +18,8 @@ export class CreateExampleMiddleware implements Middleware {
   ): Middleware.Result {
     try {
       const { record, transaction } = await this.createExample.create({
-        description: '',
-        value: '',
+        description: 'DESCRIPTION',
+        value: 'VALUE',
       });
 
       this.logger.log({
@@ -30,12 +30,12 @@ export class CreateExampleMiddleware implements Middleware {
 
       setState({
         createExample: record,
-        transaction: [...state.transaction, transaction],
+        transactions: [...state.transactions, transaction],
       });
 
       return next();
     } catch (error) {
-      await this.errorHandler.handle(error);
+      await this.errorHandler.handle(error, state.transactions);
       switch (error.message) {
         default:
           return serverError(error);

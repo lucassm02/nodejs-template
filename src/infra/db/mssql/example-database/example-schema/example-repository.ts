@@ -18,9 +18,7 @@ export class ExampleRepository
   implements CreateExampleRepository, GetExampleRepository
 {
   async get(): GetExampleRepository.Result {
-    const connection = await this.getConnection();
-
-    return connection(EXAMPLE.TABLE)
+    return this.connection(EXAMPLE.TABLE)
       .select({
         exampleId: EXAMPLE.COLUMNS.EXAMPLE_ID,
         value: EXAMPLE.COLUMNS.VALUE,
