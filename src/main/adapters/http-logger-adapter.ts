@@ -11,7 +11,7 @@ type Logger = (params: LoggerParams) => Promise<void> | void;
 export const httpLoggerAdapter =
   (logger: Logger) =>
   (expressRequest: Request, expressResponse: Response, next: NextFunction) => {
-    const makeDecorator = (method: Function) => (body: any) => {
+    const makeDecorator = (method: Function) => (unknownBody: unknown) => {
       const request = {
         body: expressRequest?.body,
         params: expressRequest?.params,
@@ -19,8 +19,18 @@ export const httpLoggerAdapter =
         headers: expressRequest?.headers,
       };
 
+      const body = (() => {
+        try {
+          if (typeof unknownBody === 'object') return unknownBody;
+          if (typeof unknownBody === 'string') return JSON.parse(unknownBody);
+          return { content: unknownBody };
+        } catch (_error) {
+          return { content: unknownBody };
+        }
+      })();
+
       const response = {
-        body: JSON.parse(body),
+        body,
         headers: expressResponse?.getHeaders(),
         code: expressResponse.statusCode,
       };
@@ -33,7 +43,7 @@ export const httpLoggerAdapter =
         });
       })();
 
-      return method.call(expressResponse, body);
+      return method.call(expressResponse, unknownBody);
     };
 
     const sendDecorator = makeDecorator(expressResponse.send);
