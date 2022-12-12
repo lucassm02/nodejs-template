@@ -25,6 +25,6 @@ RUN yarn install --production=true
 USER node
 
 COPY --from=builder /home/node/app/dist ./dist
-RUN mkdir -p ./logs
+RUN mkdir -p ./log
 
 ENTRYPOINT ["node", "dist/main/server.js"] 

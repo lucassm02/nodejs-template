@@ -58,7 +58,7 @@ export class CustomLogger {
           filename: 'logs',
           extension: '.log',
           datePattern: 'YYYY-MM-DD',
-          dirname: path.resolve('logs'),
+          dirname: path.resolve('log'),
           level: 'verbose',
           format: combine(defaultTimestamp, standard),
         }),

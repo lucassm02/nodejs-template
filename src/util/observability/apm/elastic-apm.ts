@@ -25,7 +25,7 @@ export class ElasticAPM {
 
   private start() {
     const fileName = 'apm.ndjson';
-    const filePath = path.resolve('logs', fileName);
+    const filePath = path.resolve('log', fileName);
 
     return agent.start({
       secretToken: APM.SECRET_TOKEN,
