@@ -13,6 +13,9 @@ RUN yarn build
 FROM node:18.12.0-slim
 LABEL maintainer="Santos <lucas.santos@pagtel.com.br>"
 
+ENV TZ=America/Sao_Paulo
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
 WORKDIR /home/node/app
 RUN chown node:node /home/node/app
 
