@@ -5,7 +5,7 @@ import { sqlConnection } from '../connection';
 export class Repository {
   protected connection!: Knex;
 
-  constructor(private readonly useTransaction: boolean) {
+  constructor(private readonly useTransaction: boolean = false) {
     this.connection = sqlConnection;
   }
 
