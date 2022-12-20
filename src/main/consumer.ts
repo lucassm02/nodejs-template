@@ -1,3 +1,4 @@
+import { sqlConnection } from '@/infra/db/mssql/util';
 import { rabbitMqServer } from '@/infra/mq/utils';
 import { consumersSetup } from '@/main/configs/consumers';
 import { logger, MONGO, RABBIT } from '@/util';
@@ -5,6 +6,8 @@ import mongoose from 'mongoose';
 
 (async () => {
   try {
+    mongoose.set('strictQuery', false);
+
     await mongoose.connect(MONGO.URL(), {
       dbName: MONGO.NAME,
       authSource: MONGO.AUTH_SOURCE,
@@ -19,6 +22,8 @@ import mongoose from 'mongoose';
       host: RABBIT.HOST,
       port: +RABBIT.PORT,
     });
+
+    await sqlConnection.raw('SELECT 1');
 
     await server.start();
 

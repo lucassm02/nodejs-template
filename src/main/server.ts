@@ -7,6 +7,8 @@ import { application } from './application';
 
 application.onStart(async () => {
   try {
+    mongoose.set('strictQuery', false);
+
     await mongoose.connect(MONGO.URL(), {
       dbName: MONGO.NAME,
       authSource: MONGO.AUTH_SOURCE,
