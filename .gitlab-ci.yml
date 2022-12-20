@@ -70,7 +70,7 @@ Deploy (Homologation):
     - echo 'Deploy of TAG:' $TAG
     - kubectl apply -n homologation -f "${CONFIG_REPOSITORY_BASE_URL}/${PROJECT_GROUP}%2F${HELM_NAME}%2Fconfig-map.yaml/raw?private_token=$ACCESS_TOKEN_READ_REPOSITORY&ref=homologation"
     - kubectl apply -n homologation -f "${CONFIG_REPOSITORY_BASE_URL}/${PROJECT_GROUP}%2F${HELM_NAME}%2Fsecret.yaml/raw?private_token=$ACCESS_TOKEN_READ_REPOSITORY&ref=homologation"
-    - helm upgrade -n homologation $HELM_NAME $HELM_CHART_NAME --set image.tag=$TAG --values ./helm/homologation-values.yaml --install
+    - helm upgrade -n homologation ${PROJECT_GROUP}-${HELM_NAME} $HELM_CHART_NAME --set image.tag=$TAG --values ./helm/homologation-values.yaml --install
   when: manual
   only:
     - /^v.*-.*$/
@@ -114,7 +114,7 @@ Deploy (Production):
     - echo 'Deploy of TAG:' $TAG
     - kubectl apply -n production -f "${CONFIG_REPOSITORY_BASE_URL}/${PROJECT_GROUP}%2F${HELM_NAME}%2Fconfig-map.yaml/raw?private_token=$ACCESS_TOKEN_READ_REPOSITORY&ref=production"
     - kubectl apply -n production -f "${CONFIG_REPOSITORY_BASE_URL}/${PROJECT_GROUP}%2F${HELM_NAME}%2Fsecret.yaml/raw?private_token=$ACCESS_TOKEN_READ_REPOSITORY&ref=production"
-    - helm upgrade -n production $HELM_NAME $HELM_CHART_NAME --set image.tag=$TAG --values ./helm/production-values.yaml --install
+    - helm upgrade -n production ${PROJECT_GROUP}-${HELM_NAME} $HELM_CHART_NAME --set image.tag=$TAG --values ./helm/production-values.yaml --install
   when: manual
   only:
     - tags
