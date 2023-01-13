@@ -47,13 +47,13 @@
   "affinity": {},
   "check": {
     "readiness": {
-      "enabled": true,
+      "enabled": false,
       "path": "/api/v1/health",
       "port": "http"
     }
   },
   "ingress": {
-    "enabled": true,
+    "enabled": false,
     "className": "nginx",
     "annotations": {},
     "hosts": [],
