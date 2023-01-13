@@ -212,12 +212,12 @@ export const getGitlabContainerRegisterUrl = async () => {
 
   const gitLabRegisterBaseUrl = 'registry.gitlab.com';
 
-  const [, , gitlabGroup, gitLabProject] = lines[0]
+  const [, , ...uri] = lines[0]
     .replace('.git', '')
     .split('/')
     .filter((str) => str !== '');
 
-  return [gitLabRegisterBaseUrl, gitlabGroup, gitLabProject].join('/');
+  return [gitLabRegisterBaseUrl, ...uri].join('/');
 };
 
 export const getProjectRoutes = async () => {
