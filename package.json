@@ -1,6 +1,10 @@
 {
-  "name": "template",
+  "name": "template-microservice",
   "scripts": {
+    "helm:gen": "NODE_NO_WARNINGS=1 node script/helm/index.mjs",
+    "helm:gen:production": "NODE_NO_WARNINGS=1 node script/helm/index.mjs -e production",
+    "helm:gen:development": "NODE_NO_WARNINGS=1 node script/helm/index.mjs -e development",
+    "helm:gen:homologation": "NODE_NO_WARNINGS=1 node script/helm/index.mjs -e homologation",
     "prebuild": "rimraf dist",
     "build": "babel src --extensions \".js,.ts\" --out-dir dist --copy-files --no-copy-ignored",
     "lint:staged": "yarn lint-staged",
@@ -70,7 +74,9 @@
     "ts-jest": "^29.0.3",
     "ts-node-dev": "^2.0.0",
     "tsconfig-paths": "^4.1.1",
-    "typescript": "^4.9.4"
+    "typescript": "^4.9.4",
+    "yaml": "^2.2.1",
+    "yargs": "13.2"
   },
   "dependencies": {
     "@badass-team-code/formatted-cases-words": "^1.0.0",

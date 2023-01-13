@@ -1,0 +1,92 @@
+{
+  "replicaCount": 2,
+  "image": {
+    "repository": "",
+    "pullPolicy": "Always",
+    "tag": ""
+  },
+  "imagePullSecrets": [
+    {
+      "name": "gitlab-container-register"
+    }
+  ],
+  "nameOverride": "",
+  "fullnameOverride": "",
+  "serviceAccount": {
+    "create": false,
+    "annotations": {},
+    "name": ""
+  },
+  "podAnnotations": {},
+  "podSecurityContext": {},
+  "securityContext": null,
+  "service": {
+    "enabled": true,
+    "type": "NodePort",
+    "port": 80
+  },
+  "resources": {
+    "requests": {
+      "cpu": "100m",
+      "memory": "128Mi"
+    },
+    "limits": {
+      "cpu": "100m",
+      "memory": "150Mi"
+    }
+  },
+  "autoscaling": {
+    "enabled": true,
+    "minReplicas": 2,
+    "maxReplicas": 5,
+    "targetCPUUtilizationPercentage": 80,
+    "targetMemoryUtilizationPercentage": 80
+  },
+  "nodeSelector": {},
+  "tolerations": [],
+  "affinity": {},
+  "check": {
+    "readiness": {
+      "enabled": true,
+      "path": "/phoenix/v1/health",
+      "port": "http"
+    }
+  },
+  "ingress": {
+    "enabled": true,
+    "className": "nginx",
+    "annotations": {},
+    "hosts": [
+      {
+        "host": "development.pagtel.com.br",
+        "paths": [
+          {
+            "path": "/phoenix/v1/plans",
+            "pathType": "Prefix"
+          },
+          {
+            "path": "/phoenix/v1/recharges",
+            "pathType": "Prefix"
+          },
+          {
+            "path": "/phoenix/v1/recurrences",
+            "pathType": "Prefix"
+          }
+        ]
+      }
+    ],
+    "tls": []
+  },
+  "configs": [
+    {
+      "name": "NODE_ENV",
+      "refName": "phoenix-recharge-and-plan-gateway"
+    }
+  ],
+  "secrets": [
+    {
+      "name": "DB_USERNAME",
+      "refName": "phoenix-recharge-and-plan-gateway"
+    }
+  ]
+}
