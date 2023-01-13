@@ -28,6 +28,7 @@ sonar:
   allow_failure: true
   when: manual
   only:
+    - /^v.*$/
     - /^v.*-.*$/
 
 
@@ -53,6 +54,7 @@ Build (Homologation):
     - docker buildx build --cache-from type=registry,ref=$CI_REGISTRY_IMAGE:${CACHE_IMAGE_TAG} -t $CI_REGISTRY_IMAGE:${CACHE_IMAGE_TAG} --push --platform ${BUILD_ARCHITECTURE} -t $CI_REGISTRY_IMAGE:$TAG .
   when: manual
   only:
+    - /^v.*$/
     - /^v.*-.*$/
 
 Deploy (Homologation):
@@ -73,6 +75,7 @@ Deploy (Homologation):
     - helm upgrade -n homologation ${PROJECT_GROUP}-${HELM_NAME} $HELM_CHART_NAME --set image.tag=$TAG --values ./helm/homologation-values.yaml --install
   when: manual
   only:
+    - /^v.*$/
     - /^v.*-.*$/
 
 Build (Production):
