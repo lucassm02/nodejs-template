@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /* eslint-disable import/no-extraneous-dependencies */
 import Yaml from 'yaml';
 
@@ -22,12 +23,15 @@ export const handler = async (environment, scanRoutes) => {
   const allowedEnvironments = ['PRODUCTION', 'HOMOLOGATION', 'DEVELOPMENT'];
 
   if (!allowedEnvironments.includes(environmentToUpperCase)) {
+    console.error('Invalid environment');
     return process.exit(1);
   }
 
   const helmFileName = `${ENVIRONMENT_VALUES?.[environmentToUpperCase]?.HELM_FILE_NAME}.yaml`;
 
-  const envValues = await getEnvValues(`.env.${environment.toLowerCase()}`);
+  const envValues = await getEnvValues(
+    ENVIRONMENT_VALUES?.[environmentToUpperCase]?.ENV_FILE
+  );
   const { secret, configMap } = extractSecretsAndConfigMapsFromEnv(envValues);
 
   const repositoryUrl = await getGitlabContainerRegisterUrl();

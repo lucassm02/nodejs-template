@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { spawn } from 'child_process';
 import { F_OK } from 'node:fs';
 import { access, mkdir, readFile, writeFile, readdir } from 'node:fs/promises';
@@ -128,20 +129,25 @@ export const writeHelmEnvironmentConfigFile = async (
 };
 
 export const getEnvValues = async (fileName) => {
-  const path = resolve(__dirname, '..', '..', fileName);
-  const fileContent = await readFile(path, 'utf-8');
-  const lines = fileContent.split('\n');
+  try {
+    const path = resolve(__dirname, '..', '..', fileName);
+    const fileContent = await readFile(path, 'utf-8');
+    const lines = fileContent.split('\n');
 
-  const entries = lines
-    .map((item) => {
-      const line = item.trim();
-      if (!item.includes('=')) return;
-      const [key, value] = line.split('=');
-      return [key, value];
-    })
-    .filter(Boolean);
+    const entries = lines
+      .map((item) => {
+        const line = item.trim();
+        if (!item.includes('=')) return;
+        const [key, value] = line.split('=');
+        return [key, value];
+      })
+      .filter(Boolean);
 
-  return Object.fromEntries(entries);
+    return Object.fromEntries(entries);
+  } catch (error) {
+    console.error(`${fileName} not found`);
+    return process.exit(1);
+  }
 };
 
 export const extractSecretsAndConfigMapsFromEnv = (env, secretKeys = []) => {
@@ -237,7 +243,9 @@ export const getProjectRoutes = async () => {
       const filteredMatches = [...new Set(matches)];
 
       for (const match of filteredMatches) {
-        routes.push(match.replace(/[',",`]/g, ''));
+        if (match.includes('/internal/')) continue;
+        const routeWithoutQuotes = match.replace(/[',",`]/g, '');
+        routes.push(routeWithoutQuotes);
       }
     });
 
