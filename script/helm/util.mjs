@@ -243,8 +243,12 @@ export const getProjectRoutes = async () => {
       const filteredMatches = [...new Set(matches)];
 
       for (const match of filteredMatches) {
-        if (match.includes('/internal/')) continue;
         const routeWithoutQuotes = match.replace(/[',",`]/g, '');
+        if (
+          routeWithoutQuotes.includes('/internal/') ||
+          routeWithoutQuotes === '/health'
+        )
+          continue;
         routes.push(routeWithoutQuotes);
       }
     });
