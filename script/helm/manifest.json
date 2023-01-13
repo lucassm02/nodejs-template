@@ -48,7 +48,7 @@
   "check": {
     "readiness": {
       "enabled": true,
-      "path": "/phoenix/v1/health",
+      "path": "/api/v1/health",
       "port": "http"
     }
   },
@@ -56,37 +56,9 @@
     "enabled": true,
     "className": "nginx",
     "annotations": {},
-    "hosts": [
-      {
-        "host": "development.pagtel.com.br",
-        "paths": [
-          {
-            "path": "/phoenix/v1/plans",
-            "pathType": "Prefix"
-          },
-          {
-            "path": "/phoenix/v1/recharges",
-            "pathType": "Prefix"
-          },
-          {
-            "path": "/phoenix/v1/recurrences",
-            "pathType": "Prefix"
-          }
-        ]
-      }
-    ],
+    "hosts": [],
     "tls": []
   },
-  "configs": [
-    {
-      "name": "NODE_ENV",
-      "refName": "phoenix-recharge-and-plan-gateway"
-    }
-  ],
-  "secrets": [
-    {
-      "name": "DB_USERNAME",
-      "refName": "phoenix-recharge-and-plan-gateway"
-    }
-  ]
+  "configs": [],
+  "secrets": []
 }

@@ -2,9 +2,9 @@
   "name": "template-microservice",
   "scripts": {
     "helm:gen": "NODE_NO_WARNINGS=1 node script/helm/index.mjs",
-    "helm:gen:production": "NODE_NO_WARNINGS=1 node script/helm/index.mjs -e production",
-    "helm:gen:development": "NODE_NO_WARNINGS=1 node script/helm/index.mjs -e development",
-    "helm:gen:homologation": "NODE_NO_WARNINGS=1 node script/helm/index.mjs -e homologation",
+    "helm:gen:production": "NODE_NO_WARNINGS=1 node script/helm/index.mjs -e production --scan-routes",
+    "helm:gen:development": "NODE_NO_WARNINGS=1 node script/helm/index.mjs -e development --scan-routes",
+    "helm:gen:homologation": "NODE_NO_WARNINGS=1 node script/helm/index.mjs -e homologation --scan-routes",
     "prebuild": "rimraf dist",
     "build": "babel src --extensions \".js,.ts\" --out-dir dist --copy-files --no-copy-ignored",
     "lint:staged": "yarn lint-staged",

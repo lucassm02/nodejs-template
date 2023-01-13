@@ -12,12 +12,20 @@ import {
   extractSecretsAndConfigMapsFromEnv,
   generateHelmRequiredVariablesFromEnv,
   getGitlabContainerRegisterUrl,
+  makeIngressHosts,
+  getProjectRoutes,
 } from './util.mjs';
 
-export const handler = async (environment) => {
-  const helmFileName = `${
-    ENVIRONMENT_VALUES?.[environment.toUpperCase()]?.HELM_FILE_NAME
-  }.yaml`;
+export const handler = async (environment, scanRoutes) => {
+  const environmentToUpperCase = environment.toUpperCase();
+
+  const allowedEnvironments = ['PRODUCTION', 'HOMOLOGATION', 'DEVELOPMENT'];
+
+  if (!allowedEnvironments.includes(environmentToUpperCase)) {
+    return process.exit(1);
+  }
+
+  const helmFileName = `${ENVIRONMENT_VALUES?.[environmentToUpperCase]?.HELM_FILE_NAME}.yaml`;
 
   const envValues = await getEnvValues(`.env.${environment.toLowerCase()}`);
   const { secret, configMap } = extractSecretsAndConfigMapsFromEnv(envValues);
@@ -38,12 +46,20 @@ export const handler = async (environment) => {
 
   const k8sName = packageProps.name.replace(/-/g, '');
 
+  manifest.image.repository = repositoryUrl;
   manifest.fullnameOverride = k8sName;
   manifest.nameOverride = k8sName;
 
-  manifest.ingress.enabled = false;
-  manifest.ingress.hosts = [];
-  manifest.image.repository = repositoryUrl;
+  manifest.autoscaling =
+    ENVIRONMENT_VALUES?.[environmentToUpperCase].AUTOSCALING;
+  manifest.resources = ENVIRONMENT_VALUES?.[environmentToUpperCase].RESOURCES;
+
+  manifest.ingress.enabled = !!scanRoutes;
+
+  if (scanRoutes) {
+    const routes = await getProjectRoutes();
+    manifest.ingress.hosts = makeIngressHosts(routes, environment);
+  }
 
   const manifestToYaml = Yaml.stringify(manifest);
 

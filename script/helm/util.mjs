@@ -1,6 +1,6 @@
 import { spawn } from 'child_process';
 import { F_OK } from 'node:fs';
-import { access, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { access, mkdir, readFile, writeFile, readdir } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -26,14 +26,68 @@ export const ENVIRONMENT_VALUES = {
   PRODUCTION: {
     HELM_FILE_NAME: 'production-values',
     ENV_FILE: '.env.production',
+    INGRESS_HOST: 'api.pagtel.com.br',
+    RESOURCES: {
+      requests: {
+        cpu: '100m',
+        memory: '128Mi',
+      },
+      limits: {
+        cpu: '100m',
+        memory: '150Mi',
+      },
+    },
+    AUTOSCALING: {
+      enabled: true,
+      minReplicas: 2,
+      maxReplicas: 5,
+      targetCPUUtilizationPercentage: 80,
+      targetMemoryUtilizationPercentage: 80,
+    },
   },
   HOMOLOGATION: {
     HELM_FILE_NAME: 'homologation-values',
     ENV_FILE: '.env.homologation',
+    INGRESS_HOST: 'homologation.pagtel.com.br',
+    RESOURCES: {
+      requests: {
+        cpu: '100m',
+        memory: '128Mi',
+      },
+      limits: {
+        cpu: '100m',
+        memory: '150Mi',
+      },
+    },
+    AUTOSCALING: {
+      enabled: true,
+      minReplicas: 1,
+      maxReplicas: 2,
+      targetCPUUtilizationPercentage: 90,
+      targetMemoryUtilizationPercentage: 90,
+    },
   },
   DEVELOPMENT: {
     HELM_FILE_NAME: 'development-values',
     ENV_FILE: '.env.development',
+    INGRESS_HOST: 'development.pagtel.com.br',
+    RESOURCES: {
+      requests: {
+        cpu: '100m',
+        memory: '128Mi',
+      },
+      limits: {
+        cpu: '100m',
+        memory: '150Mi',
+      },
+    },
+    AUTOSCALING: {
+      enabled: true,
+      minReplicas: 1,
+      maxReplicas: 2,
+      targetCPUUtilizationPercentage: 90,
+      targetMemoryUtilizationPercentage: 90,
+    },
   },
 };
 
@@ -158,4 +212,51 @@ export const getGitlabContainerRegisterUrl = async () => {
     .filter((str) => str !== '');
 
   return [gitLabRegisterBaseUrl, gitlabGroup, gitLabProject].join('/');
+};
+
+export const getProjectRoutes = async () => {
+  const folders = ['private', 'public'];
+
+  const routesPath = resolve(__dirname, '..', '..', 'src', 'main', 'routes');
+
+  const routes = [];
+
+  const promises = folders.map(async (folder) => {
+    const targetFolder = resolve(routesPath, folder);
+    const files = await readdir(targetFolder);
+
+    const targetFiles = files.filter(
+      (file) => file.includes('.ts') || file.includes('.js')
+    );
+
+    const internPromises = targetFiles.map(async (targetFile) => {
+      const filePath = resolve(targetFolder, targetFile);
+      const content = await readFile(filePath, 'utf8');
+      const uriPattern = /[',",`]{1}(\/)\w*[',",`]{1}/gim;
+      const matches = content.match(uriPattern);
+      const filteredMatches = [...new Set(matches)];
+
+      for (const match of filteredMatches) {
+        routes.push(match.replace(/[',",`]/g, ''));
+      }
+    });
+
+    return Promise.all(internPromises);
+  });
+
+  await Promise.all(promises);
+
+  return routes;
+};
+
+export const makeIngressHosts = (routes, environment) => {
+  const paths = routes.map((path) => ({
+    path,
+    pathType: 'Exact',
+  }));
+
+  return {
+    host: ENVIRONMENT_VALUES?.[environment.toUpperCase()].INGRESS_HOST,
+    paths,
+  };
 };

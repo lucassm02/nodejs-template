@@ -18,18 +18,11 @@ cli.option('environment', {
   requiresArg: true,
 });
 
-cli.option('host', {
-  alias: 'h',
-  describe: 'Set ingress hostname',
-  type: 'string',
-});
-
-cli.option('routes', {
-  alias: 'r',
+cli.option('scan-routes', {
   describe: 'Enable route scanning',
   type: 'boolean',
 });
 
-const { environment, route, host } = cli.argv;
+const { environment, 'scan-routes': scanRoutes } = cli.argv;
 
-await handler(environment, route, host);
+await handler(environment, scanRoutes);
