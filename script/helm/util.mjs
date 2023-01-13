@@ -20,6 +20,8 @@ export const DEFAULT_SECRET_VALUES = [
   'APM_SECRET_TOKEN',
 ];
 
+export const ENVIRONMENT_VALUES_TO_IGNORE = ['SONAR_TOKEN'];
+
 export const ENVIRONMENT_VALUES = {
   PRODUCTION: {
     HELM_FILE_NAME: 'production-values',
@@ -35,7 +37,7 @@ export const ENVIRONMENT_VALUES = {
   },
 };
 
-export const writeHelmFile = async (fileName, content = '') => {
+export const writeHelmValuesFile = async (fileName, content = '') => {
   const folderPath = resolve(__dirname, '..', '..', 'helm');
   const filePath = resolve(folderPath, fileName);
 
@@ -46,6 +48,29 @@ export const writeHelmFile = async (fileName, content = '') => {
   }
 
   await writeFile(filePath, content);
+};
+
+export const writeHelmEnvironmentConfigFile = async (
+  fileName,
+  environment,
+  content = ''
+) => {
+  const folderPath = resolve(
+    __dirname,
+    '..',
+    '..',
+    'helm',
+    environment.toLowerCase()
+  );
+  const filePath = resolve(folderPath, fileName);
+
+  try {
+    await access(folderPath, F_OK);
+  } catch (error) {
+    await mkdir(folderPath);
+  }
+
+  await writeFile(filePath, `---\n${content}`);
 };
 
 export const getEnvValues = async (fileName) => {
@@ -66,15 +91,19 @@ export const getEnvValues = async (fileName) => {
 };
 
 export const extractSecretsAndConfigMapsFromEnv = (env, secretKeys = []) => {
+  const envEntriesFiltered = Object.entries(env).filter(
+    ([key]) => !ENVIRONMENT_VALUES_TO_IGNORE.includes(key)
+  );
+
   const allSecretKeys = [...new Set([...secretKeys, ...DEFAULT_SECRET_VALUES])];
 
-  const secretEntries = Object.entries(env)
+  const secretEntries = envEntriesFiltered
     .filter(([key]) => allSecretKeys.includes(key))
     .map(([key, value]) => {
       return [key, Buffer.from(value).toString('base64')];
     });
 
-  const configMapEntries = Object.entries(env).filter(
+  const configMapEntries = envEntriesFiltered.filter(
     ([key]) => !allSecretKeys.includes(key)
   );
 
@@ -88,6 +117,20 @@ export const generateHelmRequiredVariablesFromEnv = (env, appName) => {
   return Object.entries(env).map(([key]) => {
     return { name: key, refName: appName };
   });
+};
+
+export const generateEnvironmentConfig = (data, appName, kind) => {
+  const type = kind === 'Secret' ? 'Opaque' : undefined;
+
+  return {
+    apiVersion: 'v1',
+    kind,
+    type,
+    metadata: {
+      name: appName,
+    },
+    data,
+  };
 };
 
 export const getGitlabContainerRegisterUrl = async () => {

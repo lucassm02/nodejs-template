@@ -5,7 +5,9 @@ import packageProps from '../../package.json' assert { type: 'json' };
 import manifestTemplate from './manifest.json' assert { type: 'json' };
 import {
   ENVIRONMENT_VALUES,
-  writeHelmFile,
+  writeHelmValuesFile,
+  writeHelmEnvironmentConfigFile,
+  generateEnvironmentConfig,
   getEnvValues,
   extractSecretsAndConfigMapsFromEnv,
   generateHelmRequiredVariablesFromEnv,
@@ -45,5 +47,31 @@ export const handler = async (environment) => {
 
   const manifestToYaml = Yaml.stringify(manifest);
 
-  await writeHelmFile(helmFileName, manifestToYaml);
+  const configMapToJson = generateEnvironmentConfig(
+    configMap,
+    packageProps.name,
+    'ConfigMap'
+  );
+  const secretToJson = generateEnvironmentConfig(
+    secret,
+    packageProps.name,
+    'Secret'
+  );
+
+  const configMapToYaml = Yaml.stringify(configMapToJson);
+  const secretMapToYaml = Yaml.stringify(secretToJson);
+
+  await writeHelmValuesFile(helmFileName, manifestToYaml);
+
+  await writeHelmEnvironmentConfigFile(
+    'config-map.yaml',
+    environment,
+    configMapToYaml
+  );
+
+  await writeHelmEnvironmentConfigFile(
+    'secret.yaml',
+    environment,
+    secretMapToYaml
+  );
 };
