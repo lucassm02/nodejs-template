@@ -115,6 +115,7 @@ export const writeHelmEnvironmentConfigFile = async (
     '..',
     '..',
     'helm',
+    'environment',
     environment.toLowerCase()
   );
   const filePath = resolve(folderPath, fileName);
@@ -122,7 +123,7 @@ export const writeHelmEnvironmentConfigFile = async (
   try {
     await access(folderPath, F_OK);
   } catch (error) {
-    await mkdir(folderPath);
+    await mkdir(folderPath, { recursive: true });
   }
 
   await writeFile(filePath, `---\n${content}`);

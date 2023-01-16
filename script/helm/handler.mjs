@@ -17,7 +17,7 @@ import {
   getProjectRoutes,
 } from './util.mjs';
 
-export const handler = async (environment, scanRoutes) => {
+export const handler = async (environment, scanRoutes, secrets = []) => {
   const environmentToUpperCase = environment.toUpperCase();
 
   const allowedEnvironments = ['PRODUCTION', 'HOMOLOGATION', 'DEVELOPMENT'];
@@ -32,7 +32,10 @@ export const handler = async (environment, scanRoutes) => {
   const envValues = await getEnvValues(
     ENVIRONMENT_VALUES?.[environmentToUpperCase]?.ENV_FILE
   );
-  const { secret, configMap } = extractSecretsAndConfigMapsFromEnv(envValues);
+  const { secret, configMap } = extractSecretsAndConfigMapsFromEnv(
+    envValues,
+    secrets
+  );
 
   const repositoryUrl = await getGitlabContainerRegisterUrl();
 

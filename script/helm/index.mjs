@@ -23,6 +23,11 @@ cli.option('scan-routes', {
   type: 'boolean',
 });
 
-const { environment, 'scan-routes': scanRoutes } = cli.argv;
+cli.option('secrets', {
+  describe: 'Defines environment variables that should be treated as secrets',
+  type: 'array',
+});
 
-await handler(environment, scanRoutes);
+const { environment, 'scan-routes': scanRoutes, secrets } = cli.argv;
+
+await handler(environment, scanRoutes, secrets);
