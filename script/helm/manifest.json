@@ -21,7 +21,7 @@
   "podSecurityContext": {},
   "securityContext": null,
   "service": {
-    "enabled": true,
+    "enabled": false,
     "type": "NodePort",
     "port": 80
   },

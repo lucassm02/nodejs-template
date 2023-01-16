@@ -65,14 +65,14 @@ export const handler = async (environment, scanRoutes) => {
     manifest.ingress.hosts = makeIngressHosts(routes, environment);
   }
 
-  console.log(envValues);
-
   if (
     envValues.SERVER_BASE_URI &&
     envValues.SERVER_ENABLED &&
     envValues.SERVER_ENABLED.toUpperCase() === 'TRUE' &&
     envValues.SERVER_BASE_URI !== ''
   ) {
+    manifest.service.enabled = true;
+    manifest.service.port = envValues.SERVER_PORT;
     manifest.check.readiness.enabled = envValues.SERVER_ENABLED === 'true';
     manifest.check.readiness.path = `${envValues.SERVER_BASE_URI}/health`;
   }
