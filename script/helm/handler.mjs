@@ -53,7 +53,7 @@ export const handler = async (environment, scanRoutes, secrets = []) => {
 
   const k8sName = packageProps.name.replace(/-/g, '');
 
-  manifest.image.replicaCount = VALUES.REPLICA_COUNT;
+  manifest.replicaCount = VALUES.REPLICA_COUNT;
   manifest.image.repository = repositoryUrl;
   manifest.fullnameOverride = k8sName;
   manifest.nameOverride = k8sName;
