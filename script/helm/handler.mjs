@@ -75,7 +75,7 @@ export const handler = async (environment, scanRoutes, secrets = []) => {
     envValues.SERVER_BASE_URI !== ''
   ) {
     manifest.service.enabled = true;
-    manifest.service.port = envValues.SERVER_PORT;
+    manifest.service.port = Number(envValues.SERVER_PORT);
     manifest.check.readiness.enabled = envValues.SERVER_ENABLED === 'true';
     manifest.check.readiness.path = `${envValues.SERVER_BASE_URI}/health`;
   }
