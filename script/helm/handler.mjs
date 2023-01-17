@@ -27,11 +27,11 @@ export const handler = async (environment, scanRoutes, secrets = []) => {
     return process.exit(1);
   }
 
-  const helmFileName = `${ENVIRONMENT_VALUES?.[environmentToUpperCase]?.HELM_FILE_NAME}.yaml`;
+  const VALUES = ENVIRONMENT_VALUES?.[environmentToUpperCase];
 
-  const envValues = await getEnvValues(
-    ENVIRONMENT_VALUES?.[environmentToUpperCase]?.ENV_FILE
-  );
+  const helmFileName = `${VALUES?.HELM_FILE_NAME}.yaml`;
+
+  const envValues = await getEnvValues(VALUES?.ENV_FILE);
   const { secret, configMap } = extractSecretsAndConfigMapsFromEnv(
     envValues,
     secrets
@@ -53,13 +53,13 @@ export const handler = async (environment, scanRoutes, secrets = []) => {
 
   const k8sName = packageProps.name.replace(/-/g, '');
 
+  manifest.image.replicaCount = VALUES.REPLICA_COUNT;
   manifest.image.repository = repositoryUrl;
   manifest.fullnameOverride = k8sName;
   manifest.nameOverride = k8sName;
 
-  manifest.autoscaling =
-    ENVIRONMENT_VALUES?.[environmentToUpperCase].AUTOSCALING;
-  manifest.resources = ENVIRONMENT_VALUES?.[environmentToUpperCase].RESOURCES;
+  manifest.autoscaling = VALUES.AUTOSCALING;
+  manifest.resources = VALUES.RESOURCES;
 
   manifest.ingress.enabled = !!scanRoutes;
 
