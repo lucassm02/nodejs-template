@@ -45,3 +45,5 @@ yarn.lock
 
 # SonarQube
 .scannerwork
+
+helm/environment/*
