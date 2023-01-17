@@ -27,7 +27,7 @@ export const ENVIRONMENT_VALUES = {
   PRODUCTION: {
     HELM_FILE_NAME: 'production-values',
     ENV_FILE: '.env.production',
-    INGRESS_HOST: 'api.pagtel.com.br',
+    INGRESS_HOSTS: ['api.pagtel.com.br'],
     RESOURCES: {
       requests: {
         cpu: '100m',
@@ -49,7 +49,7 @@ export const ENVIRONMENT_VALUES = {
   HOMOLOGATION: {
     HELM_FILE_NAME: 'homologation-values',
     ENV_FILE: '.env.homologation',
-    INGRESS_HOST: 'homologation.pagtel.com.br',
+    INGRESS_HOSTS: ['homologation.pagtel.com.br'],
     RESOURCES: {
       requests: {
         cpu: '100m',
@@ -71,7 +71,7 @@ export const ENVIRONMENT_VALUES = {
   DEVELOPMENT: {
     HELM_FILE_NAME: 'development-values',
     ENV_FILE: '.env.development',
-    INGRESS_HOST: 'development.pagtel.com.br',
+    INGRESS_HOSTS: ['development.pagtel.com.br'],
     RESOURCES: {
       requests: {
         cpu: '100m',
@@ -268,8 +268,8 @@ export const makeIngressHosts = (routes, environment) => {
     pathType: 'Exact',
   }));
 
-  return {
-    host: ENVIRONMENT_VALUES?.[environment.toUpperCase()].INGRESS_HOST,
-    paths,
-  };
+  const hosts =
+    ENVIRONMENT_VALUES?.[environment.toUpperCase()]?.INGRESS_HOSTS ?? [];
+
+  return hosts.map((host) => ({ host, paths }));
 };
