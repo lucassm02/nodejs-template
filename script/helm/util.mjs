@@ -27,6 +27,7 @@ export const ENVIRONMENT_VALUES = {
   PRODUCTION: {
     HELM_FILE_NAME: 'production-values',
     ENV_FILE: '.env.production',
+    REPLICA_COUNT: 2,
     INGRESS_HOSTS: ['api.pagtel.com.br'],
     RESOURCES: {
       requests: {
@@ -49,6 +50,7 @@ export const ENVIRONMENT_VALUES = {
   HOMOLOGATION: {
     HELM_FILE_NAME: 'homologation-values',
     ENV_FILE: '.env.homologation',
+    REPLICA_COUNT: 1,
     INGRESS_HOSTS: ['homologation.pagtel.com.br'],
     RESOURCES: {
       requests: {
@@ -71,6 +73,7 @@ export const ENVIRONMENT_VALUES = {
   DEVELOPMENT: {
     HELM_FILE_NAME: 'development-values',
     ENV_FILE: '.env.development',
+    REPLICA_COUNT: 1,
     INGRESS_HOSTS: ['development.pagtel.com.br'],
     RESOURCES: {
       requests: {
