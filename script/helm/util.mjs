@@ -232,32 +232,36 @@ export const getProjectRoutes = async () => {
   const routes = [];
 
   const promises = folders.map(async (folder) => {
-    const targetFolder = resolve(routesPath, folder);
-    const files = await readdir(targetFolder);
+    try {
+      const targetFolder = resolve(routesPath, folder);
+      const files = await readdir(targetFolder);
 
-    const targetFiles = files.filter(
-      (file) => file.includes('.ts') || file.includes('.js')
-    );
+      const targetFiles = files.filter(
+        (file) => file.includes('.ts') || file.includes('.js')
+      );
 
-    const internPromises = targetFiles.map(async (targetFile) => {
-      const filePath = resolve(targetFolder, targetFile);
-      const content = await readFile(filePath, 'utf8');
-      const uriPattern = /[',",`]{1}(\/)\w*[',",`]{1}/gim;
-      const matches = content.match(uriPattern);
-      const filteredMatches = [...new Set(matches)];
+      const internPromises = targetFiles.map(async (targetFile) => {
+        const filePath = resolve(targetFolder, targetFile);
+        const content = await readFile(filePath, 'utf8');
+        const uriPattern = /[',",`]{1}(\/)\w*[',",`]{1}/gim;
+        const matches = content.match(uriPattern);
+        const filteredMatches = [...new Set(matches)];
 
-      for (const match of filteredMatches) {
-        const routeWithoutQuotes = match.replace(/[',",`]/g, '');
-        if (
-          routeWithoutQuotes.includes('/internal/') ||
-          routeWithoutQuotes === '/health'
-        )
-          continue;
-        routes.push(routeWithoutQuotes);
-      }
-    });
+        for (const match of filteredMatches) {
+          const routeWithoutQuotes = match.replace(/[',",`]/g, '');
+          if (
+            routeWithoutQuotes.includes('/internal/') ||
+            routeWithoutQuotes === '/health'
+          )
+            continue;
+          routes.push(routeWithoutQuotes);
+        }
+      });
 
-    return Promise.all(internPromises);
+      return Promise.all(internPromises);
+    } catch (error) {
+      return null;
+    }
   });
 
   await Promise.all(promises);
@@ -266,6 +270,8 @@ export const getProjectRoutes = async () => {
 };
 
 export const makeIngressHosts = (routes, environment) => {
+  if (routes.length === 0) return [];
+
   const paths = routes.map((path) => ({
     path,
     pathType: 'Exact',
