@@ -225,6 +225,7 @@ export const getGitlabContainerRegisterUrl = async () => {
 };
 
 export const getProjectRoutes = async () => {
+  const PATHS_TO_IGNORE = ['/health', '/examples'];
   const folders = ['private', 'public'];
 
   const routesPath = resolve(__dirname, '..', '..', 'src', 'main', 'routes');
@@ -251,7 +252,7 @@ export const getProjectRoutes = async () => {
           const routeWithoutQuotes = match.replace(/[',",`]/g, '');
           if (
             routeWithoutQuotes.includes('/internal/') ||
-            routeWithoutQuotes === '/health'
+            PATHS_TO_IGNORE.includes(routeWithoutQuotes)
           )
             continue;
           routes.push(routeWithoutQuotes);
