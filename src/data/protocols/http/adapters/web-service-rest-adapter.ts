@@ -1,10 +1,10 @@
-import { AxiosRequestConfig } from 'axios';
+import { AxiosRequestConfig, RawAxiosRequestHeaders } from 'axios';
 
 export type HttpRequest = {
   url: AxiosRequestConfig['url'];
   method: AxiosRequestConfig['method'];
   body?: AxiosRequestConfig['data'];
-  headers?: AxiosRequestConfig['headers'];
+  headers?: RawAxiosRequestHeaders;
   auth?: AxiosRequestConfig['auth'];
 };
 
