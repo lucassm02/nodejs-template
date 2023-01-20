@@ -66,7 +66,11 @@ export const handler = async (environment, scanRoutes, secrets = []) => {
   if (scanRoutes) {
     const routes = await getProjectRoutes();
     manifest.ingress.enabled = !!routes.length > 0;
-    manifest.ingress.hosts = makeIngressHosts(routes, environment);
+    manifest.ingress.hosts = makeIngressHosts(
+      routes,
+      environment,
+      envValues.SERVER_BASE_URI
+    );
   }
 
   if (

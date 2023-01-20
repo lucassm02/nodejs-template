@@ -270,11 +270,11 @@ export const getProjectRoutes = async () => {
   return routes;
 };
 
-export const makeIngressHosts = (routes, environment) => {
+export const makeIngressHosts = (routes, environment, baseUrl) => {
   if (routes.length === 0) return [];
 
   const paths = routes.map((path) => ({
-    path,
+    path: baseUrl + path,
     pathType: 'Exact',
   }));
 
