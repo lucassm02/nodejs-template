@@ -244,7 +244,7 @@ export const getProjectRoutes = async () => {
       const internPromises = targetFiles.map(async (targetFile) => {
         const filePath = resolve(targetFolder, targetFile);
         const content = await readFile(filePath, 'utf8');
-        const uriPattern = /[',",`]{1}(\/)\w*[',",`]{1}/gim;
+        const uriPattern = /(['|"|`]\/.*['\\"|`])/gm;
         const matches = content.match(uriPattern);
         const filteredMatches = [...new Set(matches)];
 
