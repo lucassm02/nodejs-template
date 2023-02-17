@@ -1,5 +1,5 @@
 import { ErrorHandlerProtocol } from '@/data/protocols/exception';
-import { Transaction } from '@/domain/models/transaction';
+import { DatabaseTransaction } from '@/domain/models';
 import { ErrorHandler } from '@/domain/usecases';
 
 export class ExErrorHandler implements ErrorHandler {
@@ -7,7 +7,7 @@ export class ExErrorHandler implements ErrorHandler {
 
   async handle(
     error: Error,
-    transactions?: (Transaction | null)[]
+    transactions?: (DatabaseTransaction | null)[]
   ): Promise<void> {
     const promises = this.handlers.map((handler) =>
       handler(error, transactions)

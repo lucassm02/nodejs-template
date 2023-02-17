@@ -1,5 +1,5 @@
-import { Transaction } from '@/domain/models/transaction';
+import { DatabaseTransaction } from '@/domain/models';
 
 export type MergeTransactions = (
-  transactions: (Transaction | null)[]
-) => Transaction;
+  transactions: (DatabaseTransaction | null)[]
+) => DatabaseTransaction;

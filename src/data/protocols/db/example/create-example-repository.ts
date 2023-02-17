@@ -1,4 +1,4 @@
-import { Wrapper } from '@/domain/models/transaction';
+import { DatabaseTransactionWrapper } from '@/domain/models';
 
 export interface CreateExampleRepository {
   create(
@@ -22,5 +22,5 @@ export namespace CreateExampleRepository {
     deletedAt: string;
   };
 
-  export type Result = Promise<Wrapper<Model>>;
+  export type Result = Promise<DatabaseTransactionWrapper<Model>>;
 }

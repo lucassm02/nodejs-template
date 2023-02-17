@@ -1,3 +1,5 @@
-import { Transaction } from '@/domain/models/transaction';
+import { DatabaseTransaction } from '@/domain/models';
 
-export type CommitAll = (transactions: (Transaction | null)[]) => Promise<void>;
+export type CommitAll = (
+  transactions: (DatabaseTransaction | null)[]
+) => Promise<void>;

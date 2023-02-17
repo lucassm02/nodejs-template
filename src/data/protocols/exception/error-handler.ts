@@ -1,7 +1,6 @@
-import { Transaction } from '@/domain/models/transaction';
-import { isPromise } from 'node:util/types';
+import { DatabaseTransaction } from '@/domain/models';
 
 export type ErrorHandlerProtocol = (
   error: Error,
-  transactions?: (Transaction | null)[]
+  transactions?: (DatabaseTransaction | null)[]
 ) => void;

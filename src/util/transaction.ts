@@ -1,6 +1,8 @@
-import { Transaction } from '@/domain/models/transaction';
+import { DatabaseTransaction } from '@/domain/models';
 
-export const mergeTransactions = (transactions: (Transaction | null)[]) => {
+export const mergeTransactions = (
+  transactions: (DatabaseTransaction | null)[]
+) => {
   const orderedTransactions = transactions.reverse();
 
   const rollback = async () => {
@@ -18,13 +20,17 @@ export const mergeTransactions = (transactions: (Transaction | null)[]) => {
   return { commit, rollback };
 };
 
-export const rollbackAll = async (transactions: (Transaction | null)[]) => {
+export const rollbackAll = async (
+  transactions: (DatabaseTransaction | null)[]
+) => {
   for await (const transaction of transactions.reverse()) {
     await transaction?.rollback();
   }
 };
 
-export const commitAll = async (transactions: (Transaction | null)[]) => {
+export const commitAll = async (
+  transactions: (DatabaseTransaction | null)[]
+) => {
   for await (const transaction of transactions) {
     await transaction?.commit();
   }

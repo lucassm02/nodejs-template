@@ -1,5 +1,5 @@
-import { Transaction } from '@/domain/models/transaction';
+import { DatabaseTransaction } from '@/domain/models';
 
 export type RollbackAll = (
-  transactions: (Transaction | null)[]
+  transactions: (DatabaseTransaction | null)[]
 ) => Promise<void>;

@@ -1,5 +1,8 @@
-import { Transaction } from '@/domain/models/transaction';
+import { DatabaseTransaction } from '@/domain/models';
 
 export interface ErrorHandler {
-  handle(error: Error, transactions?: (Transaction | null)[]): Promise<void>;
+  handle(
+    error: Error,
+    transactions?: (DatabaseTransaction | null)[]
+  ): Promise<void>;
 }
