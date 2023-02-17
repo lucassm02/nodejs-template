@@ -35,7 +35,8 @@ export class ExampleRepository
 
     const data = transform(params)
       .pipe((value) => filterKeys(value, ['description', 'value']))
-      .pipe(convertCamelCaseKeysToSnakeCase);
+      .pipe(convertCamelCaseKeysToSnakeCase)
+      .get();
 
     const [record] = await connection(EXAMPLE.TABLE)
       .insert(data)

@@ -6,6 +6,9 @@ class Pipeline<Type> {
     this.data = callback(this.data);
     return this;
   }
+  get() {
+    return this.data;
+  }
 }
 
 export const transform = <Param>(value: Param) => new Pipeline(value);
