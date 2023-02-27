@@ -1,8 +1,9 @@
 import pkg from '@/../package.json';
 import { DB } from '@/util/constants';
-import knex from 'knex';
 
-const config = {
+import { knex } from '../knex';
+
+export const sqlConnection = knex({
   client: DB.DIALECT,
   connection: {
     host: DB.HOST,
@@ -13,9 +14,6 @@ const config = {
       encrypt: false,
       enableArithAbort: false,
       appName: pkg.name,
-      validateBulkLoadParameters: false,
     },
   },
-};
-
-export const sqlConnection = knex(config);
+});
