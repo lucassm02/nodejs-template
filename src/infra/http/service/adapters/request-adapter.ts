@@ -3,10 +3,11 @@ import {
   HttpRequest,
   HttpResponse,
 } from '@/data/protocols/http/adapters';
+import { logger } from '@/util';
 import { apmSpan } from '@/util/observability/apm';
 import {
   datoraHttpLogger,
-  logger,
+  logger as customLogger,
 } from '@/util/observability/loggers/decorators';
 import Agent from 'agentkeepalive';
 import { AxiosInstance } from 'axios';
@@ -29,18 +30,27 @@ const AgentOptions = {
   keepAlive: true,
   maxSockets: 100,
   maxFreeSockets: 10,
-  timeout: 60000,
-  freeSocketTimeout: 30000,
+  timeout: 120000,
+  freeSocketTimeout: 60000,
 };
+
 export class RequestAdapter implements HttpClient {
   constructor(private readonly axios: AxiosInstance) {
     this.axios.defaults.httpAgent = new Agent(AgentOptions);
     this.axios.defaults.httpsAgent = new Agent.HttpsAgent(AgentOptions);
-    this.axios.interceptors.response.use(undefined, (error) => error.response);
+    this.axios.interceptors.response.use(undefined, (error) => {
+      logger.log(error);
+
+      if (!error.response) {
+        throw new Error('REQUEST_ERROR');
+      }
+
+      return error.response;
+    });
   }
 
   @datoraHttpLogger()
-  @logger({
+  @customLogger({
     options: decorators.options,
     input: decorators.params,
     output: decorators.result,
@@ -51,14 +61,10 @@ export class RequestAdapter implements HttpClient {
     result: decorators.result,
   })
   async request(data: HttpRequest): Promise<HttpResponse> {
-    this.axios.interceptors.response.use(undefined, (error) => error.response);
-
     const axiosResponse = await this.axios({
       data: data?.body,
       ...data,
     });
-
-    if (!axiosResponse) throw new Error('REQUEST_ERROR');
 
     return {
       statusCode: axiosResponse.status,
