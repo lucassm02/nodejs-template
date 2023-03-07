@@ -1,5 +1,6 @@
 {
   "name": "template-microservice",
+  "version": "1.0.0",
   "scripts": {
     "helm:gen": "NODE_NO_WARNINGS=1 node script/helm/index.mjs",
     "helm:gen:production": "NODE_NO_WARNINGS=1 node script/helm/index.mjs -e production --scan-routes",

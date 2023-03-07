@@ -3,12 +3,14 @@ import { createMongoLog } from '@/main/facades';
 import { ELASTICSEARCH, LOGGER } from '@/util/constants';
 import ecsFormat from '@elastic/ecs-winston-format';
 import path from 'path';
-import { createLogger, format, Logger, transports } from 'winston';
+import { Logger, createLogger, format, transports } from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import { ElasticsearchTransport } from 'winston-elasticsearch';
 
 import { elasticAPM, getAPMTransactionIds } from '../../apm';
+import { defaultIndexTemplate } from './elasticsearch';
 import { cli, standard } from './formats';
+import { elasticSearchTransformer } from './transformer/elasticsearch-transformer';
 import { GenericTransport } from './transports';
 
 type LogParams = {
@@ -23,28 +25,14 @@ type LogParams = {
     | String;
   message: string;
   payload?: object;
-  [key: string]: any;
+  [key: string]: unknown;
 };
 
 const apm = elasticAPM().getAPM();
 
 const { combine, timestamp, colorize } = format;
 
-const defaultTimestamp = timestamp({ format: 'YYYY-MM-DD HH:mm:ss' });
-
-const esTemplate = {
-  index_patterns: ['log-*'],
-  settings: {
-    number_of_shards: 3,
-    number_of_replicas: 0,
-    index: {
-      refresh_interval: '5s',
-    },
-  },
-  mappings: {
-    _source: { enabled: true },
-  },
-};
+const defaultTimestampFormat = timestamp({ format: 'YYYY-MM-DD HH:mm:ss' });
 
 export class CustomLogger {
   private static instance: CustomLogger;
@@ -59,12 +47,12 @@ export class CustomLogger {
           extension: '.log',
           datePattern: 'YYYY-MM-DD',
           dirname: path.resolve('log'),
-          level: 'verbose',
-          format: combine(defaultTimestamp, standard),
+          level: 'debug',
+          format: combine(defaultTimestampFormat, standard),
         }),
         new transports.Console({
           level: LOGGER.CONSOLE.LEVEL,
-          format: combine(defaultTimestamp, cli, colorize({ all: true })),
+          format: combine(defaultTimestampFormat, cli, colorize({ all: true })),
         }),
       ],
     });
@@ -80,9 +68,12 @@ export class CustomLogger {
       this.logger.add(
         new ElasticsearchTransport({
           apm,
-          level: 'verbose',
-          indexTemplate: esTemplate,
-          indexPrefix: 'log',
+          level: 'info',
+          index: 'application-log',
+          indexTemplate: defaultIndexTemplate,
+          dataStream: true,
+          useTransformer: true,
+          transformer: elasticSearchTransformer,
           format: ecsFormat({
             apmIntegration: true,
             convertErr: true,
@@ -96,7 +87,7 @@ export class CustomLogger {
       this.logger.add(
         new GenericTransport({
           level: 'verbose',
-          format: combine(defaultTimestamp, standard),
+          format: combine(defaultTimestampFormat, standard),
           receiver: createMongoLog,
         })
       );
@@ -136,7 +127,7 @@ export class CustomLogger {
       return;
     }
 
-    const { level, message, ...any } = params;
+    const { level, message, ...rest } = params;
 
     this.logger.log({
       traceId: ids?.traceId,
@@ -144,7 +135,7 @@ export class CustomLogger {
       application,
       message,
       level: <string>level,
-      ...any,
+      ...rest,
     });
   }
 }

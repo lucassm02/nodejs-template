@@ -50,11 +50,6 @@ export class RequestAdapter implements HttpClient {
   }
 
   @datoraHttpLogger()
-  @customLogger({
-    options: decorators.options,
-    input: decorators.params,
-    output: decorators.result,
-  })
   @apmSpan({
     options: decorators.options,
     params: decorators.params,
