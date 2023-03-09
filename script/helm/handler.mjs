@@ -20,7 +20,12 @@ import {
 export const handler = async (environment, scanRoutes, secrets = []) => {
   const environmentToUpperCase = environment.toUpperCase();
 
-  const allowedEnvironments = ['PRODUCTION', 'HOMOLOGATION', 'DEVELOPMENT'];
+  const allowedEnvironments = [
+    'PRODUCTION',
+    'HOMOLOGATION',
+    'DEVELOPMENT',
+    'STAGING',
+  ];
 
   if (!allowedEnvironments.includes(environmentToUpperCase)) {
     console.error('Invalid environment');

@@ -70,6 +70,29 @@ export const ENVIRONMENT_VALUES = {
       targetMemoryUtilizationPercentage: 90,
     },
   },
+  STAGING: {
+    HELM_FILE_NAME: 'staging-values',
+    ENV_FILE: '.env.staging',
+    REPLICA_COUNT: 1,
+    INGRESS_HOSTS: ['staging.pagtel.com.br'],
+    RESOURCES: {
+      requests: {
+        cpu: '100m',
+        memory: '128Mi',
+      },
+      limits: {
+        cpu: '100m',
+        memory: '150Mi',
+      },
+    },
+    AUTOSCALING: {
+      enabled: true,
+      minReplicas: 1,
+      maxReplicas: 2,
+      targetCPUUtilizationPercentage: 90,
+      targetMemoryUtilizationPercentage: 90,
+    },
+  },
   DEVELOPMENT: {
     HELM_FILE_NAME: 'development-values',
     ENV_FILE: '.env.development',
