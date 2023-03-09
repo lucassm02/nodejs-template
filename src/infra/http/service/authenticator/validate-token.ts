@@ -8,20 +8,42 @@ export class ValidateTokenService implements ValidateTokenProtocol {
   async validate(
     token: ValidateTokenProtocol.Params
   ): ValidateTokenProtocol.Result {
-    const result = await this.httpClient.request({
-      url: '/v1/tokens',
-      method: 'GET',
-      headers: {
-        authorization: token,
-      },
+    const url = '/v1/tokens';
+    const method = 'GET';
+    const body = {};
+    const headers = {
+      authorization: token,
+    };
+
+    const response = await this.httpClient.request({
+      url,
+      method,
+      headers,
     });
+
+    const requestEntities = {
+      'request-body': body,
+      'request-method': method,
+      'request-headers': headers,
+      'request-url': url,
+    };
+
+    const responseEntities = {
+      'response-body': response.body,
+      'response-status-code': response.statusCode,
+      'response-headers': response.headers,
+    };
 
     logger.log({
       level: 'http',
       message: 'TOKEN VALIDATION',
-      payload: { meta: { keywords: {}, services: ['AUTHENTICATION'] } },
+      payload: {
+        request: requestEntities,
+        response: responseEntities,
+        meta: { keywords: {}, services: ['AUTHENTICATION'] },
+      },
     });
 
-    return result.statusCode === 200;
+    return response.statusCode === 200;
   }
 }
