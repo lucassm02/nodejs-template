@@ -25,6 +25,7 @@ type LogParams = {
     | String;
   message: string;
   payload?: object;
+  meta?: object;
   [key: string]: unknown;
 };
 
@@ -68,7 +69,7 @@ export class CustomLogger {
       this.logger.add(
         new ElasticsearchTransport({
           apm,
-          level: 'info',
+          level: 'http',
           index: 'application-log',
           indexTemplate: defaultIndexTemplate,
           dataStream: true,

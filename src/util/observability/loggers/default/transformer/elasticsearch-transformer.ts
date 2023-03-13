@@ -1,29 +1,36 @@
 import pkg from '@/../package.json';
+import { convertCamelCaseKeysToSnakeCase } from '@/util/object';
 
 type Param = {
   message: string;
   level: string;
   meta: {
     [key: string]: {
-      [key: string]: unknown;
+      [key: string]: {
+        [key: string]: unknown;
+      };
     };
   };
   timestamp?: string;
 };
 
 export const elasticSearchTransformer = (param: Param) => {
-  const { application: _, meta, ...payload } = param.meta;
+  const { application: _, traceId, transactionId, payload, meta } = param.meta;
 
-  return {
+  const data = {
     application: {
       name: pkg.name,
       version: pkg.version ?? null,
     },
     level: param.level,
     message: param.message,
-    keywords: meta?.keywords ?? {},
+    traceId,
+    transactionId,
     payload,
+    keywords: meta?.keywords ?? {},
     services: meta?.services ?? [],
-    created_at: new Date(),
+    createdAt: new Date(),
   };
+
+  return convertCamelCaseKeysToSnakeCase(data);
 };
