@@ -6,14 +6,6 @@ import mongoose from 'mongoose';
 
 (async () => {
   try {
-    mongoose.set('strictQuery', false);
-
-    await mongoose.connect(MONGO.URL(), {
-      dbName: MONGO.NAME,
-      authSource: MONGO.AUTH_SOURCE,
-      authMechanism: 'SCRAM-SHA-1',
-    });
-
     const server = rabbitMqServer();
 
     server.setCredentials({
@@ -23,9 +15,19 @@ import mongoose from 'mongoose';
       port: +RABBIT.PORT,
     });
 
-    await sqlConnection.raw('SELECT 1');
+    const rabbitPromise = server.start();
 
-    await server.start();
+    mongoose.set('strictQuery', false);
+
+    const mongoPromise = mongoose.connect(MONGO.URL(), {
+      dbName: MONGO.NAME,
+      authSource: MONGO.AUTH_SOURCE,
+      authMechanism: 'SCRAM-SHA-1',
+    });
+
+    const sqlPromise = sqlConnection.raw('SELECT 1');
+
+    await Promise.all([rabbitPromise, mongoPromise, sqlPromise]);
 
     consumersSetup(server);
     logger.log({ level: 'info', message: 'Consumer started!' });

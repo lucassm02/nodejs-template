@@ -9,13 +9,15 @@ application.onStart(async () => {
   try {
     mongoose.set('strictQuery', false);
 
-    await mongoose.connect(MONGO.URL(), {
+    const mongoPromise = mongoose.connect(MONGO.URL(), {
       dbName: MONGO.NAME,
       authSource: MONGO.AUTH_SOURCE,
       authMechanism: 'SCRAM-SHA-1',
     });
 
-    await sqlConnection.raw('SELECT 1');
+    const sqlPromise = sqlConnection.raw('SELECT 1');
+
+    await Promise.all([mongoPromise, sqlPromise]);
   } catch (error) {
     logger.log(error);
     throw error;
