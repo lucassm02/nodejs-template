@@ -48,17 +48,21 @@ export class RabbitMqServer {
     if (!this.uri) throw new Error('RABBITMQ_CREDENTIALS_NOT_DEFINED');
     this.connection = await connect(this.uri);
     this.channel = await this.connection.createChannel();
+    await this.channel.prefetch(1);
   }
 
   public async restart() {
-    if (this.connection) this.connection.close();
+    if (this.channel) await this.channel.close();
+    if (this.connection) await this.connection.close();
     if (!this.uri) throw new Error('RABBITMQ_CREDENTIALS_NOT_DEFINED');
     this.connection = await connect(this.uri);
     this.channel = await this.connection.createChannel();
+    await this.channel.prefetch(1);
   }
 
   public async close() {
     if (!this.connection) return;
+    await this.channel.close();
     await this.connection.close();
   }
 
@@ -132,35 +136,35 @@ export class RabbitMqServer {
 
   public async consume(queue: string, callback: (payload: Payload) => void) {
     if (!this.connection || !this.channel) await this.restart();
-    await this.channel.consume(queue, async (message) => {
-      if (!message) return;
+    await this.channel.consume(
+      queue,
+      async (message) => {
+        if (!message) return;
 
-      try {
-        const payload = {
-          body: this.messageToJson(message),
-          headers: message.properties.headers,
-          properties: { queue, ...message.fields },
-        };
+        try {
+          const payload = {
+            body: this.messageToJson(message),
+            headers: message.properties.headers,
+            properties: { queue, ...message.fields },
+          };
 
-        await this.startTransaction(queue, payload, callback);
-
-        this.channel.ack(message);
-      } catch (error) {
-        logger.log(error);
-        if (error.stack.includes('at JSON.parse')) {
-          logger.log({
-            level: 'warn',
-            message: 'UNABLE_TO_CONVERT_MESSAGE_TO_JSON',
-            payload: {
-              message: message.content.toString(),
-              headers: message.properties.headers,
-              properties: { queue, ...message.fields },
-            },
-          });
+          await this.startTransaction(queue, payload, callback);
+        } catch (error) {
+          logger.log(error);
+          if (error.stack.includes('at JSON.parse')) {
+            logger.log({
+              level: 'warn',
+              message: 'UNABLE_TO_CONVERT_MESSAGE_TO_JSON',
+              payload: {
+                message: message.content.toString(),
+                headers: message.properties.headers,
+                properties: { queue, ...message.fields },
+              },
+            });
+          }
         }
-
-        this.channel.ack(message);
-      }
-    });
+      },
+      { noAck: false }
+    );
   }
 }
