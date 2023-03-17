@@ -12,8 +12,10 @@ type LogParams = {
   payload?: object;
 };
 
+type LoggerType = 'offline' | 'default';
+
 export interface Logger {
-  log(params: LogParams): void;
-  log(error: Error): void;
-  log(params: LogParams | Error): void;
+  log(params: LogParams, type?: LoggerType): void;
+  log(error: Error, type?: LoggerType): void;
+  log(params: LogParams | Error, type?: LoggerType): void;
 }

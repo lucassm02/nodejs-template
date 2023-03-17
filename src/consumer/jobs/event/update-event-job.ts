@@ -31,6 +31,7 @@ export class UpdateEventJob implements Job {
       return next();
     } catch (error) {
       await this.errorHandler.handle(error);
+      return next();
     }
   }
 }

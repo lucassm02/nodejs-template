@@ -29,6 +29,8 @@ type LogParams = {
   [key: string]: unknown;
 };
 
+type LoggerType = 'offline' | 'default';
+
 const apm = elasticAPM().getAPM();
 
 const { combine, timestamp, colorize } = format;
@@ -38,60 +40,65 @@ const defaultTimestampFormat = timestamp({ format: 'YYYY-MM-DD HH:mm:ss' });
 export class CustomLogger {
   private static instance: CustomLogger;
 
-  private logger!: Logger;
+  private defaultLogger!: Logger;
+  private offlineLogger!: Logger;
 
   constructor() {
-    this.logger = createLogger({
-      transports: [
-        new DailyRotateFile({
-          filename: 'logs',
-          extension: '.log',
-          datePattern: 'YYYY-MM-DD',
-          dirname: path.resolve('log'),
-          level: 'debug',
-          format: combine(defaultTimestampFormat, standard),
-        }),
-        new transports.Console({
-          level: LOGGER.CONSOLE.LEVEL,
-          format: combine(defaultTimestampFormat, cli, colorize({ all: true })),
-        }),
-      ],
+    const fileTransport = new DailyRotateFile({
+      filename: 'logs',
+      extension: '.log',
+      datePattern: 'YYYY-MM-DD',
+      dirname: path.resolve('log'),
+      level: 'debug',
+      format: combine(defaultTimestampFormat, standard),
+    });
+
+    const consoleTransport = new transports.Console({
+      level: LOGGER.CONSOLE.LEVEL,
+      format: combine(defaultTimestampFormat, cli, colorize({ all: true })),
+    });
+
+    this.defaultLogger = createLogger({
+      transports: [fileTransport, consoleTransport],
+    });
+
+    this.offlineLogger = createLogger({
+      transports: [fileTransport, consoleTransport],
+    });
+
+    const mongoDbTransport = new GenericTransport({
+      level: 'verbose',
+      format: combine(defaultTimestampFormat, standard),
+      receiver: createMongoLog,
     });
 
     if (ELASTICSEARCH.ENABLED) {
-      const esClientOpts = {
-        node: ELASTICSEARCH.SERVER_URL,
-        auth: {
-          username: ELASTICSEARCH.USERNAME,
-          password: ELASTICSEARCH.PASSWORD,
+      const elasticsearchTransport = new ElasticsearchTransport({
+        apm,
+        level: 'http',
+        index: 'application-log',
+        indexTemplate: defaultIndexTemplate,
+        dataStream: true,
+        useTransformer: true,
+        transformer: elasticSearchTransformer,
+        format: ecsFormat({
+          apmIntegration: true,
+          convertErr: true,
+        }),
+        clientOpts: {
+          node: ELASTICSEARCH.SERVER_URL,
+          auth: {
+            username: ELASTICSEARCH.USERNAME,
+            password: ELASTICSEARCH.PASSWORD,
+          },
         },
-      };
-      this.logger.add(
-        new ElasticsearchTransport({
-          apm,
-          level: 'http',
-          index: 'application-log',
-          indexTemplate: defaultIndexTemplate,
-          dataStream: true,
-          useTransformer: true,
-          transformer: elasticSearchTransformer,
-          format: ecsFormat({
-            apmIntegration: true,
-            convertErr: true,
-          }),
-          clientOpts: esClientOpts,
-        })
-      );
+      });
+
+      this.defaultLogger.add(elasticsearchTransport);
     }
 
     if (LOGGER.DB.ENABLED) {
-      this.logger.add(
-        new GenericTransport({
-          level: 'verbose',
-          format: combine(defaultTimestampFormat, standard),
-          receiver: createMongoLog,
-        })
-      );
+      this.defaultLogger.add(mongoDbTransport);
     }
   }
 
@@ -103,9 +110,22 @@ export class CustomLogger {
     return CustomLogger.instance;
   }
 
-  public log(error: Error): void;
-  public log(params: LogParams): void;
-  public log(params: LogParams | Error): void {
+  public log(error: Error, type: LoggerType): void;
+  public log(params: LogParams, type: LoggerType): void;
+  public log(data: LogParams | Error, type: LoggerType = 'default'): void {
+    const logger = type === 'offline' ? this.offlineLogger : this.defaultLogger;
+    this.handler(data, logger);
+  }
+
+  private handler(params: LogParams | Error, logger: Logger) {
+    if (!params) {
+      this.offlineLogger.log({
+        level: 'error',
+        message: `Unable to handle with log action ${JSON.stringify(params)}`,
+      });
+      return;
+    }
+
     const application = { name: pkg.name ?? 'nodejs-application' };
 
     const ids = getAPMTransactionIds();
@@ -115,7 +135,7 @@ export class CustomLogger {
         apm.captureError(params);
       }
 
-      this.logger.log({
+      logger.log({
         traceId: ids?.traceId,
         transactionId: ids?.transactionId,
         application,
@@ -130,12 +150,12 @@ export class CustomLogger {
 
     const { level, message, ...rest } = params;
 
-    this.logger.log({
+    logger.log({
       traceId: ids?.traceId,
       transactionId: ids?.transactionId,
       application,
       message,
-      level: <string>level,
+      level: <string>level ?? 'warn',
       ...rest,
     });
   }
