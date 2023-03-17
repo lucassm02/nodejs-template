@@ -136,35 +136,44 @@ export class RabbitMqServer {
 
   public async consume(queue: string, callback: (payload: Payload) => void) {
     if (!this.connection || !this.channel) await this.restart();
-    await this.channel.consume(
-      queue,
-      async (message) => {
-        if (!message) return;
+    await this.channel.consume(queue, async (message) => {
+      if (!message) return;
 
-        try {
-          const payload = {
-            body: this.messageToJson(message),
-            headers: message.properties.headers,
-            properties: { queue, ...message.fields },
-          };
+      let acked = false;
 
-          await this.startTransaction(queue, payload, callback);
-        } catch (error) {
-          logger.log(error);
-          if (error.stack.includes('at JSON.parse')) {
-            logger.log({
-              level: 'warn',
-              message: 'UNABLE_TO_CONVERT_MESSAGE_TO_JSON',
-              payload: {
-                message: message.content.toString(),
-                headers: message.properties.headers,
-                properties: { queue, ...message.fields },
-              },
-            });
-          }
+      const ack = () => {
+        if (acked) return;
+
+        this.channel.ack(message);
+        acked = true;
+      };
+
+      try {
+        const payload = {
+          body: this.messageToJson(message),
+          headers: message.properties.headers,
+          properties: { queue, ...message.fields },
+        };
+
+        await this.startTransaction(queue, payload, callback);
+
+        ack();
+      } catch (error) {
+        logger.log(error);
+        if (error.stack.includes('at JSON.parse')) {
+          logger.log({
+            level: 'warn',
+            message: 'UNABLE_TO_CONVERT_MESSAGE_TO_JSON',
+            payload: {
+              message: message.content.toString(),
+              headers: message.properties.headers,
+              properties: { queue, ...message.fields },
+            },
+          });
         }
-      },
-      { noAck: false }
-    );
+
+        ack();
+      }
+    });
   }
 }
