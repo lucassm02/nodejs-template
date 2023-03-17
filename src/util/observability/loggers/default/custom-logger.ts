@@ -110,8 +110,8 @@ export class CustomLogger {
     return CustomLogger.instance;
   }
 
-  public log(error: Error, type: LoggerType): void;
-  public log(params: LogParams, type: LoggerType): void;
+  public log(error: Error, type?: LoggerType): void;
+  public log(params: LogParams, type?: LoggerType): void;
   public log(data: LogParams | Error, type: LoggerType = 'default'): void {
     const logger = type === 'offline' ? this.offlineLogger : this.defaultLogger;
     this.handler(data, logger);

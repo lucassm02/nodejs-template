@@ -3,6 +3,6 @@ import { ExErrorHandler } from '@/data/usecases/exception';
 import { logger } from '@/util';
 
 export const makeErrorHandler = (handlers: Handler[] = []) => {
-  const defaultErrorHandlers = [logger.log.bind(logger)];
+  const defaultErrorHandlers = [(error: Error) => logger.log(error)];
   return new ExErrorHandler([...defaultErrorHandlers, ...handlers]);
 };
