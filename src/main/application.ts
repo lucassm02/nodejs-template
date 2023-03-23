@@ -19,8 +19,6 @@ application.use(express.json());
 application.use(express.urlencoded({ extended: true }));
 application.use(httpLoggerAdapter(createHttpRequestLog));
 
-application.setSharedState({});
-
 application.setBaseUrl(SERVER.BASE_URI);
 
 const routesFolder = path.resolve(__dirname, 'routes');
