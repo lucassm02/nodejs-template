@@ -1,6 +1,7 @@
 import { HttpClient } from '@/data/protocols/http/adapters';
 import { ValidateTokenService as ValidateTokenProtocol } from '@/data/protocols/http/authenticator';
-import { logger } from '@/util';
+
+import { httpLoggerWrapper } from '../../utils';
 
 export class ValidateTokenService implements ValidateTokenProtocol {
   constructor(private readonly httpClient: HttpClient) {}
@@ -9,6 +10,7 @@ export class ValidateTokenService implements ValidateTokenProtocol {
     token: ValidateTokenProtocol.Params
   ): ValidateTokenProtocol.Result {
     const url = '/v1/tokens/verify';
+    const description = 'TOKEN VALIDATION';
     const method = 'GET';
     const body = {};
     const headers = {
@@ -21,27 +23,12 @@ export class ValidateTokenService implements ValidateTokenProtocol {
       headers,
     });
 
-    const requestEntities = {
-      'request-body': body,
-      'request-method': method,
-      'request-headers': headers,
-      'request-url': url,
-    };
-
-    const responseEntities = {
-      'response-body': response.body,
-      'response-status-code': response.statusCode,
-      'response-headers': response.headers,
-    };
-
-    logger.log({
-      level: 'http',
-      message: 'TOKEN VALIDATION',
-      meta: { keywords: {}, services: ['AUTHENTICATION'] },
-      payload: {
-        request: requestEntities,
-        response: responseEntities,
-      },
+    httpLoggerWrapper({
+      description,
+      keywords: {},
+      services: ['AUTHENTICATION'],
+      request: { url, method, body, headers },
+      response,
     });
 
     return response.statusCode === 200;
