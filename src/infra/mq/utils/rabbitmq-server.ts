@@ -136,17 +136,9 @@ export class RabbitMqServer {
 
   public async consume(queue: string, callback: (payload: Payload) => void) {
     if (!this.connection || !this.channel) await this.restart();
+
     await this.channel.consume(queue, async (message) => {
       if (!message) return;
-
-      let acked = false;
-
-      const ack = () => {
-        if (acked) return;
-
-        this.channel.ack(message);
-        acked = true;
-      };
 
       try {
         const payload = {
@@ -156,8 +148,6 @@ export class RabbitMqServer {
         };
 
         await this.startTransaction(queue, payload, callback);
-
-        ack();
       } catch (error) {
         logger.log(error);
         if (error.stack.includes('at JSON.parse')) {
@@ -171,8 +161,17 @@ export class RabbitMqServer {
             },
           });
         }
-
-        ack();
+      } finally {
+        logger.log({
+          level: 'verbose',
+          message: 'THE MASSAGE LEFT THE QUEUE',
+          payload: {
+            message: message.content.toString(),
+            headers: message.properties.headers,
+            properties: { queue, ...message.fields },
+          },
+        });
+        this.channel.ack(message);
       }
     });
   }
