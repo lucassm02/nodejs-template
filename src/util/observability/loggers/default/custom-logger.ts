@@ -67,7 +67,7 @@ export class CustomLogger {
     });
 
     const mongoDbTransport = new GenericTransport({
-      level: 'verbose',
+      level: 'debug',
       format: combine(defaultTimestampFormat, standard),
       receiver: createMongoLog,
     });
