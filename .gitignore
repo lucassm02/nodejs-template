@@ -9,8 +9,8 @@ lib-cov
 *.swp
 
 pids
-logs
-log
+/logs
+/log
 results
 tmp
 TODO.txt
