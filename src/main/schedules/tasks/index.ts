@@ -1,1 +1,1 @@
-export * from './example-task';
+export * from './example/example-task';

@@ -11,7 +11,7 @@ import {
 export default function (route: Route) {
   route.get(
     '/examples',
-    makeGetExampleMiddleware(),
+    makeGetExampleMiddleware({ valuesToExtract: ['request.query.sort'] }),
     makeGetExampleController()
   );
 

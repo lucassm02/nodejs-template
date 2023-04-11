@@ -5,11 +5,21 @@ import { logger } from '@/util';
 
 import { makeErrorHandler } from '../../usecases';
 
-type Params = { useTransaction: boolean };
-export const makeGetExampleMiddleware = (
-  { useTransaction }: Params = { useTransaction: false }
-) => {
+type FactoryParams = {
+  useTransaction?: boolean;
+  valuesToExtract: (string | Record<string, string>)[];
+};
+
+export const makeGetExampleMiddleware = ({
+  valuesToExtract,
+  useTransaction,
+}: FactoryParams) => {
   const exampleRepository = new ExampleRepository(useTransaction);
   const dbGetExample = new DbGetExample(exampleRepository);
-  return new GetExampleMiddleware(dbGetExample, logger, makeErrorHandler());
+  return new GetExampleMiddleware(
+    dbGetExample,
+    logger,
+    makeErrorHandler(),
+    valuesToExtract
+  );
 };

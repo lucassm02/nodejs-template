@@ -1,7 +1,7 @@
 import { taskAdapter } from '@/main/adapters/task-adapter';
 import { makeExampleTask } from '@/main/factories/tasks';
 
-import { Options } from '../protocols';
+import { Options } from '../../protocols';
 
 export const exampleTask: Options = {
   enabled: true,
