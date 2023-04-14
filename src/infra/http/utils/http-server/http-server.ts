@@ -191,6 +191,13 @@ export class HttpServer {
 
     const files = readdirSync(path);
 
+    const route = arg1 instanceof Route ? arg1 : this.route('', baseUrl);
+
+    if (middlewares.length) {
+      const [arg1, ...args] = middlewares;
+      route.use(arg1, ...args);
+    }
+
     for await (const fileName of files) {
       const fileNameToUpperCase = fileName.toLocaleUpperCase();
 
@@ -207,13 +214,6 @@ export class HttpServer {
         const setup = <Function>(await import(filePath)).default;
 
         if (!setup) continue;
-
-        const route = arg1 instanceof Route ? arg1 : this.route('', baseUrl);
-
-        if (middlewares.length) {
-          const [arg1, ...args] = middlewares;
-          route.use(arg1, ...args);
-        }
 
         setup(route);
       }
