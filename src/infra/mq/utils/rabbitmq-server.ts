@@ -24,6 +24,7 @@ export class RabbitMqServer {
   private connection!: Connection;
   private channel!: Channel;
   private uri!: string;
+  private prefetch!: number;
 
   private static instance: RabbitMqServer;
 
@@ -39,8 +40,17 @@ export class RabbitMqServer {
     return RabbitMqServer.instance;
   }
 
+  public setPrefetch(prefetch: number) {
+    if (typeof prefetch !== 'number')
+      throw new Error('Prefetch must be a number');
+
+    this.prefetch = prefetch;
+    return this;
+  }
+
   public setCredentials(credentials: Credentials) {
     this.uri = `amqp://${credentials.user}:${credentials.password}@${credentials.host}:${credentials.port}`;
+    return this;
   }
 
   public async start() {
@@ -48,22 +58,23 @@ export class RabbitMqServer {
     if (!this.uri) throw new Error('RABBITMQ_CREDENTIALS_NOT_DEFINED');
     this.connection = await connect(this.uri);
     this.channel = await this.connection.createChannel();
-    await this.channel.prefetch(1);
-  }
-
-  public async restart() {
-    if (this.channel) await this.channel.close();
-    if (this.connection) await this.connection.close();
-    if (!this.uri) throw new Error('RABBITMQ_CREDENTIALS_NOT_DEFINED');
-    this.connection = await connect(this.uri);
-    this.channel = await this.connection.createChannel();
-    await this.channel.prefetch(1);
+    if (typeof this.prefetch === 'number') {
+      await this.channel.prefetch(this.prefetch);
+    }
+    return this;
   }
 
   public async close() {
     if (!this.connection) return;
     await this.channel.close();
     await this.connection.close();
+    return this;
+  }
+
+  public async restart() {
+    await this.close();
+    await this.start();
+    return this;
   }
 
   @loggerDecorator({
