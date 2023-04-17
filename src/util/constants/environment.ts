@@ -40,21 +40,22 @@ export const DB = {
   HOST: process.env.DB_HOST || '',
   USERNAME: process.env.DB_USERNAME || '',
   PASSWORD: process.env.DB_PASSWORD || '',
-  PORT: process.env.DB_PORT || 1433,
+  PORT: +(() => process.env.DB_PORT || 1433)(),
 };
 
 export const RABBIT = {
   USER: process.env.RABBIT_USER || '',
   PASSWORD: process.env.RABBIT_PASSWORD || '',
   HOST: process.env.RABBIT_HOST || '',
-  PORT: process.env.RABBIT_PORT || 5672,
+  PORT: +(() => process.env.RABBIT_PORT || 5672)(),
+  PREFETCH: +(() => process.env.RABBIT_PREFETCH || 10)(),
 };
 
 export const MONGO = {
   USER: process.env.MONGO_USER || '',
   PASSWORD: process.env.MONGO_PASSWORD || '',
   HOST: process.env.MONGO_HOST || '',
-  PORT: process.env.MONGO_PORT || 27017,
+  PORT: +(() => process.env.MONGO_PORT || 27017)(),
   NAME: process.env.MONGO_NAME || '',
   AUTH_SOURCE: process.env.MONGO_AUTH_SOURCE || '',
   URL() {
@@ -78,6 +79,6 @@ export const ELASTICSEARCH = {
 
 export const REPROCESSING = {
   ENABLED: stringToBoolean(process.env.REPROCESSING_ENABLED) || false,
-  MAX_TRIES: Number(process.env.REPROCESSING_MAX_TRIES) || 1,
+  MAX_TRIES: +(() => process.env.REPROCESSING_MAX_TRIES || 1)(),
   DELAYS: process.env.REPROCESSING_DELAYS?.split(',').map(Number) || [],
 };

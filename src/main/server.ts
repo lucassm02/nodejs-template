@@ -7,13 +7,13 @@ import { application } from './application';
 
 application.onStart(async () => {
   try {
-    mongoose.set('strictQuery', false);
-
-    const mongoPromise = mongoose.connect(MONGO.URL(), {
-      dbName: MONGO.NAME,
-      authSource: MONGO.AUTH_SOURCE,
-      authMechanism: 'SCRAM-SHA-1',
-    });
+    const mongoPromise = mongoose
+      .set('strictQuery', false)
+      .connect(MONGO.URL(), {
+        dbName: MONGO.NAME,
+        authSource: MONGO.AUTH_SOURCE,
+        authMechanism: 'SCRAM-SHA-1',
+      });
 
     const sqlPromise = sqlConnection.raw('SELECT 1');
 
