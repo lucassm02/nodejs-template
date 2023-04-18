@@ -32,6 +32,7 @@ export class HttpServer {
     baseUrl?: string;
     router: Router;
     loaded: boolean;
+    hidden: boolean;
   }[] = [];
 
   private startupCallbacks: Function[] = [];
@@ -138,10 +139,10 @@ export class HttpServer {
 
     this.express.use(...this.adaptMiddlewares([value, ...middlewares]));
   }
-
-  public setSharedState<T>(state: T): void {
-    this.express.use(this.makeSharedStateChanger(state));
-  }
+  // FIXME: NEED TO FIX STATE AS GLOBAL VARIABLE
+  // public setSharedState<T>(state: T): void {
+  //   this.express.use(this.makeSharedStateChanger(state));
+  // }
 
   public set(setting: string, val: any) {
     this.express.set(setting, val);
@@ -191,7 +192,10 @@ export class HttpServer {
 
     const files = readdirSync(path);
 
-    const route = arg1 instanceof Route ? arg1 : this.route('', baseUrl);
+    const route =
+      arg1 instanceof Route
+        ? arg1
+        : this.createRoute({ hidden: true, baseUrl, path: '' });
 
     if (middlewares.length) {
       const [arg1, ...args] = middlewares;
@@ -235,15 +239,38 @@ export class HttpServer {
 
     if (route) return route;
 
+    return this.createRoute({ path, baseUrl });
+  }
+
+  private createRoute(options: {
+    path?: string;
+    baseUrl?: string;
+    hidden?: boolean;
+  }): Route;
+  private createRoute(path?: string, baseUrl?: string, hidden?: boolean): Route;
+  private createRoute(
+    arg1?: string | { path?: string; baseUrl?: string; hidden?: boolean },
+    arg2?: string,
+    arg3?: boolean
+  ) {
+    const { path, baseUrl, hidden } =
+      typeof arg1 === 'object'
+        ? arg1
+        : { path: arg1, baseUrl: arg2, hidden: arg3 };
+
     const router = Router();
-    this.routers = [...this.routers, { path, baseUrl, router, loaded: false }];
+    this.routers = [
+      ...this.routers,
+      { path, baseUrl, router, loaded: false, hidden: hidden || false },
+    ];
 
     return new Route(router, this.adaptMiddlewares.bind(this));
   }
 
   public getRoute(path?: string, baseUrl?: string) {
     const route = this.routers.find(
-      (route) => route.path === path && route.baseUrl === baseUrl
+      (route) =>
+        route.path === path && route.baseUrl === baseUrl && !route.hidden
     );
 
     if (!route) return undefined;
