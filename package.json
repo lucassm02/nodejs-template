@@ -90,7 +90,7 @@
     "tsx": "^3.12.6",
     "typescript": "^5.0.4",
     "yaml": "^2.2.1",
-    "yargs": "17.7"
+    "yargs": "13.2"
   },
   "dependencies": {
     "@badass-team-code/formatted-cases-words": "^1.0.0",
