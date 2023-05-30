@@ -6,25 +6,34 @@ import {
 import { logger } from '@/util/observability';
 import { apmSpan, apmTransaction } from '@/util/observability/apm';
 import { logger as loggerDecorator } from '@/util/observability/loggers/decorators';
-import { Channel, connect, Connection, Message } from 'amqplib';
+import { Channel, Connection, Message, connect } from 'amqplib';
+import { randomUUID } from 'crypto';
+import { EventEmitter } from 'stream';
 
-type Credentials = {
-  user: string;
-  password: string;
-  host: string;
-  port: number;
-};
+import { Consumer, ConsumerCallback, Credentials, Payload } from './types';
 
-type Payload = {
-  body: object;
-  headers: object;
-};
+type ChannelWrapper = { id: string; channel: Channel };
 
 export class RabbitMqServer {
-  private connection!: Connection;
-  private channel!: Channel;
+  private connection: Connection | null = null;
+  private channelWrapper: ChannelWrapper | null = null;
+  private consumers: Map<string, Consumer> = new Map();
   private uri!: string;
   private prefetch!: number;
+
+  private thereIsAPendingRestart = false;
+
+  public Error = {
+    CredentialsNotDefined:
+      'Credentials not defined, use setCredentials to define credentials',
+    InvalidCredentialFieldValue: (field: string) =>
+      `Invalid value for (${field}) field`,
+    InvalidPrefetchValue: 'Prefetch must be a number',
+  };
+
+  private event = new EventEmitter();
+
+  private events = { RESTART: Symbol('RESTART'), ACK: Symbol('ACK') };
 
   private static instance: RabbitMqServer;
 
@@ -42,38 +51,101 @@ export class RabbitMqServer {
 
   public setPrefetch(prefetch: number) {
     if (typeof prefetch !== 'number')
-      throw new Error('Prefetch must be a number');
+      throw new Error(this.Error.InvalidPrefetchValue);
 
     this.prefetch = prefetch;
     return this;
   }
 
   public setCredentials(credentials: Credentials) {
+    Object.entries(credentials).forEach(([key, value]) => {
+      if (value === undefined)
+        throw new Error(this.Error.InvalidCredentialFieldValue(key));
+    });
+
     this.uri = `amqp://${credentials.user}:${credentials.password}@${credentials.host}:${credentials.port}`;
     return this;
   }
 
   public async start() {
-    if (this.connection) return;
-    if (!this.uri) throw new Error('RABBITMQ_CREDENTIALS_NOT_DEFINED');
-    this.connection = await connect(this.uri);
-    this.channel = await this.connection.createChannel();
-    if (typeof this.prefetch === 'number') {
-      await this.channel.prefetch(this.prefetch);
+    logger.log({ level: 'info', message: 'Starting connection' });
+    if (!this.connection) {
+      if (!this.uri) throw new Error(this.Error.CredentialsNotDefined);
+      this.connection = await connect(this.uri);
     }
+
+    this.channelWrapper?.channel.recover();
+
+    if (!this.channelWrapper) {
+      const channel = await this.connection.createChannel();
+      this.channelWrapper = { channel, id: randomUUID() };
+    }
+
+    if (typeof this.prefetch === 'number') {
+      await this.channelWrapper.channel.prefetch(this.prefetch);
+    }
+
+    this.startEventLiveners();
+
+    logger.log({ level: 'info', message: 'Connection started' });
+
     return this;
   }
 
   public async close() {
-    if (!this.connection) return;
-    await this.channel.close();
-    await this.connection.close();
+    logger.log({ level: 'info', message: 'Closing connection' });
+
+    if (this.channelWrapper) {
+      try {
+        await this.channelWrapper.channel.close();
+      } catch (error) {
+        logger.log(error);
+      }
+    }
+
+    this.channelWrapper?.channel.removeAllListeners();
+    this.connection?.removeAllListeners();
+    this.event.removeAllListeners();
+
+    if (this.connection) {
+      try {
+        await this.connection.close();
+      } catch (error) {
+        logger.log(error);
+      }
+    }
+
+    this.channelWrapper = null;
+    this.connection = null;
+
+    logger.log({ level: 'info', message: 'Connection closed' });
+
     return this;
   }
 
   public async restart() {
-    await this.close();
-    await this.start();
+    logger.log({ level: 'info', message: 'Restart event' });
+    if (this.thereIsAPendingRestart) return;
+    if (!this.channelWrapper || !this.connection) return;
+    logger.log({ level: 'info', message: 'Restart event accepted' });
+    this.thereIsAPendingRestart = true;
+
+    try {
+      await this.close();
+      await this.start();
+    } catch (error) {
+      logger.log({ level: 'info', message: 'Error when restarting' });
+      logger.log(error);
+      this.thereIsAPendingRestart = false;
+      this.event.emit(this.events.RESTART);
+    }
+
+    await this.rebuildConsumers(true);
+
+    setTimeout(() => {
+      this.thereIsAPendingRestart = false;
+    }, 1500);
+
     return this;
   }
 
@@ -86,12 +158,12 @@ export class RabbitMqServer {
     params: { queue: 0, message: 1, headers: 2 },
   })
   public async publishInQueue(queue: string, message: object, headers: object) {
-    if (!this.connection || !this.channel) await this.restart();
-    const messageFromBuffer = this.messageFromBuffer(
+    if (!this.connection || !this.channelWrapper) await this.restart();
+    const messageFromBuffer = this.convertMessageToBuffer(
       convertCamelCaseKeysToSnakeCase(message)
     );
 
-    this.channel.sendToQueue(queue, messageFromBuffer, {
+    this.channelWrapper?.channel?.sendToQueue(queue, messageFromBuffer, {
       headers,
     });
   }
@@ -109,24 +181,143 @@ export class RabbitMqServer {
     routingKey: string,
     headers?: object
   ) {
-    if (!this.connection || !this.channel) await this.restart();
-    this.channel.publish(
+    if (!this.connection || !this.channelWrapper) await this.restart();
+    this.channelWrapper?.channel.publish(
       exchange,
       routingKey,
-      this.messageFromBuffer(convertCamelCaseKeysToSnakeCase(message)),
+      this.convertMessageToBuffer(convertCamelCaseKeysToSnakeCase(message)),
       { headers }
     );
   }
 
-  private messageFromBuffer(message: Record<string, unknown>): Buffer {
-    const string = JSON.stringify(message);
-    return Buffer.from(string);
+  public async consume(queue: string, callback: ConsumerCallback) {
+    const channelId = this.channelWrapper?.id;
+
+    const consumer = await this.channelWrapper?.channel.consume(
+      queue,
+      async (message) => {
+        if (!message) return;
+
+        try {
+          const payload = {
+            body: message.content.toJSON(),
+            headers: message.properties.headers,
+            properties: { queue, ...message.fields },
+          };
+
+          await this.transactionHandler(queue, payload, callback);
+        } catch (error) {
+          logger.log(error);
+          if (error.stack.includes('at JSON.parse')) {
+            logger.log({
+              level: 'warn',
+              message: 'Unable to convert message to JSON',
+              payload: {
+                message: message.content.toString(),
+                headers: message.properties.headers,
+                properties: { queue, ...message.fields },
+              },
+            });
+          }
+        } finally {
+          logger.log({
+            level: 'verbose',
+            message: 'The massage left the queue',
+            payload: {
+              message: message.content.toString(),
+              headers: message.properties.headers,
+              properties: { queue, ...message.fields },
+            },
+          });
+
+          this.event.emit(this.events.ACK, {
+            message,
+            channelId,
+          });
+        }
+      }
+    );
+
+    if (!consumer) return;
+
+    this.consumers.set(consumer.consumerTag, { queue, callback });
   }
 
-  private messageToJson(message: Message): object {
-    return convertSnakeCaseKeysToCamelCase(
-      JSON.parse(message.content.toString())
+  private startEventLiveners() {
+    this.connection?.on('error', (error) => {
+      logger.log(error);
+      this.event.emit(this.events.RESTART);
+    });
+
+    this.channelWrapper?.channel.on('error', (error) => {
+      logger.log(error);
+      this.event.emit(this.events.RESTART);
+    });
+
+    this.connection?.on('close', (error) => {
+      logger.log(error);
+      this.event.emit(this.events.RESTART);
+    });
+
+    this.channelWrapper?.channel.on('close', (error) => {
+      logger.log(error);
+      this.event.emit(this.events.RESTART);
+    });
+
+    this.event.on(this.events.RESTART, async () => {
+      await this.restart();
+    });
+
+    this.event.on(
+      this.events.ACK,
+      ({ message, channelId }: { message: Message; channelId: string }) => {
+        try {
+          if (!message) return;
+          if (this.channelWrapper?.id !== channelId) return;
+
+          this.channelWrapper?.channel.ack(message);
+        } catch (error) {
+          logger.log(error);
+          logger.log({
+            level: 'warn',
+            message: 'Unable to ack message',
+            payload: { message: message.content.toString() },
+          });
+        }
+      }
     );
+  }
+
+  private async rebuildConsumers(deleteConsumers = true) {
+    logger.log({ level: 'info', message: 'Starting rebuilding consumers' });
+    if (!this.channelWrapper) {
+      this.event.emit(this.events.RESTART);
+      return;
+    }
+
+    const consumers = Array.from(this.consumers);
+
+    const promises = consumers.map(async ([key, value]) => {
+      try {
+        if (deleteConsumers) await this.channelWrapper?.channel.cancel(key);
+        this.consumers.delete(key);
+        return this.consume(value.queue, value.callback);
+      } catch (error) {
+        logger.log(error);
+        return null;
+      }
+    });
+
+    await Promise.allSettled(promises);
+    logger.log({
+      level: 'info',
+      message: 'Consumer reconstruction completed',
+    });
+  }
+
+  private convertMessageToBuffer(message: Record<string, unknown>): Buffer {
+    const string = JSON.stringify(message);
+    return Buffer.from(string);
   }
 
   @amqpLogger({
@@ -137,53 +328,17 @@ export class RabbitMqServer {
     options: { nameByParameter: 0, type: 'rabbitmq' },
     params: { message: 1 },
   })
-  private async startTransaction(
+  private async transactionHandler(
     _queue: string,
     payload: Payload,
     callback: Function
   ): Promise<void> {
-    return callback(payload);
-  }
-
-  public async consume(queue: string, callback: (payload: Payload) => void) {
-    if (!this.connection || !this.channel) await this.restart();
-
-    await this.channel.consume(queue, async (message) => {
-      if (!message) return;
-
-      try {
-        const payload = {
-          body: this.messageToJson(message),
-          headers: message.properties.headers,
-          properties: { queue, ...message.fields },
-        };
-
-        await this.startTransaction(queue, payload, callback);
-      } catch (error) {
-        logger.log(error);
-        if (error.stack.includes('at JSON.parse')) {
-          logger.log({
-            level: 'warn',
-            message: 'UNABLE_TO_CONVERT_MESSAGE_TO_JSON',
-            payload: {
-              message: message.content.toString(),
-              headers: message.properties.headers,
-              properties: { queue, ...message.fields },
-            },
-          });
-        }
-      } finally {
-        logger.log({
-          level: 'verbose',
-          message: 'THE MASSAGE LEFT THE QUEUE',
-          payload: {
-            message: message.content.toString(),
-            headers: message.properties.headers,
-            properties: { queue, ...message.fields },
-          },
-        });
-        this.channel.ack(message);
-      }
+    const { body, headers, ...restOfPayload } = payload;
+    const bodyAndHeadersToCamelCase = convertSnakeCaseKeysToCamelCase({
+      body,
+      headers,
     });
+
+    return callback({ ...bodyAndHeadersToCamelCase, ...restOfPayload });
   }
 }
