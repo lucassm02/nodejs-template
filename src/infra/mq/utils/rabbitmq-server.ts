@@ -200,7 +200,9 @@ export class RabbitMqServer {
 
         try {
           const payload = {
-            body: message.content.toJSON(),
+            body: convertSnakeCaseKeysToCamelCase(
+              this.convertMessageToJson(message)
+            ),
             headers: message.properties.headers,
             properties: { queue, ...message.fields },
           };
@@ -318,6 +320,10 @@ export class RabbitMqServer {
   private convertMessageToBuffer(message: Record<string, unknown>): Buffer {
     const string = JSON.stringify(message);
     return Buffer.from(string);
+  }
+
+  private convertMessageToJson(message: Message): object {
+    return JSON.parse(message.content.toString());
   }
 
   @amqpLogger({
