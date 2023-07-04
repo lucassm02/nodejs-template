@@ -7,21 +7,20 @@ import { logger } from '@/util/observability';
 import { apmSpan, apmTransaction } from '@/util/observability/apm';
 import { logger as loggerDecorator } from '@/util/observability/loggers/decorators';
 import { Channel, Connection, Message, connect } from 'amqplib';
-import { randomUUID } from 'crypto';
 import { EventEmitter } from 'stream';
 
 import { Consumer, ConsumerCallback, Credentials, Payload } from './types';
 
-type ChannelWrapper = { id: string; channel: Channel };
-
 export class RabbitMqServer {
   private connection: Connection | null = null;
-  private channelWrapper: ChannelWrapper | null = null;
+  private channel: Channel | null = null;
   private consumers: Map<string, Consumer> = new Map();
   private uri!: string;
   private prefetch!: number;
 
   private thereIsAPendingRestart = false;
+  private preventChannelRecover = false;
+  private theChannelIsActive = false;
 
   public Error = {
     CredentialsNotDefined:
@@ -74,15 +73,14 @@ export class RabbitMqServer {
       this.connection = await connect(this.uri);
     }
 
-    this.channelWrapper?.channel.recover();
-
-    if (!this.channelWrapper) {
-      const channel = await this.connection.createChannel();
-      this.channelWrapper = { channel, id: randomUUID() };
+    if (!this.channel) {
+      this.channel = await this.connection.createChannel();
     }
 
+    this.theChannelIsActive = true;
+
     if (typeof this.prefetch === 'number') {
-      await this.channelWrapper.channel.prefetch(this.prefetch);
+      await this.channel.prefetch(this.prefetch);
     }
 
     this.startEventLiveners();
@@ -95,17 +93,21 @@ export class RabbitMqServer {
   public async close() {
     logger.log({ level: 'info', message: 'Closing connection' });
 
-    if (this.channelWrapper) {
-      try {
-        await this.channelWrapper.channel.close();
-      } catch (error) {
-        logger.log(error);
-      }
-    }
-
-    this.channelWrapper?.channel.removeAllListeners();
+    this.channel?.removeAllListeners();
     this.connection?.removeAllListeners();
     this.event.removeAllListeners();
+
+    this.preventChannelRecover = true;
+
+    if (this.channel) {
+      try {
+        await this.channel.close();
+      } catch (error) {
+        logger.log(error);
+      } finally {
+        this.theChannelIsActive = false;
+      }
+    }
 
     if (this.connection) {
       try {
@@ -115,10 +117,12 @@ export class RabbitMqServer {
       }
     }
 
-    this.channelWrapper = null;
+    this.channel = null;
     this.connection = null;
 
     logger.log({ level: 'info', message: 'Connection closed' });
+
+    this.preventChannelRecover = false;
 
     return this;
   }
@@ -126,7 +130,6 @@ export class RabbitMqServer {
   public async restart() {
     logger.log({ level: 'info', message: 'Restart event' });
     if (this.thereIsAPendingRestart) return;
-    if (!this.channelWrapper || !this.connection) return;
     logger.log({ level: 'info', message: 'Restart event accepted' });
     this.thereIsAPendingRestart = true;
 
@@ -149,6 +152,20 @@ export class RabbitMqServer {
     return this;
   }
 
+  private async recoverChannel(): Promise<boolean> {
+    try {
+      logger.log({ level: 'info', message: 'Recover channel event' });
+      if (this.preventChannelRecover) return false;
+      logger.log({ level: 'info', message: 'Recover channel event accepted' });
+      await this.channel?.recover();
+      return true;
+    } catch (error) {
+      logger.log({ level: 'info', message: 'Error when recover channel' });
+      logger.log(error);
+      return false;
+    }
+  }
+
   @loggerDecorator({
     options: { name: 'Publish message in queue', subType: 'rabbitmq' },
     input: { queue: 0, message: 1, headers: 2 },
@@ -158,12 +175,12 @@ export class RabbitMqServer {
     params: { queue: 0, message: 1, headers: 2 },
   })
   public async publishInQueue(queue: string, message: object, headers: object) {
-    if (!this.connection || !this.channelWrapper) await this.restart();
+    if (!this.connection || !this.channel) await this.restart();
     const messageFromBuffer = this.convertMessageToBuffer(
       convertCamelCaseKeysToSnakeCase(message)
     );
 
-    this.channelWrapper?.channel?.sendToQueue(queue, messageFromBuffer, {
+    this.channel?.sendToQueue(queue, messageFromBuffer, {
       headers,
     });
   }
@@ -181,8 +198,8 @@ export class RabbitMqServer {
     routingKey: string,
     headers?: object
   ) {
-    if (!this.connection || !this.channelWrapper) await this.restart();
-    this.channelWrapper?.channel.publish(
+    if (!this.connection || !this.channel) await this.restart();
+    this.channel?.publish(
       exchange,
       routingKey,
       this.convertMessageToBuffer(convertCamelCaseKeysToSnakeCase(message)),
@@ -191,58 +208,64 @@ export class RabbitMqServer {
   }
 
   public async consume(queue: string, callback: ConsumerCallback) {
-    const channelId = this.channelWrapper?.id;
+    const consumer = await this.channel?.consume(queue, async (message) => {
+      if (!message) return;
 
-    const consumer = await this.channelWrapper?.channel.consume(
-      queue,
-      async (message) => {
-        if (!message) return;
+      try {
+        const payload = {
+          body: convertSnakeCaseKeysToCamelCase(
+            this.convertMessageToJson(message)
+          ),
+          headers: message.properties.headers,
+          properties: { queue, ...message.fields },
+        };
 
-        try {
-          const payload = {
-            body: convertSnakeCaseKeysToCamelCase(
-              this.convertMessageToJson(message)
-            ),
-            headers: message.properties.headers,
-            properties: { queue, ...message.fields },
-          };
-
-          await this.transactionHandler(queue, payload, callback);
-        } catch (error) {
-          logger.log(error);
-          if (error.stack.includes('at JSON.parse')) {
-            logger.log({
-              level: 'warn',
-              message: 'Unable to convert message to JSON',
-              payload: {
-                message: message.content.toString(),
-                headers: message.properties.headers,
-                properties: { queue, ...message.fields },
-              },
-            });
-          }
-        } finally {
+        await this.transactionHandler(queue, payload, callback);
+      } catch (error) {
+        logger.log(error);
+        if (error.stack.includes('at JSON.parse')) {
           logger.log({
-            level: 'verbose',
-            message: 'The massage left the queue',
+            level: 'warn',
+            message: 'Unable to convert message to JSON',
             payload: {
               message: message.content.toString(),
               headers: message.properties.headers,
               properties: { queue, ...message.fields },
             },
           });
-
-          this.event.emit(this.events.ACK, {
-            message,
-            channelId,
-          });
         }
+      } finally {
+        logger.log({
+          level: 'verbose',
+          message: 'The message left the queue',
+          payload: {
+            message: message.content.toString(),
+            headers: message.properties.headers,
+            properties: { queue, ...message.fields },
+          },
+        });
+
+        this.ack(message);
       }
-    );
+    });
 
     if (!consumer) return;
 
     this.consumers.set(consumer.consumerTag, { queue, callback });
+  }
+
+  private ack(message: Message) {
+    try {
+      if (!this.theChannelIsActive || !this.channel) return;
+      this.channel.ack(message);
+    } catch (error) {
+      logger.log(error);
+      logger.log({
+        level: 'warn',
+        message: 'Unable to ack message',
+        payload: { message: message.content.toString() },
+      });
+    }
   }
 
   private startEventLiveners() {
@@ -251,48 +274,44 @@ export class RabbitMqServer {
       this.event.emit(this.events.RESTART);
     });
 
-    this.channelWrapper?.channel.on('error', (error) => {
+    this.channel?.on('error', async (error) => {
       logger.log(error);
-      this.event.emit(this.events.RESTART);
+
+      this.theChannelIsActive = false;
+
+      const wasItRecovered = await this.recoverChannel();
+
+      if (!wasItRecovered) {
+        this.event.emit(this.events.RESTART);
+      }
     });
 
     this.connection?.on('close', (error) => {
       logger.log(error);
-      this.event.emit(this.events.RESTART);
-    });
-
-    this.channelWrapper?.channel.on('close', (error) => {
-      logger.log(error);
-      this.event.emit(this.events.RESTART);
-    });
-
-    this.event.on(this.events.RESTART, async () => {
-      await this.restart();
-    });
-
-    this.event.on(
-      this.events.ACK,
-      ({ message, channelId }: { message: Message; channelId: string }) => {
-        try {
-          if (!message) return;
-          if (this.channelWrapper?.id !== channelId) return;
-
-          this.channelWrapper?.channel.ack(message);
-        } catch (error) {
-          logger.log(error);
-          logger.log({
-            level: 'warn',
-            message: 'Unable to ack message',
-            payload: { message: message.content.toString() },
-          });
-        }
+      if (!this.thereIsAPendingRestart) {
+        this.event.emit(this.events.RESTART);
       }
-    );
+    });
+
+    this.channel?.on('close', async (error) => {
+      logger.log(error);
+      logger.log(error);
+
+      this.theChannelIsActive = false;
+
+      const wasItRecovered = await this.recoverChannel();
+
+      if (!wasItRecovered && !this.preventChannelRecover) {
+        this.event.emit(this.events.RESTART);
+      }
+    });
+
+    this.event.on(this.events.RESTART, this.restart.bind(this));
   }
 
   private async rebuildConsumers(deleteConsumers = true) {
     logger.log({ level: 'info', message: 'Starting rebuilding consumers' });
-    if (!this.channelWrapper) {
+    if (!this.channel) {
       this.event.emit(this.events.RESTART);
       return;
     }
@@ -301,7 +320,7 @@ export class RabbitMqServer {
 
     const promises = consumers.map(async ([key, value]) => {
       try {
-        if (deleteConsumers) await this.channelWrapper?.channel.cancel(key);
+        if (deleteConsumers) await this.channel?.cancel(key);
         this.consumers.delete(key);
         return this.consume(value.queue, value.callback);
       } catch (error) {
