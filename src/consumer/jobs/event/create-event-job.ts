@@ -16,7 +16,7 @@ export class CreateEventJob implements Job {
     next: Job.Next
   ): Job.Result {
     try {
-      if (!ELASTICSEARCH.ENABLED) return await next();
+      if (!ELASTICSEARCH.ENABLED) next();
 
       const event = await this.createEvent.create({
         event: '',
@@ -33,10 +33,10 @@ export class CreateEventJob implements Job {
 
       setState({ createEven: event });
 
-      return next();
+      next();
     } catch (error) {
       await this.errorHandler.handle(error);
-      return next();
+      next();
     }
   }
 }

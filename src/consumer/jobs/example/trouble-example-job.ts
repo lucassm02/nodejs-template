@@ -23,7 +23,7 @@ export class TroubleExampleJob implements Job {
         step,
       });
 
-      return next();
+      next();
     } catch (error) {
       this.logger.log({ level: 'error', ...error });
       throw error;

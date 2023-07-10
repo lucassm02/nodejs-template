@@ -16,7 +16,7 @@ export class UpdateEventJob implements Job {
     next: Job.Next
   ): Job.Result {
     try {
-      if (!ELASTICSEARCH.ENABLED) return await next();
+      if (!ELASTICSEARCH.ENABLED) next();
 
       const event = await this.updateEvent.update({
         status: 'SUCCESS',
@@ -28,10 +28,10 @@ export class UpdateEventJob implements Job {
         payload: event,
       });
 
-      return next();
+      next();
     } catch (error) {
       await this.errorHandler.handle(error);
-      return next();
+      next();
     }
   }
 }
