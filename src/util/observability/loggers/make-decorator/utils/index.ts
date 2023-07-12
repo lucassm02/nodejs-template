@@ -111,6 +111,10 @@ export const getType = (subType: string | null | undefined): string | void => {
       type: 'websocket',
       subtypes: ['send'],
     },
+    {
+      type: 'worker',
+      subtypes: ['task'],
+    },
   ];
 
   if (!subType) return;

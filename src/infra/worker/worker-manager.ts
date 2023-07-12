@@ -1,6 +1,6 @@
 import { taskAdapter } from '@/main/adapters/task-adapter';
 import { Task } from '@/schedule/protocols';
-import { apmTransaction, logger } from '@/util';
+import { apmTransaction, logger, workerLogger } from '@/util';
 import { readdirSync } from 'fs';
 import { scheduleJob } from 'node-schedule';
 import { resolve } from 'path';
@@ -39,7 +39,9 @@ export class WorkerManager {
       message: `New task was registered, name: ${name}, cron: ${cron}`,
     });
 
-    this.taskHandler(name, cron, taskAdapter(...callbacks));
+    scheduleJob(cron, async () =>
+      this.taskHandler(name, cron, taskAdapter(...callbacks))
+    );
   }
 
   public async tasksDirectory(path: string): Promise<void> {
@@ -70,15 +72,19 @@ export class WorkerManager {
     }
   }
 
+  @workerLogger({
+    options: { nameByParameter: 0, subType: 'task' },
+    input: { cron: 1 },
+  })
   @apmTransaction({
     options: { nameByParameter: 0, type: 'worker' },
     params: { cron: 1 },
   })
-  private taskHandler(
-    name: string,
-    cron: string,
+  private async taskHandler(
+    _name: string,
+    _cron: string,
     callback: () => Promise<void>
-  ) {
-    scheduleJob(cron, callback);
+  ): Promise<void> {
+    await callback();
   }
 }

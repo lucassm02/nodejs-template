@@ -1,7 +1,11 @@
 import { InputAndOutputLogRepository } from '@/infra/db/mongodb/input-and-output-log/input-and-output-log-repository';
 import { getAPMTransactionIds, logger, LOGGER } from '@/util';
 
-type Params = { url: string; request: object; response: object };
+type Params = {
+  url: string;
+  request: Record<string, unknown>;
+  response: Record<string, unknown>;
+};
 
 export const createHttpRequestLog = async (params: Params): Promise<void> => {
   try {
@@ -9,8 +13,7 @@ export const createHttpRequestLog = async (params: Params): Promise<void> => {
 
     const ids = getAPMTransactionIds();
 
-    const inputAndOutputLogRepository = new InputAndOutputLogRepository();
-    await inputAndOutputLogRepository.create({
+    await new InputAndOutputLogRepository().create({
       type: 'HTTP',
       traceId: ids?.traceId,
       transactionId: ids?.transactionId,
