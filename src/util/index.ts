@@ -4,7 +4,6 @@ export * from './formatters';
 export * from './number';
 export * from './object';
 export * from './observability';
-export * from './scheduler';
 export * from './text';
 export * from './uuid';
 export * from './comparation';

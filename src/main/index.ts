@@ -1,4 +1,4 @@
-import { CONSUMER, SCHEDULER, SERVER } from '@/util';
+import { CONSUMER, WORKER, SERVER } from '@/util';
 
 (async () => {
   if (CONSUMER.ENABLED) {
@@ -9,7 +9,7 @@ import { CONSUMER, SCHEDULER, SERVER } from '@/util';
     await import('./server');
   }
 
-  if (SCHEDULER.ENABLED) {
-    await import('./scheduler');
+  if (WORKER.ENABLED) {
+    await import('./worker');
   }
 })();

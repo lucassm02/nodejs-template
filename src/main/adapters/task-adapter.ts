@@ -27,7 +27,7 @@ export const taskAdapter = (...tasks: (Task | Function)[]) => {
     };
   });
 
-  return () => {
-    return makeFlow({ [STATE_KEY]: {} })(...adaptedTasks)();
+  return async () => {
+    await makeFlow({ [STATE_KEY]: {} })(...adaptedTasks)();
   };
 };

@@ -11,8 +11,8 @@ export const CONSUMER = {
   ENABLED: process.env.CONSUMER_ENABLED !== 'false',
 };
 
-export const SCHEDULER = {
-  ENABLED: process.env.SCHEDULER_ENABLED !== 'false',
+export const WORKER = {
+  ENABLED: process.env.WORKER_ENABLED !== 'false',
 };
 
 export const LOGGER = {

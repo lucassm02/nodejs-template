@@ -1,10 +1,10 @@
 import { sqlConnection } from '@/infra/db/mssql/util';
-import { logger, MONGO, Scheduler } from '@/util';
+import { WorkerManager } from '@/infra/worker';
+import { logger, MONGO } from '@/util';
 import mongoose from 'mongoose';
+import path from 'path';
 
-import { schedulerSetup } from './configs/scheduler';
-
-const scheduler = new Scheduler();
+const manager = WorkerManager.getInstance();
 
 (async () => {
   try {
@@ -19,10 +19,13 @@ const scheduler = new Scheduler();
     const sqlPromise = sqlConnection.raw('SELECT 1');
 
     await Promise.all([mongoPromise, sqlPromise]);
+
+    const workersFolder = path.resolve(__dirname, 'workers');
+
+    manager.tasksDirectory(workersFolder);
+
+    logger.log({ level: 'info', message: 'Scheduler started!' });
   } catch (error) {
     logger.log(error);
   }
 })();
-
-logger.log({ level: 'info', message: 'Scheduler started!' });
-schedulerSetup(scheduler);
