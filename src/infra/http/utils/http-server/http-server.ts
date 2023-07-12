@@ -215,9 +215,9 @@ export class HttpServer {
 
       if (haveAValidName && hasAValidExtension) {
         const filePath = resolve(path, fileName);
-        const setup = <Function>(await import(filePath)).default;
+        const setup = (await import(filePath)).default;
 
-        if (!setup) continue;
+        if (typeof setup !== 'function') continue;
 
         setup(route);
       }
