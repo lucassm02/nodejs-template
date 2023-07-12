@@ -25,8 +25,8 @@ export const consumerAdapter = (...jobs: (Job | Function)[]) => {
     };
   });
 
-  return (payload: object) => {
-    return makeFlow({
+  return async (payload: Record<string, unknown>): Promise<void> => {
+    await makeFlow({
       ...payload,
       [STATE_KEY]: {},
     })(...adaptedJobs)();

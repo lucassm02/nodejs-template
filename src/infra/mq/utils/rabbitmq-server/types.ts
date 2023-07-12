@@ -16,3 +16,5 @@ export type Consumer = {
   queue: string;
   callback: ConsumerCallback;
 };
+
+export type ConsumerOptions = { queue: string; enabled?: boolean };

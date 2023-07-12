@@ -1,8 +1,8 @@
 import { sqlConnection } from '@/infra/db/mssql/util';
 import { rabbitMqServer } from '@/infra/mq/utils';
-import { consumersSetup } from '@/main/configs/consumers';
 import { logger, MONGO, RABBIT } from '@/util';
 import mongoose from 'mongoose';
+import path from 'path';
 
 (async () => {
   try {
@@ -30,7 +30,10 @@ import mongoose from 'mongoose';
 
     await Promise.all([rabbitPromise, mongoPromise, sqlPromise]);
 
-    consumersSetup(rabbitServer);
+    const consumersFolder = path.resolve(__dirname, 'consumers');
+
+    rabbitServer.consumersDirectory(consumersFolder);
+
     logger.log({ level: 'info', message: 'Consumer started!' });
   } catch (error) {
     logger.log(error);

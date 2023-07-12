@@ -1,3 +1,5 @@
+import { Job } from '@/consumer/protocols';
+import { consumerAdapter } from '@/main/adapters';
 import {
   amqpLogger,
   convertCamelCaseKeysToSnakeCase,
@@ -7,9 +9,17 @@ import { logger } from '@/util/observability';
 import { apmSpan, apmTransaction } from '@/util/observability/apm';
 import { logger as loggerDecorator } from '@/util/observability/loggers/decorators';
 import { Channel, Connection, Message, connect } from 'amqplib';
+import { readdirSync } from 'fs';
+import { resolve } from 'path';
 import { EventEmitter } from 'stream';
 
-import { Consumer, ConsumerCallback, Credentials, Payload } from './types';
+import {
+  Consumer,
+  ConsumerCallback,
+  Credentials,
+  Payload,
+  ConsumerOptions,
+} from './types';
 
 export class RabbitMqServer {
   private connection: Connection | null = null;
@@ -252,6 +262,56 @@ export class RabbitMqServer {
     if (!consumer) return;
 
     this.consumers.set(consumer.consumerTag, { queue, callback });
+
+    logger.log({
+      level: 'info',
+      message: `Consumer to ${queue} is online!`,
+    });
+  }
+
+  public makeConsumer(queue: string, ...callbacks: (Job | Function)[]): void;
+  public makeConsumer(
+    options: ConsumerOptions,
+    ...callbacks: (Job | Function)[]
+  ): void;
+  public makeConsumer(
+    arg1: string | ConsumerOptions,
+    ...callbacks: (Job | Function)[]
+  ): void {
+    const queue = typeof arg1 === 'object' ? arg1.queue : arg1;
+    const enabled = typeof arg1 === 'object' ? !!arg1?.enabled : true;
+
+    if (!enabled) return;
+
+    this.consume(queue, consumerAdapter(...callbacks));
+  }
+
+  public async consumersDirectory(path: string): Promise<void> {
+    const extensionsToSearch = ['.TS', '.JS'];
+    const ignoreIfIncludes = ['.MAP.', '.SPEC.', '.TEST.'];
+
+    const files = readdirSync(path);
+
+    for await (const fileName of files) {
+      const fileNameToUpperCase = fileName.toLocaleUpperCase();
+
+      const hasAValidExtension = ignoreIfIncludes.map((text) =>
+        fileNameToUpperCase.includes(text)
+      );
+
+      const haveAValidName = extensionsToSearch.map((ext) =>
+        fileNameToUpperCase.endsWith(ext)
+      );
+
+      if (haveAValidName && hasAValidExtension) {
+        const filePath = resolve(path, fileName);
+        const setup = (await import(filePath)).default;
+
+        if (typeof setup !== 'function') continue;
+
+        setup(this);
+      }
+    }
   }
 
   private ack(message: Message) {
@@ -367,3 +427,5 @@ export class RabbitMqServer {
     return callback({ ...bodyAndHeadersToCamelCase, ...restOfPayload });
   }
 }
+
+process.on('unhandledRejection', () => {});
