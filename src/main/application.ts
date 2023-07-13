@@ -1,5 +1,4 @@
 import { httpServer } from '@/infra/http/utils/http-server';
-import { httpLoggerAdapter } from '@/main/adapters';
 import { elasticAPM } from '@/util';
 import { SERVER } from '@/util/constants';
 import cors from 'cors';
@@ -7,7 +6,10 @@ import express from 'express';
 import helmet from 'helmet';
 import path from 'path';
 
-import { createHttpRequestLog } from './facades';
+import {
+  apmHttpResponseLoggerMiddleware,
+  dbHttpLoggerMiddleware,
+} from './middlewares';
 
 elasticAPM();
 
@@ -17,7 +19,8 @@ application.use(cors({ exposedHeaders: 'X-Total-Count' }));
 application.use(helmet());
 application.use(express.json());
 application.use(express.urlencoded({ extended: true }));
-application.use(httpLoggerAdapter(createHttpRequestLog));
+application.use(apmHttpResponseLoggerMiddleware);
+application.use(dbHttpLoggerMiddleware);
 
 application.setBaseUrl(SERVER.BASE_URI);
 
