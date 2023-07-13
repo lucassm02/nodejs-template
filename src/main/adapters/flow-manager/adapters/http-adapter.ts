@@ -1,5 +1,5 @@
 import { httpServer } from '@/infra/http/utils/http-server';
-import makeFlow from '@/main/adapters/fow-adapter';
+import makeFlow from '@/main/adapters/flow-adapter';
 
 type Payload = {
   state: Record<string, unknown>;

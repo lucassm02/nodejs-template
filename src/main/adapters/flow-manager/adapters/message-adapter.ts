@@ -1,4 +1,4 @@
-import makeFlow from '@/main/adapters/fow-adapter';
+import makeFlow from '@/main/adapters/flow-adapter';
 
 type Payload = {
   payload: Record<string, unknown>;

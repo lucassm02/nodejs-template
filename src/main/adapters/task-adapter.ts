@@ -1,6 +1,6 @@
 import { Task } from '@/schedule/protocols';
 
-import makeFlow from './fow-adapter';
+import makeFlow from './flow-adapter';
 
 const STATE_KEY = Symbol('STATE');
 
