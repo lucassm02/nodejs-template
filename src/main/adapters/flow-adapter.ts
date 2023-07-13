@@ -17,10 +17,8 @@ export default <Data extends Record<string, unknown>>(data: Data) =>
       event.emit(NEXT_EVENT_SYMBOL);
     };
 
-    const dataClone = structuredClone(data);
-
     const callStack = callbacks
-      .map((middleware) => () => middleware(dataClone, nextFunction))
+      .map((middleware) => () => middleware(data, nextFunction))
       .reverse();
 
     event.on(NEXT_EVENT_SYMBOL, async () => {
