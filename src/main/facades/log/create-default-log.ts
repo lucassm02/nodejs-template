@@ -10,8 +10,6 @@ export const createDefaultLog = async (
 
     const ids = getAPMTransactionIds();
 
-    console.log(type);
-
     await new InputAndOutputLogRepository().create({
       traceId: ids?.traceId,
       transactionId: ids?.transactionId,
