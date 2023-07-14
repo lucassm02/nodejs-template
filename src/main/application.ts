@@ -6,10 +6,7 @@ import express from 'express';
 import helmet from 'helmet';
 import path from 'path';
 
-import {
-  apmHttpResponseLoggerMiddleware,
-  dbHttpLoggerMiddleware,
-} from './middlewares';
+import { apmHttpLoggerMiddleware, dbHttpLoggerMiddleware } from './middlewares';
 
 elasticAPM();
 
@@ -19,7 +16,7 @@ application.use(cors({ exposedHeaders: 'X-Total-Count' }));
 application.use(helmet());
 application.use(express.json());
 application.use(express.urlencoded({ extended: true }));
-application.use(apmHttpResponseLoggerMiddleware);
+application.use(apmHttpLoggerMiddleware);
 application.use(dbHttpLoggerMiddleware);
 
 application.setBaseUrl(SERVER.BASE_URI);
