@@ -1,4 +1,4 @@
-import { Job } from '@/consumer/protocols';
+import { Job } from '@/job/protocols';
 import { consumerAdapter } from '@/main/adapters';
 import {
   amqpLogger,

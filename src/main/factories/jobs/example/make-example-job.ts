@@ -1,4 +1,4 @@
-import { ExampleJob } from '@/consumer';
+import { ExampleJob } from '@/job';
 import { logger } from '@/util';
 
 import { makeErrorHandler } from '../../usecases';

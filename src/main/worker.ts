@@ -23,8 +23,6 @@ const manager = WorkerManager.getInstance();
     const workersFolder = path.resolve(__dirname, 'workers');
 
     manager.tasksDirectory(workersFolder);
-
-    logger.log({ level: 'info', message: 'Scheduler started!' });
   } catch (error) {
     logger.log(error);
   }

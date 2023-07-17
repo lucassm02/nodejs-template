@@ -1,6 +1,6 @@
-import { overrideState } from '@/consumer/utils';
 import { MqSendReprocessing } from '@/data/usecases/mq';
 import { rabbitMqServer } from '@/infra/mq/utils';
+import { overrideState } from '@/job/utils';
 import { REPROCESSING } from '@/util';
 
 const mqServer = rabbitMqServer();

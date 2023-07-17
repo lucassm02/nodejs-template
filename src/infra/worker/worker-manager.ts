@@ -1,16 +1,49 @@
-import { taskAdapter } from '@/main/adapters/task-adapter';
-import { Task } from '@/schedule/protocols';
-import { apmTransaction, logger, workerLogger } from '@/util';
+import { Job } from '@/job/protocols';
+import { consumerAdapter } from '@/main/adapters';
+import {
+  MONGO,
+  apmTransaction,
+  elasticAPM,
+  logger,
+  workerLogger,
+} from '@/util';
+import { Agenda } from '@hokify/agenda';
 import { readdirSync } from 'fs';
-import { scheduleJob } from 'node-schedule';
 import { resolve } from 'path';
 
 import { WorkerOptions } from './types';
 
 export class WorkerManager {
   private static instance: WorkerManager;
+  private agenda!: Agenda;
+  private collectionName = 'agenda';
 
-  constructor() {}
+  constructor() {
+    elasticAPM();
+
+    this.agenda = new Agenda();
+
+    const mongoUrl = `${MONGO.URL()}/${MONGO.NAME}?authSource=${
+      MONGO.AUTH_SOURCE
+    }`;
+
+    this.agenda
+      .on('fail', (error) => {
+        logger.log({ level: 'error', message: error.message });
+      })
+      .on('ready', () => {
+        logger.log({ level: 'info', message: 'Scheduler ready!' });
+      })
+      .on('start', () => {
+        logger.log({ level: 'info', message: 'Scheduler started!' });
+      })
+      .on('error', (error) => {
+        logger.log({ level: 'info', message: error.message });
+      });
+
+    this.agenda.database(mongoUrl, this.collectionName);
+    this.agenda.start();
+  }
 
   public static getInstance(): WorkerManager {
     if (!WorkerManager.instance) {
@@ -22,12 +55,12 @@ export class WorkerManager {
 
   public makeWorker(
     options: WorkerOptions,
-    ...callbacks: (Task | Function)[]
+    ...callbacks: (Job | Function)[]
   ): void;
-  public makeWorker(
+  public async makeWorker(
     arg1: WorkerOptions,
-    ...callbacks: (Task | Function)[]
-  ): void {
+    ...callbacks: (Job | Function)[]
+  ): Promise<void> {
     const { cron, name } = arg1;
 
     const enabled = arg1?.enabled ?? true;
@@ -39,9 +72,17 @@ export class WorkerManager {
       message: `New task was registered, name: ${name}, cron: ${cron}`,
     });
 
-    scheduleJob(cron, async () =>
-      this.taskHandler(name, cron, taskAdapter(...callbacks))
-    );
+    this.agenda.define(name, async (job, done) => {
+      const { data, repeatInterval } = job.attrs;
+      await this.taskHandler(name, repeatInterval, () =>
+        consumerAdapter(...callbacks)(data)
+      );
+      done();
+    });
+
+    if (cron) {
+      await this.agenda.every(cron, name, {});
+    }
   }
 
   public async tasksDirectory(path: string): Promise<void> {
@@ -82,7 +123,7 @@ export class WorkerManager {
   })
   private async taskHandler(
     _name: string,
-    _cron: string,
+    _cron: string | number | undefined,
     callback: () => Promise<void>
   ): Promise<void> {
     await callback();

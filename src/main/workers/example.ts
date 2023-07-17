@@ -1,10 +1,7 @@
 import { WorkerManager } from '@/infra/worker';
 
-import { makeExampleTask } from '../factories/tasks';
+import { makeExampleJob } from '../factories/jobs';
 
 export default (manager: WorkerManager) => {
-  manager.makeWorker(
-    { name: 'example', cron: '*/1 * * * *' },
-    makeExampleTask()
-  );
+  manager.makeWorker({ name: 'example' }, makeExampleJob());
 };

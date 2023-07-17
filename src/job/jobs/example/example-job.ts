@@ -1,6 +1,6 @@
-import { Job } from '@/consumer/protocols';
 import { Logger } from '@/data/protocols/utils';
 import { ErrorHandler } from '@/domain/usecases';
+import { Job } from '@/job/protocols';
 
 export class ExampleJob implements Job {
   constructor(

@@ -1,5 +1,5 @@
-import { TroubleExampleJob } from '@/consumer';
 import { ExampleTrouble } from '@/data/usecases/example';
+import { TroubleExampleJob } from '@/job';
 import { logger } from '@/util';
 
 export const makeTroubleExampleJob = () => {

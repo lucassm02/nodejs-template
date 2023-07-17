@@ -1,37 +1,32 @@
-import { Job } from '@/consumer/protocols';
 import { Logger } from '@/data/protocols/utils';
-import { EsCreateEvent } from '@/data/usecases/elasticsearch';
+import { EsUpdateEvent } from '@/data/usecases/elasticsearch';
 import { ErrorHandler } from '@/domain/usecases';
+import { Job } from '@/job/protocols';
 import { ELASTICSEARCH } from '@/util';
 
-export class CreateEventJob implements Job {
+export class UpdateEventJob implements Job {
   constructor(
-    private createEvent: EsCreateEvent,
+    private updateEvent: EsUpdateEvent,
     private readonly logger: Logger,
     private readonly errorHandler: ErrorHandler
   ) {}
   async handle(
-    payload: Job.Payload,
-    [, setState]: Job.State,
+    _payload: Job.Payload,
+    _state: Job.State,
     next: Job.Next
   ): Job.Result {
     try {
       if (!ELASTICSEARCH.ENABLED) next();
 
-      const event = await this.createEvent.create({
-        event: '',
-        mvno: '',
-        status: 'CREATED',
-        payload: payload.body,
+      const event = await this.updateEvent.update({
+        status: 'SUCCESS',
       });
 
       this.logger.log({
         level: 'debug',
-        message: 'CREATE EVENT',
+        message: 'UPDATE EVENT',
         payload: event,
       });
-
-      setState({ createEven: event });
 
       next();
     } catch (error) {
