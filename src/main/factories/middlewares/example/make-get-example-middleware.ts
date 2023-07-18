@@ -7,19 +7,26 @@ import { makeErrorHandler } from '../../usecases';
 
 type FactoryParams = {
   useTransaction?: boolean;
-  valuesToExtract: (string | Record<string, string>)[];
+  context: 'GET_EXAMPLE' | 'CREATE_EXAMPLE';
 };
 
 export const makeGetExampleMiddleware = ({
-  valuesToExtract,
+  context,
   useTransaction,
 }: FactoryParams) => {
+  const extractValuesSchema = {
+    GET_EXAMPLE: ['state.getExample.name'],
+    CREATE_EXAMPLE: [{ name: 'request.body.userName' }],
+  };
+
+  const extractValues = extractValuesSchema[context];
+
   const exampleRepository = new ExampleRepository(useTransaction);
   const dbGetExample = new DbGetExample(exampleRepository);
   return new GetExampleMiddleware(
     dbGetExample,
     logger,
     makeErrorHandler(),
-    valuesToExtract
+    extractValues
   );
 };
