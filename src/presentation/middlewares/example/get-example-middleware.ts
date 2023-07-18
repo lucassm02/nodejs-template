@@ -2,7 +2,7 @@ import { Logger } from '@/data/protocols/utils';
 import { ErrorHandler, GetExample } from '@/domain/usecases';
 import { ExtractValues } from '@/plugin';
 import { Middleware } from '@/presentation/protocols/middleware';
-import { serverError } from '@/presentation/utils';
+import { serverError, stateDependencies } from '@/presentation/utils';
 
 export class GetExampleMiddleware extends ExtractValues implements Middleware {
   constructor(
@@ -13,7 +13,7 @@ export class GetExampleMiddleware extends ExtractValues implements Middleware {
   ) {
     super(valuesToExtract);
   }
-
+  @stateDependencies(['createExample'])
   async handle(
     httpRequest: Middleware.HttpRequest,
     [state, setState]: Middleware.State,
