@@ -1,5 +1,5 @@
 import { Job } from '@/job/protocols';
-import { consumerAdapter } from '@/main/adapters';
+import { jobAdapter } from '@/main/adapters';
 import {
   amqpLogger,
   convertCamelCaseKeysToSnakeCase,
@@ -283,7 +283,7 @@ export class RabbitMqServer {
 
     if (!enabled) return;
 
-    this.consume(queue, consumerAdapter(...callbacks));
+    this.consume(queue, jobAdapter(...callbacks));
   }
 
   public async consumersDirectory(path: string): Promise<void> {

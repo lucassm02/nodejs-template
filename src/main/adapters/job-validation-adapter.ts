@@ -10,13 +10,8 @@ export function messageValidationAdapter(
   schema: YupSchema
 ): (payload: Job.Payload, state: Job.State, next: Job.Next) => Job.Result {
   return async (payload: Job.Payload, _state: Job.State, next: Job.Next) => {
-    const httpRequest = {
-      ...payload.body,
-      ...payload.headers,
-    };
-
     try {
-      const messageInSnakeCase = convertCamelCaseKeysToSnakeCase(httpRequest);
+      const messageInSnakeCase = convertCamelCaseKeysToSnakeCase(payload);
 
       await schema.validate(messageInSnakeCase, {
         abortEarly: false,

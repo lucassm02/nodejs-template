@@ -7,7 +7,7 @@ const STATE_KEY = Symbol('STATE');
 type State = Record<string, unknown>;
 type Payload = Job.Payload & { [key: string | symbol]: State };
 
-export const consumerAdapter = (...jobs: (Job | Function)[]) => {
+export const jobAdapter = (...jobs: (Job | Function)[]) => {
   const adaptedJobs = jobs.map((job) => {
     return ({ [STATE_KEY]: state, ...payload }: Payload, next: Job.Next) => {
       const setState = (data: State) => {

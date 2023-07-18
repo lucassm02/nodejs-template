@@ -2,7 +2,6 @@ import { MONGO, WORKER, logger } from '@/util';
 import { Agenda } from 'agenda';
 import agendash from 'agendash';
 import express from 'express';
-import http from 'http';
 
 const app = express();
 
@@ -20,8 +19,7 @@ const { BASE_URI, PORT } = WORKER.DASHBOARD;
 app.use(BASE_URI, middleware);
 app.set('port', PORT);
 
-const server = http.createServer(app);
-server.listen(PORT, () => {
+app.listen(PORT, () => {
   logger.log(
     {
       level: 'info',

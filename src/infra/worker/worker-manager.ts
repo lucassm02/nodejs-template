@@ -1,5 +1,5 @@
 import { Job } from '@/job/protocols';
-import { consumerAdapter } from '@/main/adapters';
+import { jobAdapter } from '@/main/adapters';
 import {
   MONGO,
   apmTransaction,
@@ -79,7 +79,7 @@ export class WorkerManager {
     this.agenda.define(name, async (job, done) => {
       const { data, repeatInterval } = job.attrs;
       await this.taskHandler(name, repeatInterval, data, () =>
-        consumerAdapter(...callbacks)(data)
+        jobAdapter(...callbacks)(data)
       );
       done();
     });
