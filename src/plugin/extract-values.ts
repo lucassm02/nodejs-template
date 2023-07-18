@@ -9,7 +9,7 @@ type Option = {
   sources: Sources;
 };
 
-export class Middleware {
+export class ExtractValues {
   constructor(protected readonly valuesToExtract: Values = []) {}
 
   private extractValues({ sources, values }: Option) {

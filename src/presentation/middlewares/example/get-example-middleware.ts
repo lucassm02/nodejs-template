@@ -1,14 +1,10 @@
 import { Logger } from '@/data/protocols/utils';
 import { ErrorHandler, GetExample } from '@/domain/usecases';
+import { ExtractValues } from '@/plugin';
 import { Middleware } from '@/presentation/protocols/middleware';
 import { serverError } from '@/presentation/utils';
 
-import { Middleware as MiddlewareClass } from '../middleware';
-
-export class GetExampleMiddleware
-  extends MiddlewareClass
-  implements Middleware
-{
+export class GetExampleMiddleware extends ExtractValues implements Middleware {
   constructor(
     private readonly getExample: GetExample,
     private readonly logger: Logger,
