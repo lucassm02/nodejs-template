@@ -61,27 +61,31 @@ export class WorkerManager {
     arg1: WorkerOptions,
     ...callbacks: (Job | Function)[]
   ): Promise<void> {
-    const { cron, name } = arg1;
+    const { repeatInterval, name } = arg1;
 
     const enabled = arg1?.enabled ?? true;
 
     if (!enabled) return;
 
+    const cronText = repeatInterval
+      ? `, repeat interval: ${repeatInterval}`
+      : '';
+
     logger.log({
       level: 'info',
-      message: `New task was registered, name: ${name}, cron: ${cron}`,
+      message: `New worker was registered, name: ${name}${cronText}`,
     });
 
     this.agenda.define(name, async (job, done) => {
       const { data, repeatInterval } = job.attrs;
-      await this.taskHandler(name, repeatInterval, () =>
+      await this.taskHandler(name, repeatInterval, data, () =>
         consumerAdapter(...callbacks)(data)
       );
       done();
     });
 
-    if (cron) {
-      await this.agenda.every(cron, name, {});
+    if (repeatInterval) {
+      await this.agenda.every(repeatInterval, name, {});
     }
   }
 
@@ -115,15 +119,16 @@ export class WorkerManager {
 
   @workerLogger({
     options: { nameByParameter: 0, subType: 'task' },
-    input: { cron: 1 },
+    input: { repeat_interval: 1, data: 2 },
   })
   @apmTransaction({
     options: { nameByParameter: 0, type: 'worker' },
-    params: { cron: 1 },
+    params: { repeat_interval: 1, data: 2 },
   })
   private async taskHandler(
     _name: string,
-    _cron: string | number | undefined,
+    _repeatInterval: string | number | undefined,
+    _data: unknown,
     callback: () => Promise<void>
   ): Promise<void> {
     await callback();

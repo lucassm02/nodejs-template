@@ -12,4 +12,8 @@ import { CONSUMER, WORKER, SERVER } from '@/util';
   if (WORKER.ENABLED) {
     await import('./worker');
   }
+
+  if (WORKER.DASHBOARD.ENABLED) {
+    await import('./agendash');
+  }
 })();

@@ -13,7 +13,11 @@ export class ExampleJob implements Job {
     next: Job.Next
   ): Job.Result {
     try {
-      this.logger.log({ level: 'info', message: "Hello i'm a consumer" });
+      this.logger.log({
+        level: 'info',
+        message: "Hello i'm a job",
+        payload,
+      });
       next();
     } catch (error) {
       await this.errorHandler.handle(error);

@@ -13,6 +13,11 @@ export const CONSUMER = {
 
 export const WORKER = {
   ENABLED: process.env.WORKER_ENABLED !== 'false',
+  DASHBOARD: {
+    ENABLED: process.env.WORKER_DASHBOARD_ENABLED !== 'false',
+    PORT: process.env.WORKER_DASHBOARD_PORT || 8080,
+    BASE_URI: process.env.WORKER_DASHBOARD_BASE_URI || '/dash',
+  },
 };
 
 export const LOGGER = {
