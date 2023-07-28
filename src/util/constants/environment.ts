@@ -2,19 +2,19 @@ import 'dotenv/config';
 import { stringToBoolean } from '../text';
 
 export const SERVER = {
-  ENABLED: process.env.SERVER_ENABLED !== 'false',
+  ENABLED: process.env.SERVER_ENABLED === 'true',
   PORT: process.env.SERVER_PORT || 3000,
   BASE_URI: process.env.SERVER_BASE_URI || '',
 };
 
 export const CONSUMER = {
-  ENABLED: process.env.CONSUMER_ENABLED !== 'false',
+  ENABLED: process.env.CONSUMER_ENABLED === 'true',
 };
 
 export const WORKER = {
-  ENABLED: process.env.WORKER_ENABLED !== 'false',
+  ENABLED: process.env.WORKER_ENABLED === 'true',
   DASHBOARD: {
-    ENABLED: process.env.WORKER_DASHBOARD_ENABLED !== 'false',
+    ENABLED: process.env.WORKER_DASHBOARD_ENABLED === 'true',
     PORT: process.env.WORKER_DASHBOARD_PORT || 8080,
     BASE_URI: process.env.WORKER_DASHBOARD_BASE_URI || '/dash',
   },

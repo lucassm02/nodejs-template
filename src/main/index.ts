@@ -1,22 +1,28 @@
 import knexSetup from '@/infra/db/mssql/util/knex';
-import { CONSUMER, WORKER, SERVER } from '@/util';
+import { CONSUMER, WORKER, SERVER, logger } from '@/util';
 
 knexSetup();
 
-(async () => {
-  if (CONSUMER.ENABLED) {
-    await import('./consumer');
+async function main() {
+  const promises = [];
+
+  if (CONSUMER.ENABLED) promises.push(import('./consumer'));
+  if (SERVER.ENABLED) promises.push(import('./server'));
+  if (WORKER.ENABLED) promises.push(import('./worker'));
+  if (WORKER.DASHBOARD.ENABLED) promises.push(import('./agendash'));
+
+  if (promises.length === 0) {
+    logger.log(
+      {
+        level: 'warn',
+        message: 'No service enabled, exiting...',
+      },
+      'offline'
+    );
+    return;
   }
 
-  if (SERVER.ENABLED) {
-    await import('./server');
-  }
+  await Promise.all(promises);
+}
 
-  if (WORKER.ENABLED) {
-    await import('./worker');
-  }
-
-  if (WORKER.DASHBOARD.ENABLED) {
-    await import('./agendash');
-  }
-})();
+main();
