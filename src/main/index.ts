@@ -1,4 +1,7 @@
+import knexSetup from '@/infra/db/mssql/util/knex';
 import { CONSUMER, WORKER, SERVER } from '@/util';
+
+knexSetup();
 
 (async () => {
   if (CONSUMER.ENABLED) {
