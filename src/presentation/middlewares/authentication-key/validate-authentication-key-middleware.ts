@@ -28,7 +28,7 @@ export class ValidateAuthenticationKeyMiddleware implements Middleware {
       this.logger.log({
         level: 'debug',
         message: 'VALIDATE AUTHENTICATION KEY',
-        payload: { authenticationKey },
+        payload: { authenticationKey }
       });
 
       setState({ validateAuthenticationKey: authenticationKey });

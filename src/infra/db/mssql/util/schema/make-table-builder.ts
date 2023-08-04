@@ -25,7 +25,7 @@ export const makeTableBuilder =
     const columns = options.columns.reduce((accumulator, current) => {
       return {
         ...accumulator,
-        [String(current).toUpperCase()]: `${table}.${current}`,
+        [String(current).toUpperCase()]: `${table}.${current}`
       };
     }, {});
 
@@ -35,6 +35,6 @@ export const makeTableBuilder =
       TABLE: table,
       ALIAS: tableWithAlias,
       COLUMNS: columns as { [P in Uppercase<Columns[number]>]: string },
-      RAW_COLUMNS: options.columns,
+      RAW_COLUMNS: options.columns
     };
   };

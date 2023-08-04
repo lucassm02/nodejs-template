@@ -1,14 +1,14 @@
+import { Client } from '@elastic/elasticsearch';
 import {
   CreateDocumentService,
   GetDocumentByIdService,
-  UpdateDocumentService,
+  UpdateDocumentService
 } from '@/data/protocols/elasticsearch';
 import {
   convertCamelCaseKeysToSnakeCase,
   convertSnakeCaseKeysToCamelCase,
-  ELASTICSEARCH,
+  ELASTICSEARCH
 } from '@/util';
-import { Client } from '@elastic/elasticsearch';
 
 export class Elasticsearch
   implements
@@ -23,8 +23,8 @@ export class Elasticsearch
       node: ELASTICSEARCH.SERVER_URL,
       auth: {
         username: ELASTICSEARCH.USERNAME,
-        password: ELASTICSEARCH.PASSWORD,
-      },
+        password: ELASTICSEARCH.PASSWORD
+      }
     });
   }
   async create(
@@ -33,7 +33,7 @@ export class Elasticsearch
     const response = await this.client.index({
       index: params.index,
       id: params.id,
-      document: convertCamelCaseKeysToSnakeCase(params.data),
+      document: convertCamelCaseKeysToSnakeCase(params.data)
     });
 
     return { id: response._id };
@@ -45,7 +45,7 @@ export class Elasticsearch
     const response = await this.client.update({
       index: params.index,
       id: params.id,
-      doc: convertCamelCaseKeysToSnakeCase(params.data),
+      doc: convertCamelCaseKeysToSnakeCase(params.data)
     });
 
     return { id: response._id };
@@ -57,7 +57,7 @@ export class Elasticsearch
     try {
       const response = await this.client.get({
         index: params.index,
-        id: params.id,
+        id: params.id
       });
 
       return convertSnakeCaseKeysToCamelCase(response._source);

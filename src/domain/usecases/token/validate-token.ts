@@ -1,7 +1,7 @@
 import {
   AccountTokenModel,
   ManagementTokenModel,
-  SystemTokenModel,
+  SystemTokenModel
 } from '@/domain/models/token';
 
 export interface ValidateToken {
@@ -15,6 +15,6 @@ export namespace ValidateToken {
   >;
   export enum Exceptions {
     ERROR_ON_DECRYPTING = 'error:0606506D:digital envelope routines:EVP_DecryptFinal_ex:wrong final block length',
-    INVALID_TOKEN = 'Invalid or expired token',
+    INVALID_TOKEN = 'Invalid or expired token'
   }
 }

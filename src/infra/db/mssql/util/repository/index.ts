@@ -28,7 +28,7 @@ export class Repository {
         },
         rollback: async () => {
           await connection.rollback();
-        },
+        }
       };
     }
 

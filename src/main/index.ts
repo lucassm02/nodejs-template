@@ -15,7 +15,7 @@ async function main() {
     logger.log(
       {
         level: 'warn',
-        message: 'No service enabled, exiting...',
+        message: 'No service enabled, exiting...'
       },
       'offline'
     );

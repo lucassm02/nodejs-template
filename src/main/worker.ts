@@ -1,8 +1,9 @@
+import path from 'path';
+import mongoose from 'mongoose';
+
 import { sqlConnection } from '@/infra/db/mssql/util';
 import { WorkerManager } from '@/infra/worker';
 import { logger, MONGO } from '@/util';
-import mongoose from 'mongoose';
-import path from 'path';
 
 const manager = WorkerManager.getInstance();
 
@@ -13,7 +14,7 @@ const manager = WorkerManager.getInstance();
       .connect(MONGO.URL(), {
         dbName: MONGO.NAME,
         authSource: MONGO.AUTH_SOURCE,
-        authMechanism: 'SCRAM-SHA-1',
+        authMechanism: 'SCRAM-SHA-1'
       });
 
     const sqlPromise = sqlConnection.raw('SELECT 1');

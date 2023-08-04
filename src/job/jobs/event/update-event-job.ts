@@ -19,13 +19,13 @@ export class UpdateEventJob implements Job {
       if (!ELASTICSEARCH.ENABLED) next();
 
       const event = await this.updateEvent.update({
-        status: 'SUCCESS',
+        status: 'SUCCESS'
       });
 
       this.logger.log({
         level: 'debug',
         message: 'UPDATE EVENT',
-        payload: event,
+        payload: event
       });
 
       next();

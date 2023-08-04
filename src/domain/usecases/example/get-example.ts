@@ -7,6 +7,6 @@ export interface GetExample {
 export namespace GetExample {
   export type Result = Promise<ExampleModel[]>;
   export enum Exceptions {
-    NO_EXAMPLE_WAS_FOUND = 'No example found, contact administrator.',
+    NO_EXAMPLE_WAS_FOUND = 'No example found, contact administrator.'
   }
 }

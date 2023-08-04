@@ -16,7 +16,7 @@ export class ExampleJob implements Job {
       this.logger.log({
         level: 'info',
         message: "Hello i'm a job",
-        payload,
+        payload
       });
       next();
     } catch (error) {

@@ -36,7 +36,7 @@ export function makeDecorator<Logger extends Function>(
           type,
           subType,
           [loggerOptions.inputName]: inputData,
-          [loggerOptions.outputName]: outputData,
+          [loggerOptions.outputName]: outputData
         });
 
         return methodResult;

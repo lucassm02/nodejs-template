@@ -53,8 +53,8 @@ export const getType = (subType: string): string | void => {
         'graphql',
         'mailer',
         'resource',
-        'handler',
-      ],
+        'handler'
+      ]
     },
     {
       type: 'db',
@@ -80,16 +80,16 @@ export const getType = (subType: string): string | void => {
         'sqlite',
         'sqlite3',
         'sql-server',
-        'unknown',
-      ],
+        'unknown'
+      ]
     },
     {
       type: 'external',
-      subtypes: ['dubbo', 'grpc', 'http'],
+      subtypes: ['dubbo', 'grpc', 'http']
     },
     {
       type: 'json',
-      subtypes: ['parse', 'generate'],
+      subtypes: ['parse', 'generate']
     },
     {
       type: 'messaging',
@@ -100,21 +100,21 @@ export const getType = (subType: string): string | void => {
         'kafka',
         'rabbitmq',
         'sns',
-        'sqs',
-      ],
+        'sqs'
+      ]
     },
     {
       type: 'storage',
-      subtypes: ['azure-blob', 'azure-file', 'azure-table', 's3'],
+      subtypes: ['azure-blob', 'azure-file', 'azure-table', 's3']
     },
     {
       type: 'websocket',
-      subtypes: ['send'],
+      subtypes: ['send']
     },
     {
       type: 'worker',
-      subtypes: ['task'],
-    },
+      subtypes: ['task']
+    }
   ];
 
   for (const type of types) {

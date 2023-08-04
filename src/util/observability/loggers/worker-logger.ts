@@ -6,6 +6,6 @@ export const workerLogger = makeDecorator(
   (payload: Record<string, unknown>) => createDefaultLog(payload, 'WORKER'),
   {
     inputName: 'options',
-    outputName: 'result',
+    outputName: 'result'
   }
 );

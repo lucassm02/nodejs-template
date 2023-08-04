@@ -3,8 +3,8 @@ export const ok = (message: string, payload: object) => ({
   body: {
     message,
     payload,
-    error: [],
-  },
+    error: []
+  }
 });
 
 export const created = (message: string, payload: object) => ({
@@ -12,8 +12,8 @@ export const created = (message: string, payload: object) => ({
   body: {
     message,
     payload,
-    error: [],
-  },
+    error: []
+  }
 });
 
 export const serverError = (error: any, message?: string) => {
@@ -24,8 +24,8 @@ export const serverError = (error: any, message?: string) => {
         message ||
         'Ops, parece que ocorreu um erro dentro dos nossos servidores',
       payload: {},
-      error: [{ message: 'Ocorreu um erro em nosso servidores' }],
-    },
+      error: [{ message: 'Ocorreu um erro em nosso servidores' }]
+    }
   };
 };
 
@@ -34,8 +34,8 @@ export const conflict = (message: string, error?: any) => ({
   body: {
     message,
     payload: {},
-    error,
-  },
+    error
+  }
 });
 
 export const badRequest = (error?: any) => ({
@@ -43,8 +43,8 @@ export const badRequest = (error?: any) => ({
   body: {
     message: 'Ops! Ocorreram alguns erros de validação',
     payload: {},
-    error,
-  },
+    error
+  }
 });
 
 export const unprocessableEntity = (message: string, error?: any) => ({
@@ -52,8 +52,8 @@ export const unprocessableEntity = (message: string, error?: any) => ({
   body: {
     message,
     payload: {},
-    error,
-  },
+    error
+  }
 });
 
 export const notFound = (message: string, error?: any) => ({
@@ -61,8 +61,8 @@ export const notFound = (message: string, error?: any) => ({
   body: {
     message,
     payload: {},
-    error,
-  },
+    error
+  }
 });
 
 export const unauthorized = (message: string, error?: any) => ({
@@ -70,6 +70,6 @@ export const unauthorized = (message: string, error?: any) => ({
   body: {
     message,
     payload: {},
-    error,
-  },
+    error
+  }
 });

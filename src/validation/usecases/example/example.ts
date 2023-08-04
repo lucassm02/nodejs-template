@@ -1,5 +1,6 @@
-import { uuid } from '@/validation';
 import * as yup from 'yup';
+
+import { uuid } from '@/validation';
 
 export const example = yup.object().shape({
   payment_id: uuid,
@@ -10,5 +11,5 @@ export const example = yup.object().shape({
     .matches(
       /^AUTHORIZED$|^DELIVERED|^UNAUTHORIZED$/,
       'O formato do consumo precisa ser "AUTHORIZED", "DELIVERED" ou "UNAUTHORIZED"'
-    ),
+    )
 });

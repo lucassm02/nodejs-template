@@ -13,7 +13,7 @@ export const sqlConnection = knex({
     options: {
       encrypt: false,
       enableArithAbort: false,
-      appName: pkg.name,
-    },
-  },
+      appName: pkg.name
+    }
+  }
 });

@@ -14,7 +14,7 @@ export class ExampleTrouble implements TroubleExample {
         throw {
           step: index + 1,
           total: troubleArray.length,
-          message: 'Error',
+          message: 'Error'
         };
 
       continueProgress = true;

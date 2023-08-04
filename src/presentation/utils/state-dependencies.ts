@@ -5,5 +5,5 @@ import { serverError } from './http-response';
 
 export const stateDependencies = makeStateDependencies<SharedState>({
   trowException: false,
-  exceptionHandler: serverError,
+  exceptionHandler: serverError
 });

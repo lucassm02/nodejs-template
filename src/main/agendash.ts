@@ -1,7 +1,8 @@
-import { MONGO, WORKER, logger } from '@/util';
 import { Agenda } from 'agenda';
-import agendash from 'agendash';
 import express from 'express';
+import agendash from 'agendash';
+
+import { MONGO, WORKER, logger } from '@/util';
 
 const app = express();
 
@@ -11,7 +12,7 @@ const mongoCollection = 'agenda';
 const agenda = new Agenda().database(mongoUrl, mongoCollection);
 
 const middleware = agendash(agenda, {
-  title: 'Agenda Dashboard',
+  title: 'Agenda Dashboard'
 });
 
 const { BASE_URI, PORT } = WORKER.DASHBOARD;
@@ -23,7 +24,7 @@ app.listen(PORT, () => {
   logger.log(
     {
       level: 'info',
-      message: `Agendash started http://localhost:${PORT}${BASE_URI}`,
+      message: `Agendash started http://localhost:${PORT}${BASE_URI}`
     },
     'offline'
   );

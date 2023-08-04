@@ -57,7 +57,7 @@ export function reprocessing(options: Options = {}) {
 
       const queueOptions = options.queueOptions ?? {
         exchange: payload.properties.exchange,
-        routingKey: payload.properties.routingKey,
+        routingKey: payload.properties.routingKey
       };
 
       const mqSendReprocessing = new MqSendReprocessing(
@@ -76,7 +76,7 @@ export function reprocessing(options: Options = {}) {
         }
 
         setState({
-          reprocessing: { ...state.reprocessing, middleware: null },
+          reprocessing: { ...state.reprocessing, middleware: null }
         });
 
         const result = await originalMethod.apply(this, args);
@@ -89,9 +89,9 @@ export function reprocessing(options: Options = {}) {
           tries: state?.reprocessing?.tries,
           progress: {
             step: error?.step,
-            total: error?.total,
+            total: error?.total
           },
-          data: { state, payload },
+          data: { state, payload }
         });
       }
     };

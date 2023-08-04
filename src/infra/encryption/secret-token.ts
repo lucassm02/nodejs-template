@@ -1,6 +1,7 @@
+import { createDecipheriv } from 'crypto';
+
 import { DecryptToken } from '@/data/protocols/encryption/decrypt-token';
 import { ENCRYPTION } from '@/util/constants';
-import { createDecipheriv } from 'crypto';
 
 export class SecretToken implements DecryptToken {
   decrypt(params: string): DecryptToken.Result {

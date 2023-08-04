@@ -7,7 +7,7 @@ import {
   getUnixTime,
   isAfter as dateIsAfter,
   subBusinessDays as dateFnsSubBusinessDays,
-  subDays as dateFnsSubDays,
+  subDays as dateFnsSubDays
 } from 'date-fns';
 
 export const convertUnixToDate = (unixTime: number): Date => {

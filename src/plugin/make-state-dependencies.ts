@@ -8,7 +8,7 @@ type Options = {
 
 export function makeStateDependencies<SharedState>({
   trowException,
-  exceptionHandler,
+  exceptionHandler
 }: Options) {
   type Dependencies = (keyof SharedState)[];
   return function (dependencies: Dependencies) {

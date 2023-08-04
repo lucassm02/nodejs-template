@@ -1,8 +1,9 @@
+import { NextFunction, Request, Response } from 'express';
+
 import { YupSchema } from '@/presentation/protocols';
 import { badRequest } from '@/presentation/utils/http-response';
 import { convertCamelCaseKeysToSnakeCase } from '@/util';
 import { formatYupError } from '@/util/formatters/yup-error-formatter';
-import { NextFunction, Request, Response } from 'express';
 
 export function requestValidationAdapter(
   schema: YupSchema
@@ -12,7 +13,7 @@ export function requestValidationAdapter(
       ...req.body,
       ...req.params,
       ...req.query,
-      ...req.headers,
+      ...req.headers
     };
 
     try {
@@ -20,7 +21,7 @@ export function requestValidationAdapter(
         convertCamelCaseKeysToSnakeCase(httpRequest);
 
       await schema.validate(httpRequestInSnakeCase, {
-        abortEarly: false,
+        abortEarly: false
       });
 
       return next();

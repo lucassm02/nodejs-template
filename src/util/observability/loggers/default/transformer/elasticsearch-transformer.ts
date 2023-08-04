@@ -20,7 +20,7 @@ export const elasticSearchTransformer = (param: Param) => {
   const data = {
     application: {
       name: pkg.name,
-      version: pkg.version ?? null,
+      version: pkg.version ?? null
     },
     level: param.level,
     message: param.message,
@@ -29,7 +29,7 @@ export const elasticSearchTransformer = (param: Param) => {
     payload,
     keywords: meta?.keywords ?? {},
     services: meta?.services ?? [],
-    createdAt: new Date(),
+    createdAt: new Date()
   };
 
   return convertCamelCaseKeysToSnakeCase(data);

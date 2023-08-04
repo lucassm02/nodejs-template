@@ -26,11 +26,11 @@ export class ValidateTokenMiddleware implements Middleware {
       this.logger.log({
         level: 'debug',
         message: 'PUBLISH RECHARGE IN EXCHANGE',
-        payload: { tokenData: data },
+        payload: { tokenData: data }
       });
 
       setState({
-        validateToken: data,
+        validateToken: data
       });
 
       return next();

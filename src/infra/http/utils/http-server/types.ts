@@ -1,12 +1,13 @@
-import { Controller, Middleware } from '@/presentation/protocols';
 import {
   IRouter,
   IRouterHandler,
   IRouterMatcher,
   NextFunction,
   Request,
-  Response,
+  Response
 } from 'express';
+
+import { Controller, Middleware } from '@/presentation/protocols';
 
 import { Route as RouteClass } from './route';
 

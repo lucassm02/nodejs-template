@@ -16,7 +16,7 @@ export const httpLoggerAdapter =
         body: expressRequest?.body,
         params: expressRequest?.params,
         query: expressRequest?.query,
-        headers: expressRequest?.headers,
+        headers: expressRequest?.headers
       };
 
       const body = (() => {
@@ -32,14 +32,14 @@ export const httpLoggerAdapter =
       const response = {
         body,
         headers: expressResponse?.getHeaders(),
-        code: expressResponse.statusCode,
+        code: expressResponse.statusCode
       };
 
       (async () => {
         await logger?.({
           url: expressRequest.originalUrl,
           request,
-          response,
+          response
         });
       })();
 

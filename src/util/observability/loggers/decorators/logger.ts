@@ -8,5 +8,5 @@ const loggerAdapter = ({ name, ...payload }: any) => {
 
 export const logger = makeDecorator(loggerAdapter, {
   inputName: 'input',
-  outputName: 'output',
+  outputName: 'output'
 });

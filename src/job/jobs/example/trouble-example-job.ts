@@ -20,7 +20,7 @@ export class TroubleExampleJob implements Job {
 
       this.troubleExample.trouble({
         current: 2,
-        step,
+        step
       });
 
       next();

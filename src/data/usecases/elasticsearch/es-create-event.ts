@@ -21,7 +21,7 @@ export class EsCreateEvent implements CreateEvent {
     return this.createDocumentService.create({
       id: ids.transactionId,
       index: 'datora-event',
-      data: { ...params, createdAt: nowToString, updatedAt: nowToString },
+      data: { ...params, createdAt: nowToString, updatedAt: nowToString }
     });
   }
 }

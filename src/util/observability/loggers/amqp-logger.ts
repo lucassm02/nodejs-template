@@ -6,6 +6,6 @@ export const amqpLogger = makeDecorator(
   (payload: Record<string, unknown>) => createDefaultLog(payload, 'AMQP'),
   {
     inputName: 'input',
-    outputName: 'output',
+    outputName: 'output'
   }
 );

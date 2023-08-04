@@ -10,13 +10,13 @@ export const DICTIONARY = {
       NONE_WAS_FOUND: 'Nenhum {value} foi encontrado.',
       LOCALS: {
         TELECALL_SUBSCRIPTION_INACTIVE:
-          'Esta inscrição encontra-se inativa atualmente.',
-      },
+          'Esta inscrição encontra-se inativa atualmente.'
+      }
     },
     DESCRIPTION: {
       INTERNAL_SERVER_ERROR: 'Ocorreu um erro em nossos servidores',
       UNAUTHORIZED:
-        'Falha ao autenticar. O Authorization fornecido é inválido ou está expirado',
-    },
-  },
+        'Falha ao autenticar. O Authorization fornecido é inválido ou está expirado'
+    }
+  }
 };

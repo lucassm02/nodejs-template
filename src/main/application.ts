@@ -1,10 +1,11 @@
-import { httpServer } from '@/infra/http/utils/http-server';
-import { elasticAPM } from '@/util';
-import { SERVER } from '@/util/constants';
+import path from 'path';
 import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
-import path from 'path';
+
+import { httpServer } from '@/infra/http/utils/http-server';
+import { elasticAPM } from '@/util';
+import { SERVER } from '@/util/constants';
 
 import { apmHttpLoggerMiddleware, dbHttpLoggerMiddleware } from './middlewares';
 

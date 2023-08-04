@@ -46,5 +46,5 @@ export type SystemTokenModel = BaseTokenData & {
 export enum TokenType {
   ACCOUNT = 1,
   MANAGEMENT = 2,
-  SYSTEM = 3,
+  SYSTEM = 3
 }

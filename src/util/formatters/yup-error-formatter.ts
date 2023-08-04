@@ -10,6 +10,6 @@ export interface PrettyYupError {
 export function formatYupError(error: ValidationError): PrettyYupError[] {
   return error.inner.map((item) => ({
     message: item.message,
-    param: convertCamelCaseKeysToSnakeCase(item.path),
+    param: convertCamelCaseKeysToSnakeCase(item.path)
   }));
 }

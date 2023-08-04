@@ -13,7 +13,7 @@ export const httpLoggerWrapper = ({
   request,
   description,
   keywords,
-  services,
+  services
 }: Options) => {
   try {
     const requestTypeOf = typeof request?.body;
@@ -33,13 +33,13 @@ export const httpLoggerWrapper = ({
       'request-body': newRequestBody,
       'request-method': request.method,
       'request-headers': request.headers,
-      'request-url': request.url,
+      'request-url': request.url
     };
 
     const responseEntities = {
       'response-body': newResponseBody,
       'response-status-code': response.statusCode,
-      'response-headers': response.headers,
+      'response-headers': response.headers
     };
 
     logger.log({
@@ -48,8 +48,8 @@ export const httpLoggerWrapper = ({
       meta: { keywords, services },
       payload: {
         request: requestEntities,
-        response: responseEntities,
-      },
+        response: responseEntities
+      }
     });
   } catch (error) {
     logger.log(error);

@@ -1,3 +1,7 @@
+import { readdirSync } from 'fs';
+import { resolve } from 'path';
+
+import { Agenda } from '@hokify/agenda';
 import { Job } from '@/job/protocols';
 import { jobAdapter } from '@/main/adapters';
 import {
@@ -5,11 +9,8 @@ import {
   apmTransaction,
   elasticAPM,
   logger,
-  workerLogger,
+  workerLogger
 } from '@/util';
-import { Agenda } from '@hokify/agenda';
-import { readdirSync } from 'fs';
-import { resolve } from 'path';
 
 import { WorkerOptions } from './types';
 
@@ -73,7 +74,7 @@ export class WorkerManager {
 
     logger.log({
       level: 'info',
-      message: `New worker was registered, name: ${name}${cronText}`,
+      message: `New worker was registered, name: ${name}${cronText}`
     });
 
     this.agenda.define(name, async (job, done) => {
@@ -119,11 +120,11 @@ export class WorkerManager {
 
   @workerLogger({
     options: { nameByParameter: 0, subType: 'task' },
-    input: { repeat_interval: 1, data: 2 },
+    input: { repeat_interval: 1, data: 2 }
   })
   @apmTransaction({
     options: { nameByParameter: 0, type: 'worker' },
-    params: { repeat_interval: 1, data: 2 },
+    params: { repeat_interval: 1, data: 2 }
   })
   private async taskHandler(
     _name: string,

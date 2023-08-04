@@ -28,7 +28,7 @@ export const jobAdapter = (...jobs: (Job | Function)[]) => {
   return async (payload: Record<string, unknown>): Promise<void> => {
     await makeFlow({
       ...payload,
-      [STATE_KEY]: {},
+      [STATE_KEY]: {}
     })(...adaptedJobs)();
   };
 };

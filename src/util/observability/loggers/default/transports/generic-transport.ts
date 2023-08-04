@@ -1,5 +1,6 @@
-import { isJson } from '@/util/text';
 import Transport from 'winston-transport';
+
+import { isJson } from '@/util/text';
 
 type Options = Pick<Transport.TransportStreamOptions, 'format' | 'level'> & {
   receiver: ((params: { [key: string]: any }) => void) | Function;
@@ -23,7 +24,7 @@ export class GenericTransport extends Transport {
     http: 3,
     verbose: 4,
     debug: 5,
-    silly: 6,
+    silly: 6
   };
 
   constructor(options: Options) {

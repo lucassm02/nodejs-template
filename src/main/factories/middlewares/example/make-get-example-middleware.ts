@@ -12,11 +12,11 @@ type FactoryParams = {
 
 export const makeGetExampleMiddleware = ({
   context,
-  useTransaction,
+  useTransaction
 }: FactoryParams) => {
   const extractValuesSchema = {
     GET_EXAMPLE: ['state.getExample.name'],
-    CREATE_EXAMPLE: [{ name: 'request.body.userName' }],
+    CREATE_EXAMPLE: [{ name: 'request.body.userName' }]
   };
 
   const extractValues = extractValuesSchema[context];

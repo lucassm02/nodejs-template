@@ -1,24 +1,25 @@
+import { readdirSync } from 'fs';
+import { resolve } from 'path';
+import { EventEmitter } from 'stream';
+import { Channel, Connection, Message, connect } from 'amqplib';
+
 import { Job } from '@/job/protocols';
 import { jobAdapter } from '@/main/adapters';
 import {
   amqpLogger,
   convertCamelCaseKeysToSnakeCase,
-  convertSnakeCaseKeysToCamelCase,
+  convertSnakeCaseKeysToCamelCase
 } from '@/util';
 import { logger } from '@/util/observability';
 import { apmSpan, apmTransaction } from '@/util/observability/apm';
 import { logger as loggerDecorator } from '@/util/observability/loggers/decorators';
-import { Channel, Connection, Message, connect } from 'amqplib';
-import { readdirSync } from 'fs';
-import { resolve } from 'path';
-import { EventEmitter } from 'stream';
 
 import {
   Consumer,
   ConsumerCallback,
   Credentials,
   Payload,
-  ConsumerOptions,
+  ConsumerOptions
 } from './types';
 
 export class RabbitMqServer {
@@ -37,7 +38,7 @@ export class RabbitMqServer {
       'Credentials not defined, use setCredentials to define credentials',
     InvalidCredentialFieldValue: (field: string) =>
       `Invalid value for (${field}) field`,
-    InvalidPrefetchValue: 'Prefetch must be a number',
+    InvalidPrefetchValue: 'Prefetch must be a number'
   };
 
   private event = new EventEmitter();
@@ -178,11 +179,11 @@ export class RabbitMqServer {
 
   @loggerDecorator({
     options: { name: 'Publish message in queue', subType: 'rabbitmq' },
-    input: { queue: 0, message: 1, headers: 2 },
+    input: { queue: 0, message: 1, headers: 2 }
   })
   @apmSpan({
     options: { name: 'Publish message in queue', subType: 'rabbitmq' },
-    params: { queue: 0, message: 1, headers: 2 },
+    params: { queue: 0, message: 1, headers: 2 }
   })
   public async publishInQueue(queue: string, message: object, headers: object) {
     if (!this.connection || !this.channel) await this.restart();
@@ -191,16 +192,16 @@ export class RabbitMqServer {
     );
 
     this.channel?.sendToQueue(queue, messageFromBuffer, {
-      headers,
+      headers
     });
   }
   @loggerDecorator({
     options: { name: 'Publish message in exchange', subType: 'rabbitmq' },
-    input: { exchange: 0, message: 1, routingKey: 2, headers: 3 },
+    input: { exchange: 0, message: 1, routingKey: 2, headers: 3 }
   })
   @apmSpan({
     options: { name: 'Publish message in exchange', subType: 'rabbitmq' },
-    params: { exchange: 0, message: 1, routingKey: 2, headers: 3 },
+    params: { exchange: 0, message: 1, routingKey: 2, headers: 3 }
   })
   public async publishInExchange(
     exchange: string,
@@ -227,7 +228,7 @@ export class RabbitMqServer {
             this.convertMessageToJson(message)
           ),
           headers: message.properties.headers,
-          properties: { queue, ...message.fields },
+          properties: { queue, ...message.fields }
         };
 
         await this.transactionHandler(queue, payload, callback);
@@ -240,8 +241,8 @@ export class RabbitMqServer {
             payload: {
               message: message.content.toString(),
               headers: message.properties.headers,
-              properties: { queue, ...message.fields },
-            },
+              properties: { queue, ...message.fields }
+            }
           });
         }
       } finally {
@@ -251,8 +252,8 @@ export class RabbitMqServer {
           payload: {
             message: message.content.toString(),
             headers: message.properties.headers,
-            properties: { queue, ...message.fields },
-          },
+            properties: { queue, ...message.fields }
+          }
         });
 
         this.ack(message);
@@ -265,7 +266,7 @@ export class RabbitMqServer {
 
     logger.log({
       level: 'info',
-      message: `Consumer to ${queue} is online!`,
+      message: `Consumer to ${queue} is online!`
     });
   }
 
@@ -323,7 +324,7 @@ export class RabbitMqServer {
       logger.log({
         level: 'warn',
         message: 'Unable to ack message',
-        payload: { message: message.content.toString() },
+        payload: { message: message.content.toString() }
       });
     }
   }
@@ -392,7 +393,7 @@ export class RabbitMqServer {
     await Promise.allSettled(promises);
     logger.log({
       level: 'info',
-      message: 'Consumer reconstruction completed',
+      message: 'Consumer reconstruction completed'
     });
   }
 
@@ -407,11 +408,11 @@ export class RabbitMqServer {
 
   @amqpLogger({
     options: { nameByParameter: 0, subType: 'rabbitmq' },
-    input: { message: 1 },
+    input: { message: 1 }
   })
   @apmTransaction({
     options: { nameByParameter: 0, type: 'rabbitmq' },
-    params: { message: 1 },
+    params: { message: 1 }
   })
   private async transactionHandler(
     _queue: string,
@@ -421,7 +422,7 @@ export class RabbitMqServer {
     const { body, headers, ...restOfPayload } = payload;
     const bodyAndHeadersToCamelCase = convertSnakeCaseKeysToCamelCase({
       body,
-      headers,
+      headers
     });
 
     return callback({ ...bodyAndHeadersToCamelCase, ...restOfPayload });

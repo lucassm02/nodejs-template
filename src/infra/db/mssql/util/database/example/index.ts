@@ -2,7 +2,7 @@ import { makeTableBuilder } from '../../schema';
 
 const builder = makeTableBuilder({
   database: 'Example',
-  tablePrefix: 'tb_',
+  tablePrefix: 'tb_'
 });
 
 export const EXAMPLE_DB = {
@@ -16,8 +16,8 @@ export const EXAMPLE_DB = {
         'description',
         'created_at',
         'updated_at',
-        'deleted_at',
-      ],
-    }),
-  },
+        'deleted_at'
+      ]
+    })
+  }
 };

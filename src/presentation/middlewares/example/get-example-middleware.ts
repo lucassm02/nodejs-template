@@ -22,7 +22,7 @@ export class GetExampleMiddleware extends ExtractValues implements Middleware {
     try {
       const values = this.extractValuesFromSources({
         request: httpRequest,
-        state,
+        state
       });
 
       const example = await this.getExample.get();
@@ -30,7 +30,7 @@ export class GetExampleMiddleware extends ExtractValues implements Middleware {
       this.logger.log({
         level: 'debug',
         message: 'GET EXAMPLE',
-        payload: { example, values },
+        payload: { example, values }
       });
 
       setState({ getExample: example });

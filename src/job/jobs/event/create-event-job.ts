@@ -22,13 +22,13 @@ export class CreateEventJob implements Job {
         event: '',
         mvno: '',
         status: 'CREATED',
-        payload: payload.body,
+        payload: payload.body
       });
 
       this.logger.log({
         level: 'debug',
         message: 'CREATE EVENT',
-        payload: event,
+        payload: event
       });
 
       setState({ createEven: event });

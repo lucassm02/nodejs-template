@@ -14,13 +14,13 @@ export class ValidateTokenService implements ValidateTokenProtocol {
     const method = 'GET';
     const body = {};
     const headers = {
-      authorization: token,
+      authorization: token
     };
 
     const response = await this.httpClient.request({
       url,
       method,
-      headers,
+      headers
     });
 
     httpLoggerWrapper({
@@ -28,7 +28,7 @@ export class ValidateTokenService implements ValidateTokenProtocol {
       keywords: {},
       services: ['AUTHENTICATION'],
       request: { url, method, body, headers },
-      response,
+      response
     });
 
     return response.statusCode === 200;

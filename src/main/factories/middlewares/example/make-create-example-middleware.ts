@@ -19,7 +19,7 @@ export const makeCreateExampleMiddleware = (
       async (_error, transactions) => {
         if (!transactions) return;
         await rollbackAll(transactions);
-      },
+      }
     ])
   );
 };

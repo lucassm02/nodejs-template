@@ -4,10 +4,10 @@ export const defaultIndexTemplate = {
     number_of_shards: 3,
     number_of_replicas: 0,
     index: {
-      refresh_interval: '5s',
-    },
+      refresh_interval: '5s'
+    }
   },
   mappings: {
-    _source: { enabled: true },
-  },
+    _source: { enabled: true }
+  }
 };

@@ -71,5 +71,5 @@ export const address = {
   city: string.required('A cidade é obrigatória'),
   state: string
     .min(2, 'O estado precisa ter no mínimo 2 caracteres')
-    .required('O estado é obrigatório'),
+    .required('O estado é obrigatório')
 };

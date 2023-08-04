@@ -1,7 +1,7 @@
 import {
   AccountTokenModel,
   ManagementTokenModel,
-  SystemTokenModel,
+  SystemTokenModel
 } from '@/domain/models/token';
 
 export interface DecryptToken {

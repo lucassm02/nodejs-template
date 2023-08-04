@@ -1,7 +1,7 @@
 import { GetAPMTransactionIds } from '@/data/protocols/apm';
 import {
   GetDocumentByIdService,
-  UpdateDocumentService,
+  UpdateDocumentService
 } from '@/data/protocols/elasticsearch';
 import { FormatDate, Merge } from '@/data/protocols/utils';
 import { UpdateEvent } from '@/domain/usecases/event';
@@ -24,20 +24,20 @@ export class EsUpdateEvent implements UpdateEvent {
 
     const document = await this.getDocumentByIdService.getById({
       index: INDEX,
-      id: ids.transactionId,
+      id: ids.transactionId
     });
 
     const now = new Date();
     const nowToString = this.formatDate(now, 'yyyy-MM-dd HH:mm:ss');
 
     const newDocument = this.merge(document, params, {
-      updatedAt: nowToString,
+      updatedAt: nowToString
     });
 
     return this.updateDocumentService.update({
       id: ids.transactionId,
       index: INDEX,
-      data: newDocument,
+      data: newDocument
     });
   }
 }

@@ -1,8 +1,9 @@
+import path from 'path';
+import mongoose from 'mongoose';
+
 import { sqlConnection } from '@/infra/db/mssql/util';
 import { rabbitMqServer } from '@/infra/mq/utils';
 import { logger, MONGO, RABBIT } from '@/util';
-import mongoose from 'mongoose';
-import path from 'path';
 
 (async () => {
   try {
@@ -13,7 +14,7 @@ import path from 'path';
         user: RABBIT.USER,
         password: RABBIT.PASSWORD,
         host: RABBIT.HOST,
-        port: RABBIT.PORT,
+        port: RABBIT.PORT
       })
       .setPrefetch(RABBIT.PREFETCH)
       .start();
@@ -23,7 +24,7 @@ import path from 'path';
       .connect(MONGO.URL(), {
         dbName: MONGO.NAME,
         authSource: MONGO.AUTH_SOURCE,
-        authMechanism: 'SCRAM-SHA-1',
+        authMechanism: 'SCRAM-SHA-1'
       });
 
     const sqlPromise = sqlConnection.raw('SELECT 1');

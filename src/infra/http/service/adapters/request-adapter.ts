@@ -1,29 +1,30 @@
+import Agent from 'agentkeepalive';
+import { AxiosInstance } from 'axios';
+
 import {
   HttpClient,
   HttpRequest,
-  HttpResponse,
+  HttpResponse
 } from '@/data/protocols/http/adapters';
 import { logger } from '@/util';
 import { apmSpan } from '@/util/observability/apm';
 import {
   datoraHttpLogger,
-  logger as customLogger,
+  logger as customLogger
 } from '@/util/observability/loggers/decorators';
-import Agent from 'agentkeepalive';
-import { AxiosInstance } from 'axios';
 
 const decorators = {
   options: { subType: 'http', name: 'Http Request' },
   params: {
     'request-body': 'body',
     'request-headers': 'headers',
-    'request-url': 'url',
+    'request-url': 'url'
   },
   result: {
     'response-body': 'body',
     'response-status-code': 'statusCode',
-    'response-headers': 'headers',
-  },
+    'response-headers': 'headers'
+  }
 };
 
 const AgentOptions = {
@@ -31,7 +32,7 @@ const AgentOptions = {
   maxSockets: 100,
   maxFreeSockets: 10,
   timeout: 120000,
-  freeSocketTimeout: 60000,
+  freeSocketTimeout: 60000
 };
 
 export class RequestAdapter implements HttpClient {
@@ -53,18 +54,18 @@ export class RequestAdapter implements HttpClient {
   @apmSpan({
     options: decorators.options,
     params: decorators.params,
-    result: decorators.result,
+    result: decorators.result
   })
   async request(data: HttpRequest): Promise<HttpResponse> {
     const axiosResponse = await this.axios({
       data: data?.body,
-      ...data,
+      ...data
     });
 
     return {
       statusCode: axiosResponse.status,
       body: axiosResponse.data,
-      headers: axiosResponse.headers,
+      headers: axiosResponse.headers
     };
   }
 }

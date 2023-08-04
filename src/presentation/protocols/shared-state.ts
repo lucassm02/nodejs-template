@@ -2,7 +2,7 @@ import {
   ValidateTokenModel,
   AuthenticationModel,
   ExampleModel,
-  DatabaseTransaction,
+  DatabaseTransaction
 } from '@/domain/models';
 
 export type SharedState = {

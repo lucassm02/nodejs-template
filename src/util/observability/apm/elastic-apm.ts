@@ -1,6 +1,7 @@
-import { APM } from '@/util/constants';
-import agent from 'elastic-apm-node';
 import path from 'path';
+import agent from 'elastic-apm-node';
+
+import { APM } from '@/util/constants';
 import 'reflect-metadata';
 
 export type Agent = agent.Agent;
@@ -42,7 +43,7 @@ export class ElasticAPM {
       logUncaughtExceptions: true,
       instrument: true,
       instrumentIncomingHTTPRequests: true,
-      captureSpanStackTraces: true,
+      captureSpanStackTraces: true
     });
   }
 

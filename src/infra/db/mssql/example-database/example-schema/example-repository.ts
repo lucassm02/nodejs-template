@@ -1,16 +1,16 @@
 import {
   CreateExampleRepository,
-  GetExampleRepository,
+  GetExampleRepository
 } from '@/data/protocols/db/example';
 import { EXAMPLE_DB, Repository } from '@/infra/db/mssql/util';
 import {
   convertCamelCaseKeysToSnakeCase,
   filterKeys,
-  transform,
+  transform
 } from '@/util/object';
 
 const {
-  EXAMPLE: { EXAMPLE },
+  EXAMPLE: { EXAMPLE }
 } = EXAMPLE_DB;
 
 export class ExampleRepository
@@ -24,7 +24,7 @@ export class ExampleRepository
         value: EXAMPLE.COLUMNS.VALUE,
         description: EXAMPLE.COLUMNS.DESCRIPTION,
         createdAt: EXAMPLE.COLUMNS.CREATED_AT,
-        updatedAt: EXAMPLE.COLUMNS.UPDATED_AT,
+        updatedAt: EXAMPLE.COLUMNS.UPDATED_AT
       })
       .whereNotNull(EXAMPLE.COLUMNS.DELETED_AT);
   }
@@ -45,7 +45,7 @@ export class ExampleRepository
 
     return {
       record,
-      transaction: this.transactionAdapter(connection),
+      transaction: this.transactionAdapter(connection)
     };
   }
 }

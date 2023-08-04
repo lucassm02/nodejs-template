@@ -3,7 +3,7 @@ import { YupSchema } from '@/presentation/protocols';
 import {
   convertCamelCaseKeysToSnakeCase,
   formatYupError,
-  logger,
+  logger
 } from '@/util';
 
 export function messageValidationAdapter(
@@ -14,7 +14,7 @@ export function messageValidationAdapter(
       const messageInSnakeCase = convertCamelCaseKeysToSnakeCase(payload);
 
       await schema.validate(messageInSnakeCase, {
-        abortEarly: false,
+        abortEarly: false
       });
 
       return next();
@@ -22,7 +22,7 @@ export function messageValidationAdapter(
       logger.log({
         level: 'error',
         message: 'VALIDATION ERROR',
-        erros: formatYupError(error),
+        erros: formatYupError(error)
       });
     }
   };

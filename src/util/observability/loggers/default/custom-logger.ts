@@ -1,11 +1,12 @@
-import pkg from '@/../package.json';
-import { createMongoLog } from '@/main/facades';
-import { ELASTICSEARCH, LOGGER } from '@/util/constants';
-import ecsFormat from '@elastic/ecs-winston-format';
 import path from 'path';
 import { Logger, createLogger, format, transports } from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import { ElasticsearchTransport } from 'winston-elasticsearch';
+
+import ecsFormat from '@elastic/ecs-winston-format';
+import pkg from '@/../package.json';
+import { createMongoLog } from '@/main/facades';
+import { ELASTICSEARCH, LOGGER } from '@/util/constants';
 
 import { elasticAPM, getAPMTransactionIds } from '../../apm';
 import { defaultIndexTemplate } from './elasticsearch';
@@ -50,26 +51,26 @@ export class CustomLogger {
       datePattern: 'YYYY-MM-DD',
       dirname: path.resolve('log'),
       level: 'debug',
-      format: combine(defaultTimestampFormat, standard),
+      format: combine(defaultTimestampFormat, standard)
     });
 
     const consoleTransport = new transports.Console({
       level: LOGGER.CONSOLE.LEVEL,
-      format: combine(defaultTimestampFormat, cli, colorize({ all: true })),
+      format: combine(defaultTimestampFormat, cli, colorize({ all: true }))
     });
 
     this.defaultLogger = createLogger({
-      transports: [fileTransport, consoleTransport],
+      transports: [fileTransport, consoleTransport]
     });
 
     this.offlineLogger = createLogger({
-      transports: [fileTransport, consoleTransport],
+      transports: [fileTransport, consoleTransport]
     });
 
     const mongoDbTransport = new GenericTransport({
       level: 'debug',
       format: combine(defaultTimestampFormat, standard),
-      receiver: createMongoLog,
+      receiver: createMongoLog
     });
 
     if (ELASTICSEARCH.ENABLED) {
@@ -83,15 +84,15 @@ export class CustomLogger {
         transformer: elasticSearchTransformer,
         format: ecsFormat({
           apmIntegration: true,
-          convertErr: true,
+          convertErr: true
         }),
         clientOpts: {
           node: ELASTICSEARCH.SERVER_URL,
           auth: {
             username: ELASTICSEARCH.USERNAME,
-            password: ELASTICSEARCH.PASSWORD,
-          },
-        },
+            password: ELASTICSEARCH.PASSWORD
+          }
+        }
       });
 
       this.defaultLogger.add(elasticsearchTransport);
@@ -121,7 +122,7 @@ export class CustomLogger {
     if (!params) {
       this.offlineLogger.log({
         level: 'error',
-        message: `Unable to handle with log action ${JSON.stringify(params)}`,
+        message: `Unable to handle with log action ${JSON.stringify(params)}`
       });
       return;
     }
@@ -142,7 +143,7 @@ export class CustomLogger {
         name: params.name,
         message: params.message,
         stack: params.stack,
-        level: 'error',
+        level: 'error'
       });
 
       return;
@@ -156,7 +157,7 @@ export class CustomLogger {
       application,
       message,
       level: <string>level ?? 'warn',
-      ...rest,
+      ...rest
     });
   }
 }

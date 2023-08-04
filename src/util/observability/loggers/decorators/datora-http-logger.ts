@@ -3,7 +3,7 @@ import {
   ELASTICSEARCH,
   formatDate,
   generateUuid,
-  getAPMTransactionIds,
+  getAPMTransactionIds
 } from '@/util';
 
 export const datoraHttpLogger = () => {
@@ -43,7 +43,7 @@ export const datoraHttpLogger = () => {
 
         const document: any = await elasticsearch.getById({
           id: transactionIds.transactionId,
-          index: EVENT_INDEX,
+          index: EVENT_INDEX
         });
 
         if (!document) return methodResult;
@@ -52,7 +52,7 @@ export const datoraHttpLogger = () => {
           if (typeof requestOptions.body === 'object') {
             return {
               body: requestOptions.body,
-              rawBody: JSON.stringify(requestOptions.body),
+              rawBody: JSON.stringify(requestOptions.body)
             };
           }
 
@@ -64,7 +64,7 @@ export const datoraHttpLogger = () => {
           if (typeof methodResult.body === 'object') {
             return {
               body: methodResult.body,
-              rawBody: JSON.stringify(requestOptions.body),
+              rawBody: JSON.stringify(requestOptions.body)
             };
           }
 
@@ -86,15 +86,15 @@ export const datoraHttpLogger = () => {
               url: requestOptions.url,
               method: requestOptions.method,
               ...requestData,
-              headers: requestOptions.headers,
+              headers: requestOptions.headers
             },
             response: {
               statusCode: methodResult.statusCode,
               ...responseData,
-              headers: methodResult.headers,
+              headers: methodResult.headers
             },
-            createdAt: formatDate(new Date(), 'yyyy-MM-dd HH:mm:ss'),
-          },
+            createdAt: formatDate(new Date(), 'yyyy-MM-dd HH:mm:ss')
+          }
         });
       }
 

@@ -1,7 +1,7 @@
 import {
   formateCamelCaseKeysForSnakeCase,
   formateSnakeCaseKeysForCamelCase,
-  formateToLowerCase,
+  formateToLowerCase
 } from '@badass-team-code/formatted-cases-words';
 
 export const convertSnakeCaseKeysToCamelCase = formateSnakeCaseKeysForCamelCase;

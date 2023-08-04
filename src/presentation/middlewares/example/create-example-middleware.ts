@@ -19,18 +19,18 @@ export class CreateExampleMiddleware implements Middleware {
     try {
       const { record, transaction } = await this.createExample.create({
         description: 'DESCRIPTION',
-        value: 'VALUE',
+        value: 'VALUE'
       });
 
       this.logger.log({
         level: 'debug',
         message: 'CREATE EXAMPLE',
-        payload: { example: record },
+        payload: { example: record }
       });
 
       setState({
         createExample: record,
-        transactions: [...state.transactions, transaction],
+        transactions: [...state.transactions, transaction]
       });
 
       return next();

@@ -33,7 +33,7 @@ const recursiveDataConvertApplyLayer = (
     if (typeof value === 'object') {
       return {
         ...accumulator,
-        [key]: recursiveDataConvertFilterLayer(value, formatter),
+        [key]: recursiveDataConvertFilterLayer(value, formatter)
       };
     }
     return { ...accumulator, [key]: value };

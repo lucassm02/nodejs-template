@@ -1,20 +1,21 @@
-import { Controller, Middleware } from '@/presentation/protocols';
-import {
-  convertCamelCaseKeysToSnakeCase,
-  convertSnakeCaseKeysToCamelCase,
-  logger,
-} from '@/util';
+import { readdirSync } from 'fs';
+import server, { Server } from 'http';
+import { AddressInfo } from 'net';
+import { resolve } from 'path';
 import express, {
   Express,
   NextFunction,
   Request,
   Response,
-  Router,
+  Router
 } from 'express';
-import { readdirSync } from 'fs';
-import server, { Server } from 'http';
-import { AddressInfo } from 'net';
-import { resolve } from 'path';
+
+import {
+  convertCamelCaseKeysToSnakeCase,
+  convertSnakeCaseKeysToCamelCase,
+  logger
+} from '@/util';
+import { Controller, Middleware } from '@/presentation/protocols';
 
 import { Route } from './route';
 import { Callback, ExpressRoute, RouteMiddleware } from './types';
@@ -83,8 +84,8 @@ export class HttpServer {
     if (this.isStarted) return;
     this.isStarted = true;
 
-    const promises = this.startupCallbacks.map(async (callback) =>
-      callback?.()
+    const promises = this.startupCallbacks.map(
+      async (callback) => callback?.()
     );
 
     await Promise.all(promises);
@@ -152,7 +153,7 @@ export class HttpServer {
     if (this.isStarted) {
       logger.log({
         level: 'warn',
-        message: 'Only set the default base url if the server is not started',
+        message: 'Only set the default base url if the server is not started'
       });
 
       return;
@@ -261,7 +262,7 @@ export class HttpServer {
     const router = Router();
     this.routers = [
       ...this.routers,
-      { path, baseUrl, router, loaded: false, hidden: hidden || false },
+      { path, baseUrl, router, loaded: false, hidden: hidden || false }
     ];
 
     return new Route(router, this.adaptMiddlewares.bind(this));
@@ -323,7 +324,7 @@ export class HttpServer {
         return (request: Request, response: Response, next: NextFunction) => {
           const middlewareResponse = middleware(request, response, next, [
             request[SHARED_STATE_SYMBOL],
-            this.makeSetStateInRequest(request),
+            this.makeSetStateInRequest(request)
           ]);
 
           return middlewareResponse;

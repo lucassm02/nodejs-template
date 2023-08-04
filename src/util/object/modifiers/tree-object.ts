@@ -33,6 +33,6 @@ export const treeObject = (object: object, options: Options) => {
   return {
     ...Object.fromEntries(rest),
     [exceptionKey]: exceptionValue,
-    [options.child]: child,
+    [options.child]: child
   };
 };

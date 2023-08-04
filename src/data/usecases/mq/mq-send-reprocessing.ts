@@ -18,7 +18,7 @@ export class MqSendReprocessing implements SendReprocessing {
   reprocess({
     data: {
       payload,
-      state: { reprocessing, ...state },
+      state: { reprocessing, ...state }
     },
     middleware,
     progress,
@@ -38,7 +38,7 @@ export class MqSendReprocessing implements SendReprocessing {
     const tries = params.tries ?? {
       current: 1,
       max: MAX_TRIES,
-      delays: DELAYS,
+      delays: DELAYS
     };
 
     const newPayload = {
@@ -46,8 +46,8 @@ export class MqSendReprocessing implements SendReprocessing {
         middleware,
         progress,
         tries,
-        data: { payload, state },
-      },
+        data: { payload, state }
+      }
     };
 
     if (!reprocessing.tries) {
@@ -58,7 +58,7 @@ export class MqSendReprocessing implements SendReprocessing {
           this.queueOptions.queue,
           newPayload,
           {
-            ...payload.headers,
+            ...payload.headers
           }
         );
         return;
@@ -70,7 +70,7 @@ export class MqSendReprocessing implements SendReprocessing {
         this.queueOptions.routingKey ?? '',
         {
           ...payload.headers,
-          'x-delay': delay,
+          'x-delay': delay
         }
       );
       return;
@@ -85,7 +85,7 @@ export class MqSendReprocessing implements SendReprocessing {
         this.queueOptions.queue,
         newPayload,
         {
-          ...payload.headers,
+          ...payload.headers
         }
       );
       return;
@@ -97,7 +97,7 @@ export class MqSendReprocessing implements SendReprocessing {
       this.queueOptions.routingKey ?? '',
       {
         ...payload.headers,
-        'x-delay': tries.delays[tries.current - 1],
+        'x-delay': tries.delays[tries.current - 1]
       }
     );
   }

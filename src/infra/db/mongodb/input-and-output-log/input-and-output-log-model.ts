@@ -9,7 +9,7 @@ export interface InputAndOutputLogModel extends mongoose.Document {
 const schema = new mongoose.Schema(
   {
     type: { type: mongoose.Schema.Types.String },
-    created_at: { type: Date, default: () => new Date() },
+    created_at: { type: Date, default: () => new Date() }
   },
   { strict: false }
 );

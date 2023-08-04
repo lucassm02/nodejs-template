@@ -21,6 +21,8 @@
     "prettier"
   ],
   "rules": {
+    "@typescript-eslint/no-explicit-any": "warn", // TODO: Remover this in the near future 
+    "@typescript-eslint/no-unused-vars": "warn",
     "no-unreachable-loop": "off",
     "no-labels": "off",
     "no-unused-labels": "off",
@@ -74,18 +76,15 @@
       {
         "newlinesBetween": "always",
         "groups": [
+          "absolute",
           "module",
-          "/^@shared/",
+          "/^@/",
           [
             "parent",
             "sibling",
             "index"
           ]
-        ],
-        "alphabetize": {
-          "order": "asc",
-          "ignoreCase": true
-        }
+        ]
       }
     ],
     "import/no-extraneous-dependencies": [

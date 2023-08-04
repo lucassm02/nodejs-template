@@ -1,11 +1,11 @@
 import { Route } from '@/infra/http/utils/http-server';
 import {
   makeCreateExampleController,
-  makeGetExampleController,
+  makeGetExampleController
 } from '@/main/factories/controllers';
 import {
   makeCreateExampleMiddleware,
-  makeGetExampleMiddleware,
+  makeGetExampleMiddleware
 } from '@/main/factories/middlewares';
 
 export default function (route: Route) {

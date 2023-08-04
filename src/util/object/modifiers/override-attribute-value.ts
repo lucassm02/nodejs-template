@@ -3,7 +3,7 @@ type Options<T> = { from: T | T[]; attribute: keyof T; copyFrom: keyof T };
 export const overrideAttributeValue = <T>({
   from,
   attribute,
-  copyFrom,
+  copyFrom
 }: Options<T>): T => {
   const override = (object: any) => {
     if (typeof object !== 'object') return object;
