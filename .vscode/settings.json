@@ -5,6 +5,7 @@
     "codegen",
     "hokify",
     "italog",
+    "memjs",
     "sonarsource"
   ]
 }

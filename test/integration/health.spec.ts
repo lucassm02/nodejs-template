@@ -1,5 +1,6 @@
-import { application } from '@/main/application';
 import request from 'supertest';
+
+import { application } from '@/main/application';
 
 application.setBaseUrl('/api/v1');
 
