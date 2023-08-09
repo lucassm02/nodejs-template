@@ -2,7 +2,7 @@ import memjs, { Client } from 'memjs';
 import { Error } from 'mongoose';
 
 type Connection = {
-  server: string;
+  host: string;
   port: number;
   user?: string;
   password?: string;
@@ -40,7 +40,7 @@ export class CacheServer {
   public setCredentials(params: Connection[]): this;
   public setCredentials(params: Connection): this;
   public setCredentials(
-    server: string,
+    host: string,
     port: number,
     user?: string,
     password?: string
@@ -64,7 +64,7 @@ export class CacheServer {
     }
 
     this.connectionString = this.makeConnectionString({
-      server: <string>args[0],
+      host: <string>args[0],
       port: <number>args[1],
       user: <string>args[2],
       password: <string>args[3]
@@ -145,11 +145,11 @@ export class CacheServer {
 
   private makeConnectionString({
     port,
-    server,
+    host,
     password,
     user
   }: Connection): string {
-    const serverAndPortString = `${server}:${port}`;
+    const serverAndPortString = `${host}:${port}`;
     if (!user || !password) return serverAndPortString;
     return `${user}:${password}@${serverAndPortString}`;
   }
