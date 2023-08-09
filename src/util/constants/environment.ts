@@ -68,6 +68,14 @@ export const MONGO = {
   }
 };
 
+export const MEMCACHED = {
+  USER: process.env.MEMCACHED_USER || '',
+  PASSWORD: process.env.MEMCACHED_PASSWORD || '',
+  HOST: process.env.MEMCACHED_HOST || '',
+  PORT: +(() => process.env.MEMCACHED_PORT || 11211)(),
+  DEFAULT_TTL: process.env.MEMCACHED_DEFAULT_TTL || 60
+};
+
 export const APM = {
   ENABLED: stringToBoolean(process.env.APM_ENABLED) || false,
   SECRET_TOKEN: process.env.APM_SECRET_TOKEN || '',
