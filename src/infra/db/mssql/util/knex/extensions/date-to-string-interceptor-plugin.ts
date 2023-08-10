@@ -12,25 +12,9 @@ type Statement = {
   asColumn: boolean;
 };
 
-const convertValueIfIsADate = (value: unknown) => {
-  if (value instanceof Date) {
-    return format(value, 'yyyy-MM-dd HH:mm:ss');
-  }
-  return value;
-};
-
-function statementsDataToStringInterceptor(data: Statement[]) {
-  return data.map((item) => {
-    const isNotAWhereGrouping = !item.grouping.includes('where');
-    if (isNotAWhereGrouping) return item;
-    if (Array.isArray(item.value)) {
-      const newValues = item.value.map(convertValueIfIsADate);
-      item.value = newValues;
-    } else {
-      item.value = convertValueIfIsADate(item.value);
-    }
-    return item;
-  });
+function allowConvertDateToString(date: Date) {
+  const dateValues = [date.getHours(), date.getMinutes(), date.getSeconds()];
+  return !dateValues.every((value) => value === 0);
 }
 
 function singleDataToStringInterceptor(data: Record<string, unknown>) {
@@ -39,7 +23,7 @@ function singleDataToStringInterceptor(data: Record<string, unknown>) {
   const entries = Object.entries(data);
 
   const newEntries = entries.map(([key, value]) => {
-    if (value instanceof Date) {
+    if (value instanceof Date && allowConvertDateToString(value)) {
       const dateToString = format(value, 'yyyy-MM-dd HH:mm:ss');
       return [key, dateToString];
     }
@@ -76,12 +60,6 @@ export function dateToStringInterceptorPlugin(knex: typeof k) {
               <Record<string, unknown>>builder._single[prop]
             );
           }
-        }
-
-        if (builder._statements) {
-          builder._statements = statementsDataToStringInterceptor(
-            builder._statements
-          );
         }
       });
 
