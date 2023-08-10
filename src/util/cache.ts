@@ -4,6 +4,6 @@ import { name } from '../../package.json';
 
 export function getCacheKeyByContext(context: CacheContexts) {
   if (!ALLOWED_CONTEXT.includes(context)) throw new Error('');
-  const applicationName = name.toUpperCase().replace('-', '_');
+  const applicationName = name.toUpperCase().replaceAll('-', '_');
   return `${applicationName}.${context}`;
 }
