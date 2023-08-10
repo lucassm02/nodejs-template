@@ -13,7 +13,7 @@ type Statement = {
 };
 
 function allowConvertDateToString(date: Date) {
-  const dateValues = [date.getHours(), date.getMinutes(), date.getSeconds()];
+  const dateValues = [date.getUTCHours(), date.getMinutes(), date.getSeconds()];
   return !dateValues.every((value) => value === 0);
 }
 
