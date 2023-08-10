@@ -8,3 +8,4 @@ export * from './text';
 export * from './uuid';
 export * from './comparation';
 export * from './transaction';
+export * from './cache';
