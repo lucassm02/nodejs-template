@@ -1,7 +1,7 @@
 import { Logger } from '@/data/protocols/utils';
 import { ErrorHandler, GetExample } from '@/domain/usecases';
 import { ExtractValues } from '@/plugin';
-import { Middleware } from '@/presentation/protocols/middleware';
+import { Middleware } from '@/presentation/protocols';
 import { serverError, stateDependencies } from '@/presentation/utils';
 
 export class GetExampleMiddleware extends ExtractValues implements Middleware {
