@@ -1,6 +1,10 @@
 import { knex as k } from 'knex';
 
-import { noLockPlugin, dateToStringInterceptorPlugin } from './extensions';
+import {
+  noLockPlugin,
+  dateToStringInterceptorPlugin,
+  formattedSelectPlugin
+} from './extensions';
 
 export class CustomKnex {
   private static instance: CustomKnex;
@@ -9,6 +13,7 @@ export class CustomKnex {
   constructor() {
     this.knex = noLockPlugin(k);
     this.knex = dateToStringInterceptorPlugin(this.knex);
+    this.knex = formattedSelectPlugin(this.knex);
   }
 
   public static getInstance(): CustomKnex {

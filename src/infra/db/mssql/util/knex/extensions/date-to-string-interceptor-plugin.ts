@@ -46,8 +46,8 @@ export function dateToStringInterceptorPlugin(knex: typeof k) {
   };
 
   const knexProxy = new Proxy(knex, {
-    apply(target, _, argArray) {
-      const instance = target(argArray[0]);
+    apply(target, _, [arg]) {
+      const instance = target(arg);
 
       instance.on('start', (builder: ContextType) => {
         if (!builder) return;
