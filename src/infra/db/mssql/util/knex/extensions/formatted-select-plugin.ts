@@ -23,7 +23,7 @@ function getValuesPath(object: Object) {
   return paths;
 }
 
-function transformResponseValues(result: Object[] | Object) {
+function transformResponse(response: Object[] | Object) {
   function parseValue(item: Object) {
     if (!item) return item;
     const object: Record<string, unknown> = {};
@@ -54,14 +54,27 @@ function transformResponseValues(result: Object[] | Object) {
     return object;
   }
 
-  if (Array.isArray(result)) {
-    const records = [];
-    for (const item of result) {
-      records.push(parseValue(item));
+  if (Array.isArray(response)) return response.map(parseValue);
+
+  return parseValue(response);
+}
+
+function resolveWrapper(resolve: (data: Object | Object[]) => void) {
+  return (data: Object | Object[]) => {
+    if (!data) return data;
+    const sample = Array.isArray(data) ? data[0] : data;
+
+    const doesTheSelectHaveNestedObjects = Object.keys(sample).find((key) =>
+      key.includes(DELIMITER)
+    );
+
+    if (!doesTheSelectHaveNestedObjects) {
+      resolve(data);
+      return;
     }
-    return records;
-  }
-  return parseValue(result);
+
+    resolve(transformResponse(data));
+  };
 }
 
 export function formattedSelectPlugin(knex: typeof k) {
@@ -89,9 +102,7 @@ export function formattedSelectPlugin(knex: typeof k) {
                   apply(target, thisArg, [resolve, reject]) {
                     const result = target.call(
                       thisArg,
-                      (data: Object | Object[]) => {
-                        resolve(transformResponseValues(data));
-                      },
+                      resolveWrapper(resolve),
                       reject
                     );
 
