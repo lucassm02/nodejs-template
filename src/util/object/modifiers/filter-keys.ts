@@ -1,9 +1,35 @@
-export const filterKeys = <T>(object: T, allowedKeys: (keyof T)[]) => {
+import { transform } from '../handlers';
+
+type Options<T> = {
+  allowedKeys?: (keyof T)[];
+  deniedKeys?: (keyof T)[];
+};
+
+export const filterKeys = <T extends Object>(
+  object: T,
+  options: Options<T>
+) => {
   if (typeof object !== 'object') return object;
 
-  const filteredEntries = Object.entries(object as any).filter(([key]) =>
-    allowedKeys.includes(key as keyof T)
-  );
+  function filter(
+    object: Object,
+    action: 'ALLOW' | 'DENY',
+    values: string[] = []
+  ) {
+    if (values.length === 0) return object;
 
-  return Object.fromEntries(filteredEntries);
+    const filteredEntries = Object.entries(object).filter(([key]) => {
+      if (action === 'ALLOW') return values.includes(key);
+      return !values.includes(key);
+    });
+
+    return Object.fromEntries(filteredEntries);
+  }
+
+  type Keys = string[] | undefined;
+
+  return transform(object)
+    .pipe((value) => filter(value, 'ALLOW', <Keys>options.allowedKeys))
+    .pipe((value) => filter(value, 'DENY', <Keys>options.deniedKeys))
+    .get();
 };
