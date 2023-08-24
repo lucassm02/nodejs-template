@@ -62,7 +62,13 @@ function transformResponse(response: Object[] | Object) {
 function resolveWrapper(resolve: (data: Object | Object[]) => void) {
   return (data: Object | Object[]) => {
     if (!data) return data;
+
     const sample = Array.isArray(data) ? data[0] : data;
+
+    if (!sample) {
+      resolve(data);
+      return;
+    }
 
     const doesTheSelectHaveNestedObjects = Object.keys(sample).find((key) =>
       key.includes(DELIMITER)
