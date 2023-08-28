@@ -17,19 +17,29 @@ function allowConvertDateToString(date: Date) {
   return !dateValues.every((value) => value === 0);
 }
 
+function formatDateEntries([key, value]: [string, unknown]) {
+  if (value instanceof Date && allowConvertDateToString(value)) {
+    const dateToString = format(value, 'yyyy-MM-dd HH:mm:ss');
+    return [key, dateToString];
+  }
+
+  return [key, value];
+}
+
 function singleDataToStringInterceptor(data: Record<string, unknown>) {
   if (!data) return;
 
+  if (Array.isArray(data)) {
+    const entries = data.map(Object.entries);
+    const newEntries = entries.map((entriesObjects) =>
+      entriesObjects.map(formatDateEntries)
+    );
+    return newEntries.map(Object.fromEntries);
+  }
+
   const entries = Object.entries(data);
 
-  const newEntries = entries.map(([key, value]) => {
-    if (value instanceof Date && allowConvertDateToString(value)) {
-      const dateToString = format(value, 'yyyy-MM-dd HH:mm:ss');
-      return [key, dateToString];
-    }
-
-    return [key, value];
-  });
+  const newEntries = entries.map(formatDateEntries);
 
   return Object.fromEntries(newEntries);
 }
