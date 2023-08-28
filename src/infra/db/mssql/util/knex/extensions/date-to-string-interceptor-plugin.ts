@@ -27,7 +27,7 @@ function formatDateEntries([key, value]: [string, unknown]) {
 }
 
 function singleDataToStringInterceptor(data: Record<string, unknown>) {
-  if (!data) return;
+  if (typeof data !== 'object') return data;
 
   if (Array.isArray(data)) {
     const entries = data.map(Object.entries);

@@ -25,7 +25,7 @@ function getValuesPath(object: Object) {
 
 function transformResponse(response: Object[] | Object) {
   function parseValue(item: Object) {
-    if (!item) return item;
+    if (typeof item !== 'object') return item;
     const object: Record<string, unknown> = {};
     const entries = Object.entries(item);
 
@@ -61,7 +61,7 @@ function transformResponse(response: Object[] | Object) {
 
 function resolveWrapper(resolve: (data: Object | Object[]) => void) {
   return (data: Object | Object[]) => {
-    if (!data) return data;
+    if (typeof data !== 'object') return data;
 
     const sample = Array.isArray(data) ? data[0] : data;
 
