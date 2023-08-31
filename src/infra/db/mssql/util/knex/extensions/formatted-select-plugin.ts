@@ -61,7 +61,10 @@ function transformResponse(response: Object[] | Object) {
 
 function resolveWrapper(resolve: (data: Object | Object[]) => void) {
   return (data: Object | Object[]) => {
-    if (typeof data !== 'object') return data;
+    if (typeof data !== 'object') {
+      resolve(data);
+      return;
+    }
 
     const sample = Array.isArray(data) ? data[0] : data;
 
