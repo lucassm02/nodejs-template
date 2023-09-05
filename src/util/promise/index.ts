@@ -1,1 +1,1 @@
-export * from './promise-splitter';
+export * from './split-promises';

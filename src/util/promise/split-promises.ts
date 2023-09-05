@@ -7,7 +7,7 @@ import { randomUUID } from 'crypto';
 
 type Resolver = 'ALL' | 'ALL_SETTLED' | 'RACE' | 'ANY';
 
-export const promiseSplitter = async (
+export const splitPromises = async (
   callbacks: (() => Promise<unknown>)[],
   maxRunning: number,
   resolver: Resolver = 'ALL_SETTLED'
