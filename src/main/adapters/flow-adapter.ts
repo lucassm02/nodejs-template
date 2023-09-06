@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-catch */
 import EventEmitter from 'events';
 
 type Next = () => void;
@@ -18,7 +19,30 @@ export default <Data extends Record<string, unknown>>(data: Data) =>
     };
 
     const callStack = callbacks
-      .map((middleware) => () => middleware(data, nextFunction))
+      .map((middleware) => () => {
+        const middlewareProxy = new Proxy(middleware, {
+          async apply(target, _, [data, next]) {
+            let nextHasCalled = false;
+
+            function nextDecorator() {
+              next();
+              nextHasCalled = true;
+            }
+
+            try {
+              return await target(data, nextDecorator);
+            } catch (error) {
+              throw error;
+            } finally {
+              if (nextHasCalled === false) {
+                event.emit(RESOLVER_EVENT_SYMBOL);
+              }
+            }
+          }
+        });
+
+        return middlewareProxy(data, nextFunction);
+      })
       .reverse();
 
     event.on(NEXT_EVENT_SYMBOL, async () => {
