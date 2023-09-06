@@ -428,5 +428,3 @@ export class RabbitMqServer {
     return callback({ ...bodyAndHeadersToCamelCase, ...restOfPayload });
   }
 }
-
-process.on('unhandledRejection', () => {});
