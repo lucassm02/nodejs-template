@@ -19,29 +19,23 @@ export default <Data extends Record<string, unknown>>(data: Data) =>
     };
 
     const callStack = callbacks
-      .map((middleware) => () => {
-        const middlewareProxy = new Proxy(middleware, {
-          async apply(target, _, [data, next]) {
-            let nextHasCalled = false;
+      .map((middleware) => async () => {
+        let nextFunctionWasCalled = false;
 
-            function nextDecorator() {
-              next();
-              nextHasCalled = true;
-            }
+        function nextFunctionDecorator() {
+          nextFunction();
+          nextFunctionWasCalled = true;
+        }
 
-            try {
-              return await target(data, nextDecorator);
-            } catch (error) {
-              throw error;
-            } finally {
-              if (nextHasCalled === false) {
-                event.emit(RESOLVER_EVENT_SYMBOL);
-              }
-            }
+        try {
+          return await middleware(data, nextFunctionDecorator);
+        } catch (error) {
+          throw error;
+        } finally {
+          if (!nextFunctionWasCalled) {
+            event.emit(RESOLVER_EVENT_SYMBOL);
           }
-        });
-
-        return middlewareProxy(data, nextFunction);
+        }
       })
       .reverse();
 
