@@ -82,7 +82,7 @@ export class CacheServer {
   }
 
   public disconnect() {
-    if (!this.connect) return;
+    if (!this.connected) return;
     this.server.close();
     this.connected = false;
   }
