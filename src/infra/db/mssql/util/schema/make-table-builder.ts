@@ -88,7 +88,18 @@ export const makeTableBuilder =
       );
     }
 
-    const table = `[${database}].${options.table}`;
+    // removes different databases to sqlite3
+    let table =
+      process.env.NODE_ENV !== 'test'
+        ? `[${database}].${options.table}`
+        : options.table;
+
+    // removes the schema for sqlite3 works
+    if (process.env.NODE_ENV === 'test') {
+      const [newTable] = table.split('.');
+      table = newTable?.replace('[', '').replace(']', '');
+    }
+
     const prefix = tablePrefix ?? '';
     const defaultAlias = options.table.replace(prefix, '').toLocaleUpperCase();
     const alias = options.alias ?? defaultAlias;
