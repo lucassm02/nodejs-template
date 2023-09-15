@@ -6,6 +6,7 @@
     "hokify",
     "italog",
     "memjs",
-    "sonarsource"
+    "sonarsource",
+    "sqlite"
   ]
 }
