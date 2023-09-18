@@ -19,21 +19,14 @@ const configs = {
     }
   },
   test: {
-    client: DB.DIALECT,
+    client: 'sqlite3',
     connection: {
-      host: DB.HOST,
-      port: +DB.PORT,
-      user: DB.USERNAME,
-      password: DB.PASSWORD,
-      options: {
-        encrypt: false,
-        enableArithAbort: false,
-        appName: pkg.name
-      }
-    }
+      filename: `${__dirname}/test_database.sqlite`
+    },
+    useNullAsDefault: true
   }
 };
 
-const config = process.env.NODE_ENV === 'test' ? configs.default : configs.test;
+const config = process.env.NODE_ENV !== 'test' ? configs.default : configs.test;
 
 export const sqlConnection = knex(config);
