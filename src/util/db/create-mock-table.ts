@@ -36,20 +36,35 @@ export const createMockTable = async <
   if (!table.getColumnsObject)
     throw new Error('Missing dependency getColumnsObject at table object');
   await sqlConnection.schema.createTable(table.TABLE, (builder) => {
-    Object.entries(schema).forEach(([key, value]) => {
+    Object.entries(schema).forEach(async ([key, value]) => {
       if (value instanceof TypeSchema) {
         const fnSchema = {
           string: builder.string,
-          date: builder.date,
+          date: builder.datetime,
           number: builder.integer,
           boolean: builder.boolean
         };
 
-        const fn = fnSchema[value.__type as PermittedTypes];
+        const { __type: type } = value;
 
-        const _exec = !value.__default
-          ? fn(key)
-          : fn(key).defaultTo(tryToRun(value.__default));
+        switch (type as PermittedTypes) {
+          case 'date':
+            if (!value.__default) builder.datetime(key);
+            builder.datetime(key).defaultTo(await tryToRun(value.__default));
+            break;
+          case 'number':
+            if (!value.__default) builder.integer(key);
+            builder.integer(key).defaultTo(await tryToRun(value.__default));
+            break;
+          case 'boolean':
+            if (!value.__default) builder.boolean(key);
+            builder.boolean(key).defaultTo(await tryToRun(value.__default));
+            break;
+          default:
+            if (!value.__default) builder.string(key);
+            builder.string(key).defaultTo(await tryToRun(value.__default));
+            break;
+        }
       }
     });
   });
