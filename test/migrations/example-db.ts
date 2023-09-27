@@ -4,6 +4,7 @@
 
 import { EXAMPLE_DB } from '@/infra/db/mssql/util';
 import { createMockTable, downMockTable } from '@/util/db';
+import { date, number, string } from '@/util/db/types';
 
 const {
   EXAMPLE: { EXAMPLE }
@@ -13,13 +14,13 @@ export const migrate = {
   // implement migration here!
   up: async () => {
     const promiseExampleTb = createMockTable(EXAMPLE, {
-      created_at: new Date(), // pass the value according to the type!
-      updated_at: new Date(),
-      deleted_at: new Date(),
-      description: 'description',
-      external_id: 'external_id',
-      example_id: 999,
-      value: 999
+      created_at: date().default(() => new Date()),
+      updated_at: date().default(() => new Date()),
+      deleted_at: date().default(() => new Date()),
+      description: string(),
+      external_id: string(),
+      example_id: number(),
+      value: number()
     });
     await Promise.all([promiseExampleTb]);
   },
