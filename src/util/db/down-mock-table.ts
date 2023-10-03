@@ -1,4 +1,4 @@
-import { sqlConnection } from '@/infra/db/mssql/util';
+import { Table, sqlConnection } from '@/infra/db/mssql/util';
 
 export const downMockTable = async (table: Table<string>) => {
   if (process.env.NODE_ENV !== 'test')
