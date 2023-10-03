@@ -1,6 +1,6 @@
 import { Knex } from 'knex';
 
-import { sqlConnection } from '@/infra/db/mssql/util';
+import { Table, sqlConnection } from '@/infra/db/mssql/util';
 
 import 'dotenv/config';
 import { tryToRun } from '../functions';
@@ -30,8 +30,8 @@ export const createMockTable = async <
   table: T,
   schema: Schema
 ) => {
-  // if (process.env.NODE_ENV !== 'test')
-  //   throw new Error('Need to be in a test environment to use this function');
+  if (process.env.NODE_ENV !== 'test')
+    throw new Error('Need to be in a test environment to use this function');
   if (typeof table !== 'object') return;
   if (!table.getColumnsObject)
     throw new Error('Missing dependency getColumnsObject at table object');
