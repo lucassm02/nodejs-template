@@ -3,7 +3,9 @@ import {
   convertSnakeCaseKeysToCamelCase
 } from '@/util';
 
-type Options<T> = {
+import { getTableName } from './get-table-name';
+
+export type Options<T> = {
   table: string;
   alias?: string;
   columns: readonly T[];
@@ -100,17 +102,7 @@ export const makeTableBuilder =
       );
     }
 
-    // removes different databases to sqlite3
-    let table =
-      process.env.NODE_ENV !== 'test'
-        ? `[${database}].${options.table}`
-        : options.table;
-
-    // removes the schema for sqlite3 works
-    if (process.env.NODE_ENV === 'test') {
-      const [newTable] = table.split('.');
-      table = newTable?.replace('[', '').replace(']', '');
-    }
+    const table = getTableName(database, options);
 
     const prefix = tablePrefix ?? '';
     const defaultAlias = options.table.replace(prefix, '').toLocaleUpperCase();
