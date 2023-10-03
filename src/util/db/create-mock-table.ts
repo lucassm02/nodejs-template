@@ -38,13 +38,6 @@ export const createMockTable = async <
   await sqlConnection.schema.createTable(table.TABLE, (builder) => {
     Object.entries(schema).forEach(async ([key, value]) => {
       if (value instanceof TypeSchema) {
-        const fnSchema = {
-          string: builder.string,
-          date: builder.datetime,
-          number: builder.integer,
-          boolean: builder.boolean
-        };
-
         const { __type: type } = value;
 
         switch (type as PermittedTypes) {

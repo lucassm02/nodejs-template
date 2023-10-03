@@ -15,6 +15,18 @@ type BuilderOptions = {
 };
 
 type KeyCase = 'UPPER' | 'LOWER' | 'CAMEL' | 'SNAKE';
+export type Table<T extends string> = {
+  getColumnsObject: {
+    (keyCase: 'UPPER'): { [P in Uppercase<T>]: string };
+    (keyCase: 'LOWER'): { [P in Lowercase<T>]: string };
+    (keyCase: 'CAMEL'): { [P in CamelCase<T>]: string };
+    (keyCase: 'SNAKE'): { [P in SnakeCase<T>]: string };
+  };
+  TABLE: string;
+  ALIAS: string;
+  COLUMNS: { [P in Uppercase<T>]: string };
+  RAW_COLUMNS: readonly T[];
+};
 
 export const makeTableBuilder =
   ({ database, tablePrefix }: BuilderOptions) =>
