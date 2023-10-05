@@ -12,17 +12,19 @@ const {
 
 export const migrate = {
   // implement migration here!
-  up: async () => {
-    const promiseExampleTb = createMockTable(EXAMPLE, {
-      created_at: date().default(() => new Date()),
-      updated_at: date().default(() => new Date()),
-      deleted_at: date().default(() => new Date()),
-      description: string(),
-      external_id: string(),
-      example_id: number(),
-      value: number()
-    });
-    await Promise.all([promiseExampleTb]);
+  up: {
+    HealthIntegrationTest: async () => {
+      const promiseExampleTb = createMockTable(EXAMPLE, {
+        created_at: date().default(() => new Date()),
+        updated_at: date().default(() => new Date()),
+        deleted_at: date().default(() => new Date()),
+        description: string(),
+        external_id: string(),
+        example_id: number(),
+        value: number()
+      });
+      await Promise.all([promiseExampleTb]);
+    }
   },
   // implement rollback here!
   down: async () => {

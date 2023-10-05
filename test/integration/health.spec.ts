@@ -10,7 +10,7 @@ const server = application.getServer();
 
 describe('Health Route', () => {
   beforeAll(async () => {
-    await migrate.up();
+    await migrate.up.HealthIntegrationTest();
   });
   afterAll(async () => {
     await migrate.down();
