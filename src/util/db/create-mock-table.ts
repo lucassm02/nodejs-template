@@ -1,8 +1,9 @@
+import 'dotenv/config';
+
 import { Knex } from 'knex';
 
 import { Table, sqlConnection } from '@/infra/db/mssql/util';
 
-import 'dotenv/config';
 import { tryToRun } from '../functions';
 import {
   StringSchema,
