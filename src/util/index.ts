@@ -10,3 +10,4 @@ export * from './promise';
 export * from './text';
 export * from './transaction';
 export * from './uuid';
+export * from './functions';

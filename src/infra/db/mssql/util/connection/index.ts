@@ -3,17 +3,30 @@ import { DB } from '@/util/constants';
 
 import { knex } from '../knex';
 
-export const sqlConnection = knex({
-  client: DB.DIALECT,
-  connection: {
-    host: DB.HOST,
-    port: +DB.PORT,
-    user: DB.USERNAME,
-    password: DB.PASSWORD,
-    options: {
-      encrypt: false,
-      enableArithAbort: false,
-      appName: pkg.name
+const configs = {
+  default: {
+    client: DB.DIALECT,
+    connection: {
+      host: DB.HOST,
+      port: +DB.PORT,
+      user: DB.USERNAME,
+      password: DB.PASSWORD,
+      options: {
+        encrypt: false,
+        enableArithAbort: false,
+        appName: pkg.name
+      }
     }
+  },
+  test: {
+    client: 'sqlite3',
+    connection: {
+      filename: `${__dirname}/test_database.sqlite`
+    },
+    useNullAsDefault: true
   }
-});
+};
+
+const config = process.env.NODE_ENV !== 'test' ? configs.default : configs.test;
+
+export const sqlConnection = knex(config);

@@ -24,6 +24,7 @@ coverage
 # API keys and secrets
 .env
 .env.*
+!.env.*
 
 # Dependency directory
 node_modules
@@ -44,3 +45,4 @@ dist/**/*
 .scannerwork
 
 helm/environment/*
+src/infra/db/mssql/util/connection/test_database.sqlite

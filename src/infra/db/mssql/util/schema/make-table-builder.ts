@@ -3,7 +3,9 @@ import {
   convertSnakeCaseKeysToCamelCase
 } from '@/util';
 
-type Options<T> = {
+import { getTableName } from './get-table-name';
+
+export type Options<T> = {
   table: string;
   alias?: string;
   columns: readonly T[];
@@ -15,6 +17,18 @@ type BuilderOptions = {
 };
 
 type KeyCase = 'UPPER' | 'LOWER' | 'CAMEL' | 'SNAKE';
+export type Table<T extends string> = {
+  getColumnsObject: {
+    (keyCase: 'UPPER'): { [P in Uppercase<T>]: string };
+    (keyCase: 'LOWER'): { [P in Lowercase<T>]: string };
+    (keyCase: 'CAMEL'): { [P in CamelCase<T>]: string };
+    (keyCase: 'SNAKE'): { [P in SnakeCase<T>]: string };
+  };
+  TABLE: string;
+  ALIAS: string;
+  COLUMNS: { [P in Uppercase<T>]: string };
+  RAW_COLUMNS: readonly T[];
+};
 
 export const makeTableBuilder =
   ({ database, tablePrefix }: BuilderOptions) =>
@@ -88,7 +102,8 @@ export const makeTableBuilder =
       );
     }
 
-    const table = `[${database}].${options.table}`;
+    const table = getTableName(database, options);
+
     const prefix = tablePrefix ?? '';
     const defaultAlias = options.table.replace(prefix, '').toLocaleUpperCase();
     const alias = options.alias ?? defaultAlias;
