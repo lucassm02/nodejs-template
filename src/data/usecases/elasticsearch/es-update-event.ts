@@ -18,7 +18,7 @@ export class EsUpdateEvent implements UpdateEvent {
   async update(params: UpdateEvent.Params): UpdateEvent.Result {
     const ids = this.getAPMTransactionIds();
 
-    if (!ids) throw new Error('UNABLE_TO_GET_APM_TRANSACTION_ID');
+    if (!ids) return;
 
     const INDEX = 'datora-event';
 
