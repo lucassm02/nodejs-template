@@ -16,7 +16,7 @@ export class EsCreateEvent implements CreateEvent {
     const now = new Date();
     const nowToString = this.formatDate(now, 'yyyy-MM-dd HH:mm:ss');
 
-    if (!ids) throw new Error('UNABLE_TO_GET_APM_TRANSACTION_ID');
+    if (!ids) return;
 
     return this.createDocumentService.create({
       id: ids.transactionId,

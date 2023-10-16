@@ -33,6 +33,7 @@ const normalizePayload = (
 type Options = {
   maxTries?: number;
   delays?: number[];
+  normalizeOnly?: boolean;
   queueOptions?: {
     exchange: string;
     routingKey?: string;
@@ -83,7 +84,7 @@ export function reprocessing(options: Options = {}) {
 
         return result;
       } catch (error) {
-        if (!REPROCESSING.ENABLED) return;
+        if (!REPROCESSING.ENABLED || options.normalizeOnly) return;
         mqSendReprocessing.reprocess({
           middleware: target.constructor.name,
           tries: state?.reprocessing?.tries,
