@@ -24,7 +24,7 @@ coverage
 # API keys and secrets
 .env
 .env.*
-!.env.*
+!.env.example
 
 # Dependency directory
 node_modules
