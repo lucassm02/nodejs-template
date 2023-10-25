@@ -23,6 +23,7 @@ export default <Data extends Record<string, unknown>>(data: Data) =>
         let nextFunctionWasCalled = false;
 
         function nextFunctionDecorator() {
+          if (nextFunctionWasCalled) return;
           nextFunction();
           nextFunctionWasCalled = true;
         }

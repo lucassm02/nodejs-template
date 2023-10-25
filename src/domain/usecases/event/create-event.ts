@@ -4,5 +4,5 @@ export interface CreateEvent {
 
 export namespace CreateEvent {
   export type Params = Record<string, unknown>;
-  export type Result = Promise<{ id: string }>;
+  export type Result = Promise<{ id: string } | void>;
 }
