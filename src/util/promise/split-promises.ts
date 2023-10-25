@@ -1,63 +1,66 @@
-import { randomUUID } from 'crypto';
+import { EventEmitter } from 'node:events';
 
-/* eslint-disable no-plusplus */
-/* eslint-disable no-await-in-loop */
-/* eslint-disable no-useless-catch */
-/* eslint-disable no-promise-executor-return */
+const RUN_NEXT_PROMISE = Symbol('kRunNextPromise');
+const RESOLVE = Symbol('kResolve');
 
-type Resolver = 'ALL' | 'ALL_SETTLED' | 'RACE' | 'ANY';
+type Callback<T> = () => Promise<T>;
 
-export const splitPromises = async (
-  callbacks: (() => Promise<unknown>)[],
-  maxRunning: number,
-  resolver: Resolver = 'ALL_SETTLED'
-) => {
-  const handlers = {
-    ALL: Promise.all.bind(Promise),
-    ALL_SETTLED: Promise.allSettled.bind(Promise),
-    RACE: Promise.race.bind(Promise),
-    ANY: Promise.any.bind(Promise)
-  };
+export async function splitPromises<T>(
+  callbacks: Callback<T>[],
+  maxRunning: number
+) {
+  let resolveFunction: Function;
 
-  const promiseHandler = handlers[resolver] as unknown as (
-    iterable: Promise<unknown>[]
-  ) => Promise<unknown>;
-
+  const event = new EventEmitter();
   const outputs: { result: unknown; index: number }[] = [];
 
-  const callbackList = new Map();
+  const mainPromise = new Promise((resolve) => {
+    resolveFunction = resolve;
+  });
 
-  const makeWrapper = (id: string) => async () => {
+  const makeWrapper = (callback: Function, index: number) => async () => {
     try {
-      const { index, callback } = callbackList.get(id);
-
       const result = await callback();
 
       outputs.push({ result, index });
     } catch (error) {
-      throw error;
+      outputs.push({ result: error, index });
     } finally {
-      callbackList.delete(id);
+      event.emit(RUN_NEXT_PROMISE);
     }
   };
 
-  const callbacksWithWrapper = callbacks.map((callback, index) => {
-    const id = randomUUID();
-    callbackList.set(id, { callback, index });
-    return makeWrapper(id);
+  const callStack = callbacks
+    .map((callback, index) => makeWrapper(callback, index))
+    .reverse();
+
+  event.on(RUN_NEXT_PROMISE, async () => {
+    const promise = callStack.pop();
+
+    if (!promise) {
+      event.emit(RESOLVE);
+      return;
+    }
+
+    await promise();
   });
 
-  while (callbackList.size > 0) {
-    const callbacksToRun = callbacksWithWrapper.splice(
-      callbacksWithWrapper.length - maxRunning,
-      maxRunning
-    );
+  event.on(RESOLVE, async () => {
+    if (outputs.length !== callbacks.length) return;
 
-    const promises = callbacksToRun.map((callback) => callback());
-    await promiseHandler(promises);
-  }
+    const result = outputs
+      .sort((first, second) => first.index - second.index)
+      .map(({ result }) => result);
 
-  return outputs
-    .sort((first, second) => first.index - second.index)
-    .map(({ result }) => result);
-};
+    resolveFunction(result);
+  });
+
+  const indexPosition = callStack.length - maxRunning;
+  const startIndex = indexPosition < 0 ? 0 : indexPosition;
+
+  const firstWaveToRun = callStack.splice(startIndex, maxRunning);
+  const promises = firstWaveToRun.map((callback) => callback());
+  await Promise.allSettled(promises);
+
+  return mainPromise;
+}
