@@ -1,6 +1,7 @@
 import {
   CreateExampleRepository,
-  GetExampleRepository
+  GetExampleRepository,
+  GetFooWithExampleRepository
 } from '@/data/protocols/db/example';
 import { EXAMPLE_DB, Repository } from '@/infra/db/mssql/util';
 import {
@@ -12,13 +13,37 @@ import {
 import { removeUndefinedValues } from '@/util/object/modifiers/remove-undefined-values';
 
 const {
-  EXAMPLE: { EXAMPLE }
+  EXAMPLE: { EXAMPLE },
+  FOO: { FOO }
 } = EXAMPLE_DB;
 
 export class ExampleRepository
   extends Repository
-  implements CreateExampleRepository, GetExampleRepository
+  implements
+    CreateExampleRepository,
+    GetExampleRepository,
+    GetFooWithExampleRepository
 {
+  async getFooWithExample(
+    params: GetFooWithExampleRepository.Params
+  ): GetFooWithExampleRepository.Result {
+    return this.connection(FOO.TABLE)
+      .select({
+        exampleId: EXAMPLE.COLUMNS.EXAMPLE_ID,
+        createdAt: EXAMPLE.COLUMNS.CREATED_AT,
+        deletedAt: EXAMPLE.COLUMNS.DELETED_AT,
+        updatedAt: EXAMPLE.COLUMNS.UPDATED_AT,
+        description: EXAMPLE.COLUMNS.DESCRIPTION,
+        value: EXAMPLE.COLUMNS.VALUE,
+        fooId: FOO.COLUMNS.FOO_ID
+      })
+      .innerJoin(
+        EXAMPLE.TABLE,
+        EXAMPLE.COLUMNS.EXAMPLE_ID,
+        FOO.COLUMNS.EXAMPLE_ID
+      )
+      .where(FOO.COLUMNS.FOO_ID, '=', params.fooId);
+  }
   async get(): GetExampleRepository.Result {
     const exampleSchema = transform(EXAMPLE.getColumnsObject('CAMEL'))
       .pipe((value) =>
