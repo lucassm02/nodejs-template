@@ -10,10 +10,10 @@ type ObjectParams = {
   schema: Schema;
   data: Data;
   exception: Exception;
-  options: Options;
+  options?: Options;
 };
 
-type ArrayParams = [Schema, Data, Exception, Options];
+type ArrayParams = [Schema, Data, Exception, Options?];
 
 export class UcVanillaDataValidation implements DataValidation {
   private static instance: UcVanillaDataValidation;
@@ -32,7 +32,7 @@ export class UcVanillaDataValidation implements DataValidation {
     schema: ArrayParams[0],
     data: ArrayParams[1],
     exception: ArrayParams[2],
-    options: ArrayParams[3]
+    options?: ArrayParams[3]
   ): DataValidation.Result<T>;
   async validate<T extends YupSchema>(
     ...args: [ObjectParams] | ArrayParams
@@ -51,7 +51,7 @@ export class UcVanillaDataValidation implements DataValidation {
     }
 
     try {
-      return values.schema.validate(values.data);
+      return await values.schema.validate(values.data);
     } catch (err) {
       if (values.options && !values.options.throws) return;
       throw new Error(values.exception);
