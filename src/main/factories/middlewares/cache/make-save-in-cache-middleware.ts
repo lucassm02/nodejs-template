@@ -10,7 +10,7 @@ type FactoryParams<K extends Value> = {
   key: string;
   throws?: boolean;
   ttl?: number;
-  value: string | K;
+  value: K;
   extractField?: K;
 };
 
