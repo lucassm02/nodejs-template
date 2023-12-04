@@ -5,7 +5,8 @@ import {
 } from '@/main/factories/controllers';
 import {
   makeCreateExampleMiddleware,
-  makeGetExampleMiddleware
+  makeGetExampleMiddleware,
+  makeSaveInCacheMiddleware
 } from '@/main/factories/middlewares';
 
 export default function (route: Route) {
@@ -18,6 +19,11 @@ export default function (route: Route) {
   route.post(
     '/examples',
     makeCreateExampleMiddleware(),
+    makeSaveInCacheMiddleware({
+      key: 'createExample',
+      value: 'createExample',
+      ttl: 60 * 5 // 5 minutes of cache
+    }),
     makeCreateExampleController()
   );
 }
