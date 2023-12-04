@@ -5,6 +5,7 @@ import {
 } from '@/main/factories/controllers';
 import {
   makeCreateExampleMiddleware,
+  makeGetCacheValueMiddleware,
   makeGetExampleMiddleware,
   makeSaveInCacheMiddleware
 } from '@/main/factories/middlewares';
@@ -12,6 +13,13 @@ import {
 export default function (route: Route) {
   route.get(
     '/examples',
+    makeGetCacheValueMiddleware({
+      key: 'example',
+      options: {
+        parseToJson: true
+      },
+      throws: false
+    }),
     makeGetExampleMiddleware({ context: 'CREATE_EXAMPLE' }),
     makeGetExampleController()
   );
@@ -20,7 +28,7 @@ export default function (route: Route) {
     '/examples',
     makeCreateExampleMiddleware(),
     makeSaveInCacheMiddleware({
-      key: 'createExample',
+      key: 'example',
       value: 'createExample',
       ttl: 60 * 5 // 5 minutes of cache
     }),
