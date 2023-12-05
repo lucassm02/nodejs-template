@@ -7,6 +7,7 @@ import {
   makeCreateExampleMiddleware,
   makeGetCacheValueMiddleware,
   makeGetExampleMiddleware,
+  makeMqPublishInExchangeMiddleware,
   makeSaveInCacheMiddleware
 } from '@/main/factories/middlewares';
 
@@ -31,6 +32,11 @@ export default function (route: Route) {
       key: 'example',
       value: 'createExample',
       ttl: 60 * 5 // 5 minutes of cache
+    }),
+    makeMqPublishInExchangeMiddleware({
+      context: 'PUBLISH_EXAMPLE',
+      exchange: 'example',
+      routingKey: 'example'
     }),
     makeCreateExampleController()
   );
