@@ -6,12 +6,13 @@ import { SaveInCacheJob } from '@/job';
 import { makeErrorHandler } from '../../usecases';
 
 type Value = keyof SharedState;
+
 type FactoryParams<K extends Value> = {
   key: string;
   throws?: boolean;
   ttl?: number;
   value: K;
-  extractField?: K;
+  extractField?: keyof SharedState[K];
 };
 
 const getExtractValue = (params: {

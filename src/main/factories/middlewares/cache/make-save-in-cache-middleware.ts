@@ -11,7 +11,7 @@ type FactoryParams<K extends Value> = {
   throws?: boolean;
   ttl?: number;
   value: K;
-  extractField?: K;
+  extractField?: keyof SharedState[K];
 };
 
 const getExtractValue = (params: {
