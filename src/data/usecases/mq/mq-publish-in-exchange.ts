@@ -21,10 +21,10 @@ export class MqPublishInExchange implements PublishInExchange {
 
     if (value.length === 0) return;
 
-    const promises = value.map((value) =>
+    const promises = value.map((payload) =>
       this.publishInExchangeService.publishInExchange(
         exchange,
-        value,
+        payload,
         routingKey
       )
     );
