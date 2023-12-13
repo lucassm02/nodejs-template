@@ -27,7 +27,7 @@ function singleDataRemoveTableInterceptor(data: any) {
   return newEntries.map(Object.fromEntries);
 }
 
-export function updateInTestEnvironmentInterceptor(knex: typeof k) {
+export function syntaxInTestEnvironmentInterceptor(knex: typeof k) {
   if (ENVIRONMENT !== 'test') return knex;
 
   const proxy = new Proxy(knex, {
@@ -37,7 +37,7 @@ export function updateInTestEnvironmentInterceptor(knex: typeof k) {
       instance.on('start', (builder: ContextType) => {
         if (!builder) return;
 
-        const PROPS_TO_INTERCEPT = <const>['update'];
+        const PROPS_TO_INTERCEPT = <const>['update', 'insert'];
 
         for (const prop of PROPS_TO_INTERCEPT) {
           if (builder._single?.[prop]) {
