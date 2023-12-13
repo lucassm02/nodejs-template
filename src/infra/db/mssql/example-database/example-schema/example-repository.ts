@@ -1,7 +1,8 @@
 import {
   CreateExampleRepository,
   GetExampleRepository,
-  GetFooWithExampleRepository
+  GetFooWithExampleRepository,
+  UpdateExampleRepository
 } from '@/data/protocols/db/example';
 import { EXAMPLE_DB, Repository } from '@/infra/db/mssql/util';
 import {
@@ -22,8 +23,19 @@ export class ExampleRepository
   implements
     CreateExampleRepository,
     GetExampleRepository,
-    GetFooWithExampleRepository
+    GetFooWithExampleRepository,
+    UpdateExampleRepository
 {
+  async update(
+    params: UpdateExampleRepository.Params
+  ): UpdateExampleRepository.Result {
+    await this.connection(EXAMPLE.TABLE)
+      .update({
+        [EXAMPLE.COLUMNS.VALUE]: params.value,
+        [EXAMPLE.COLUMNS.DESCRIPTION]: params.description
+      })
+      .where(EXAMPLE.COLUMNS.EXAMPLE_ID, '=', params.exampleId);
+  }
   async getFooWithExample(
     params: GetFooWithExampleRepository.Params
   ): GetFooWithExampleRepository.Result {

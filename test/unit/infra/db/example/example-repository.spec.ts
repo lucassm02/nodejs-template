@@ -21,6 +21,17 @@ describe('Example DB', () => {
   afterAll(async () => {
     await migrate.down();
   });
+  it('should not throws if update works correctly', async () => {
+    const { sut } = makeSut();
+
+    const result = await sut.update({
+      exampleId: 1,
+      value: 100,
+      description: 'foo'
+    });
+
+    expect(result).toBeUndefined();
+  });
   it('should return all the example not deleted by the fooId', async () => {
     const { sut } = makeSut();
     const result = await sut.getFooWithExample({
@@ -32,7 +43,7 @@ describe('Example DB', () => {
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
         deletedAt: null,
-        description: null,
+        description: 'foo',
         exampleId: 1,
         fooId: 1,
         value: 100

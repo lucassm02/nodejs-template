@@ -1,5 +1,7 @@
 import k from 'knex';
 
+import { ENVIRONMENT } from '@/util';
+
 export function insertInTestEnvironmentPlugin(knex: typeof k) {
   type ContextType<Type> = { _single: { table: string } } & Type;
   type InsertParams = {
@@ -12,7 +14,7 @@ export function insertInTestEnvironmentPlugin(knex: typeof k) {
   knex.QueryBuilder.extend(
     'insertInTestEnvironment',
     function (this, data: InsertParams) {
-      if (process.env.NODE_ENV !== 'test') return this;
+      if (ENVIRONMENT !== 'test') return this;
       if (this.client.config.client !== 'sqlite3') return this;
 
       const context = <ContextType<typeof this>>this;
