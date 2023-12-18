@@ -8,11 +8,11 @@ const {
 export const seedExampleDatabase = async () => {
   // implement seed here!
   await sqlConnection(EXAMPLE.TABLE).insert({
-    [EXAMPLE.COLUMNS.EXTERNAL_ID]: 'any_external_id',
-    [EXAMPLE.COLUMNS.CREATED_AT]: new Date(),
-    [EXAMPLE.COLUMNS.UPDATED_AT]: sumDays(new Date(), 1), // tomorrow!
-    [EXAMPLE.COLUMNS.DELETED_AT]: null,
-    [EXAMPLE.COLUMNS.EXAMPLE_ID]: 1,
-    [EXAMPLE.COLUMNS.VALUE]: 100
+    external_id: 'any_external_id',
+    created_at: new Date(),
+    updated_at: sumDays(new Date(), 1), // tomorrow!
+    deleted_at: null,
+    example_id: 1,
+    value: 100
   });
 };
