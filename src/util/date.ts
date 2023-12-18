@@ -7,8 +7,14 @@ import {
   getUnixTime,
   isAfter as dateIsAfter,
   subBusinessDays as dateFnsSubBusinessDays,
-  subDays as dateFnsSubDays
+  subDays as dateFnsSubDays,
+  isDate
 } from 'date-fns';
+
+export const isDateValid = (date: Date): boolean => {
+  if (date instanceof Date && !Number.isNaN(date.getTime())) return true;
+  return false;
+};
 
 export const convertUnixToDate = (unixTime: number): Date => {
   return fromUnixTime(unixTime);
