@@ -3,7 +3,7 @@ import { YupSchema } from '@/presentation/protocols';
 
 type Schema = YupSchema;
 type Data = Record<string, unknown>;
-type Exception = string | Error;
+type Exception = string | Error | undefined;
 type Options = DataValidation.Options | undefined;
 
 type ObjectParams = {
