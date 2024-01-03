@@ -23,7 +23,6 @@ const configs = {
     connection: {
       filename: `${__dirname}/test_database.sqlite`
     },
-    wrapIdentifier: (value: unknown) => value,
     useNullAsDefault: true
   }
 };
