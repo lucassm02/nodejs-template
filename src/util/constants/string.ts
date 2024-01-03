@@ -1,6 +1,8 @@
 export const DICTIONARY = {
   RESPONSE: {
     MESSAGE: {
+      INVALID_DATA:
+        'foram fornecidos valores inválidos na operação de {value}.',
       OK: '{value} com sucesso.',
       BAD_REQUEST: 'Por favor, valide os dados e tente novamente.',
       UNAUTHORIZED: 'Você não tem permissão para acessar esse conteúdo.',
