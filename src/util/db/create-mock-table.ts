@@ -31,7 +31,7 @@ export const createMockTable = async <
   table: T,
   schema: Schema
 ) => {
-  if (process.env.NODE_ENV !== 'test')
+  if (String(process.env.NODE_ENV).toLowerCase() !== 'test')
     throw new Error('Need to be in a test environment to use this function');
   if (typeof table !== 'object') return;
   if (!table.getColumnsObject)
