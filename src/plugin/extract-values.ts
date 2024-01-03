@@ -1,3 +1,7 @@
+import { exceptions } from 'winston';
+
+import { UcVanillaDataValidation } from '@/data/usecases/validation';
+import { YupSchema } from '@/presentation/protocols';
 import { getIn } from '@/util';
 
 type Sources = Record<string, Record<string, unknown>>;
@@ -9,8 +13,43 @@ type Option = {
   sources: Sources;
 };
 
+type ValidationParams = {
+  schema: YupSchema;
+  exception?: string | Error;
+};
+
 export class ExtractValues {
-  constructor(protected readonly valuesToExtract: Values = []) {}
+  private readonly validator: UcVanillaDataValidation;
+
+  constructor(
+    protected readonly valuesToExtract: Values = [],
+    protected readonly validation?: ValidationParams
+  ) {
+    this.validator = UcVanillaDataValidation.getInstance();
+  }
+
+  private async validate(value: Record<string, unknown>) {
+    if (!this.validation) return;
+
+    const details = {
+      data: value,
+      exception: this.validation.exception,
+      schema: this.validation.schema
+    };
+
+    if (!exceptions) {
+      await this.validator.validate({
+        ...details,
+        options: { throws: false }
+      });
+      return;
+    }
+
+    await this.validator.validate({
+      ...details,
+      options: { throws: true }
+    });
+  }
 
   private extractValues({ sources, values }: Option) {
     const object: Record<string, unknown> = {};
@@ -44,7 +83,16 @@ export class ExtractValues {
     return object;
   }
 
-  protected extractValuesFromSources(sources: Sources) {
-    return this.extractValues({ sources, values: this.valuesToExtract });
+  protected async extractValuesFromSources(sources: Sources) {
+    const extractedValue = this.extractValues({
+      sources,
+      values: this.valuesToExtract
+    });
+
+    if (!this.validation) return extractedValue;
+
+    await this.validate(extractedValue);
+
+    return extractedValue;
   }
 }
