@@ -1,9 +1,9 @@
-import { DataValidation, StaticDataValidation } from '@/domain/usecases';
+import { DataValidation } from '@/domain/usecases';
 import { YupSchema } from '@/presentation/protocols';
 
 type Schema = YupSchema;
 type Data = Record<string, unknown>;
-type Exception = string;
+type Exception = string | Error;
 type Options = DataValidation.Options | undefined;
 
 type ObjectParams = {
@@ -54,7 +54,9 @@ export class UcVanillaDataValidation implements DataValidation {
       return await values.schema.validate(values.data);
     } catch (err) {
       if (values.options && !values.options.throws) return;
-      throw new Error(values.exception);
+      if (!(values.exception instanceof Error))
+        throw new Error(values.exception);
+      throw values.exception;
     }
   }
 }
