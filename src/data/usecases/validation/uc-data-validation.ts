@@ -25,16 +25,14 @@ export class UcVanillaDataValidation implements DataValidation {
     return this.instance;
   }
 
-  async validate<T extends YupSchema>(
-    params: ObjectParams
-  ): DataValidation.Result<T>;
-  async validate<T extends YupSchema>(
+  validate<T extends YupSchema>(params: ObjectParams): DataValidation.Result<T>;
+  validate<T extends YupSchema>(
     schema: ArrayParams[0],
     data: ArrayParams[1],
     exception: ArrayParams[2],
     options?: ArrayParams[3]
   ): DataValidation.Result<T>;
-  async validate<T extends YupSchema>(
+  validate<T extends YupSchema>(
     ...args: [ObjectParams] | ArrayParams
   ): DataValidation.Result<T> {
     let values: ObjectParams;
@@ -51,7 +49,7 @@ export class UcVanillaDataValidation implements DataValidation {
     }
 
     try {
-      return await values.schema.validate(values.data);
+      return values.schema.validateSync(values.data);
     } catch (err) {
       if (values.options && !values.options.throws) return;
       if (!(values.exception instanceof Error))

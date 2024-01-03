@@ -36,7 +36,7 @@ export class CreateExampleMiddleware
         state
       });
 
-      const params = await this.dataValidation.validate({
+      const params = this.dataValidation.validate({
         data: values,
         exception: DataValidation.Exceptions.INVALID_DATA,
         schema: createExampleSchema

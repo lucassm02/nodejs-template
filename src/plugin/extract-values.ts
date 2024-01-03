@@ -25,10 +25,7 @@ export class ExtractValues {
     this.validator = UcVanillaDataValidation.getInstance();
   }
 
-  private async validate(
-    value: Record<string, unknown>,
-    options: ValidationParams
-  ) {
+  private validate(value: Record<string, unknown>, options: ValidationParams) {
     const details = {
       data: value,
       exception: options.exception,
@@ -36,14 +33,14 @@ export class ExtractValues {
     };
 
     if (!exceptions) {
-      await this.validator.validate({
+      this.validator.validate({
         ...details,
         options: { throws: false }
       });
       return;
     }
 
-    await this.validator.validate({
+    this.validator.validate({
       ...details,
       options: { throws: true }
     });
@@ -81,7 +78,7 @@ export class ExtractValues {
     return object;
   }
 
-  protected async extractValuesFromSources(
+  protected extractValuesFromSources(
     sources: Sources,
     options?: ValidationParams
   ) {
@@ -92,7 +89,7 @@ export class ExtractValues {
 
     if (!options) return extractedValue;
 
-    await this.validate(extractedValue, options);
+    this.validate(extractedValue, options);
 
     return extractedValue;
   }
