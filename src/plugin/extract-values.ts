@@ -91,10 +91,7 @@ export class ExtractValues {
 
     if (!options) return extractedValue;
 
-    const validatedExtractedValue = this.validate<typeof options.schema>(
-      extractedValue,
-      options
-    );
+    const validatedExtractedValue = this.validate(extractedValue, options);
 
     return validatedExtractedValue;
   }
