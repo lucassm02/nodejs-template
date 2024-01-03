@@ -26,10 +26,10 @@ export class ExtractValues {
     this.validator = UcVanillaDataValidation.getInstance();
   }
 
-  private validate(
+  private validate<Schema extends YupSchema>(
     value: Record<string, unknown>,
     options: ValidationParams
-  ): unknown {
+  ): InferType<Schema> {
     const details = {
       data: value,
       exception: options.exception,
@@ -91,7 +91,10 @@ export class ExtractValues {
 
     if (!options) return extractedValue;
 
-    const validatedExtractedValue = this.validate(extractedValue, options);
+    const validatedExtractedValue = this.validate<typeof options.schema>(
+      extractedValue,
+      options
+    );
 
     return validatedExtractedValue;
   }

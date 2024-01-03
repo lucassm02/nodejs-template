@@ -12,6 +12,8 @@ import {
 import { DICTIONARY, template } from '@/util';
 import { createExampleSchema } from '@/validation/usecases';
 
+type Schema = typeof createExampleSchema;
+
 export class CreateExampleMiddleware
   extends ExtractValues
   implements Middleware
@@ -33,17 +35,15 @@ export class CreateExampleMiddleware
     next: Middleware.Next
   ): Middleware.Result {
     try {
-      const params = <InferType<typeof createExampleSchema>>(
-        this.extractValuesFromSources(
-          {
-            request: httpRequest,
-            state
-          },
-          {
-            schema: createExampleSchema,
-            exception: DataValidation.Exceptions.INVALID_DATA
-          }
-        )
+      const params = <InferType<Schema>>this.extractValuesFromSources(
+        {
+          request: httpRequest,
+          state
+        },
+        {
+          schema: createExampleSchema,
+          exception: DataValidation.Exceptions.INVALID_DATA
+        }
       );
 
       const { record, transaction } = await this.createExample.create(params);
