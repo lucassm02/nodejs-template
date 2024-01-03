@@ -1,4 +1,5 @@
 import { exceptions } from 'winston';
+import { InferType } from 'yup';
 
 import { UcVanillaDataValidation } from '@/data/usecases/validation';
 import { YupSchema } from '@/presentation/protocols';
@@ -25,22 +26,23 @@ export class ExtractValues {
     this.validator = UcVanillaDataValidation.getInstance();
   }
 
-  private validate(value: Record<string, unknown>, options: ValidationParams) {
+  private validate(
+    value: Record<string, unknown>,
+    options: ValidationParams
+  ): unknown {
     const details = {
       data: value,
       exception: options.exception,
       schema: options.schema
     };
 
-    if (!exceptions) {
-      this.validator.validate({
+    if (!exceptions)
+      return this.validator.validate({
         ...details,
         options: { throws: false }
       });
-      return;
-    }
 
-    this.validator.validate({
+    return this.validator.validate({
       ...details,
       options: { throws: true }
     });
@@ -81,7 +83,7 @@ export class ExtractValues {
   protected extractValuesFromSources(
     sources: Sources,
     options?: ValidationParams
-  ) {
+  ): unknown {
     const extractedValue = this.extractValues({
       sources,
       values: this.valuesToExtract
@@ -89,8 +91,8 @@ export class ExtractValues {
 
     if (!options) return extractedValue;
 
-    this.validate(extractedValue, options);
+    const validatedExtractedValue = this.validate(extractedValue, options);
 
-    return extractedValue;
+    return validatedExtractedValue;
   }
 }
