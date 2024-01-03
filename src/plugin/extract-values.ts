@@ -21,20 +21,18 @@ type ValidationParams = {
 export class ExtractValues {
   private readonly validator: UcVanillaDataValidation;
 
-  constructor(
-    protected readonly valuesToExtract: Values = [],
-    protected readonly validation?: ValidationParams
-  ) {
+  constructor(protected readonly valuesToExtract: Values = []) {
     this.validator = UcVanillaDataValidation.getInstance();
   }
 
-  private async validate(value: Record<string, unknown>) {
-    if (!this.validation) return;
-
+  private async validate(
+    value: Record<string, unknown>,
+    options: ValidationParams
+  ) {
     const details = {
       data: value,
-      exception: this.validation.exception,
-      schema: this.validation.schema
+      exception: options.exception,
+      schema: options.schema
     };
 
     if (!exceptions) {
@@ -83,15 +81,18 @@ export class ExtractValues {
     return object;
   }
 
-  protected async extractValuesFromSources(sources: Sources) {
+  protected async extractValuesFromSources(
+    sources: Sources,
+    options?: ValidationParams
+  ) {
     const extractedValue = this.extractValues({
       sources,
       values: this.valuesToExtract
     });
 
-    if (!this.validation) return extractedValue;
+    if (!options) return extractedValue;
 
-    await this.validate(extractedValue);
+    await this.validate(extractedValue, options);
 
     return extractedValue;
   }
