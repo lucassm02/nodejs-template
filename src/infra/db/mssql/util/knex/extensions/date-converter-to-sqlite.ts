@@ -21,13 +21,14 @@ function parseValueToUnixTimestamp(statement: Statement): Statement {
 }
 
 export function dateConverterToSqliteDriver(knex: typeof k) {
-  if (process.env.NODE_ENV !== 'test') return knex;
+  if (String(process.env.NODE_ENV).toLowerCase() !== 'test') return knex;
 
   const knexProxy = new Proxy(knex, {
     apply(target, _, [arg]) {
       const instance = target(arg);
 
-      if (instance.client.config.client !== 'sqlite3') return instance;
+      if (String(instance.client.config.client).toLowerCase() !== 'sqlite3')
+        return instance;
 
       instance.on('start', (builder: ContextType) => {
         const convertedStatements = builder._statements?.map(
