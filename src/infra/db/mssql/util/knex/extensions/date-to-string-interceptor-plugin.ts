@@ -1,16 +1,7 @@
 import k from 'knex';
 import { format } from 'date-fns';
 
-type Statement = {
-  grouping: string;
-  type: string;
-  column: string;
-  operator: string;
-  value: unknown;
-  not: boolean;
-  bool: string;
-  asColumn: boolean;
-};
+import { ContextType } from './types';
 
 function allowConvertDateToString(date: Date) {
   const dateValues = [date.getUTCHours(), date.getMinutes(), date.getSeconds()];
@@ -45,16 +36,6 @@ function singleDataToStringInterceptor(data: Record<string, unknown>) {
 }
 
 export function dateToStringInterceptorPlugin(knex: typeof k) {
-  type ContextType = {
-    _single?: {
-      table: string;
-      insert?: Record<string, unknown>;
-      update?: Record<string, unknown>;
-      only: boolean;
-    };
-    _statements?: Statement[];
-  };
-
   const knexProxy = new Proxy(knex, {
     apply(target, _, [arg]) {
       const instance = target(arg);
