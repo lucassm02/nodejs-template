@@ -1,9 +1,9 @@
-import { DataValidation, StaticDataValidation } from '@/domain/usecases';
+import { DataValidation } from '@/domain/usecases';
 import { YupSchema } from '@/presentation/protocols';
 
 type Schema = YupSchema;
 type Data = Record<string, unknown>;
-type Exception = string;
+type Exception = string | Error | undefined;
 type Options = DataValidation.Options | undefined;
 
 type ObjectParams = {
@@ -25,16 +25,14 @@ export class UcVanillaDataValidation implements DataValidation {
     return this.instance;
   }
 
-  async validate<T extends YupSchema>(
-    params: ObjectParams
-  ): DataValidation.Result<T>;
-  async validate<T extends YupSchema>(
+  validate<T extends YupSchema>(params: ObjectParams): DataValidation.Result<T>;
+  validate<T extends YupSchema>(
     schema: ArrayParams[0],
     data: ArrayParams[1],
     exception: ArrayParams[2],
     options?: ArrayParams[3]
   ): DataValidation.Result<T>;
-  async validate<T extends YupSchema>(
+  validate<T extends YupSchema>(
     ...args: [ObjectParams] | ArrayParams
   ): DataValidation.Result<T> {
     let values: ObjectParams;
@@ -51,10 +49,12 @@ export class UcVanillaDataValidation implements DataValidation {
     }
 
     try {
-      return await values.schema.validate(values.data);
+      return values.schema.validateSync(values.data);
     } catch (err) {
       if (values.options && !values.options.throws) return;
-      throw new Error(values.exception);
+      if (!(values.exception instanceof Error))
+        throw new Error(values.exception);
+      throw values.exception;
     }
   }
 }

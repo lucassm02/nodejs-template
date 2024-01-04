@@ -71,7 +71,7 @@ describe('UcVanillaDataValidation', () => {
   });
   it('should throws if invalid data is provided and passed default options or throws true in options', async () => {
     const { sut, data, exception, schema } = makeSut();
-    const result = sut.validate(schema, {}, exception);
+    const result = async () => sut.validate(schema, {}, exception);
     expect(result).rejects.toThrow(exception);
   });
   it('should return undefined with validation process throws but options throws is set as false', async () => {
