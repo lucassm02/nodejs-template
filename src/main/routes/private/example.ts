@@ -5,12 +5,22 @@ import {
 } from '@/main/factories/controllers';
 import {
   makeCreateExampleMiddleware,
-  makeGetExampleMiddleware
+  makeGetCacheValueMiddleware,
+  makeGetExampleMiddleware,
+  makeMqPublishInExchangeMiddleware,
+  makeSaveInCacheMiddleware
 } from '@/main/factories/middlewares';
 
 export default function (route: Route) {
   route.get(
     '/examples',
+    makeGetCacheValueMiddleware({
+      key: 'example',
+      options: {
+        parseToJson: true
+      },
+      throws: false
+    }),
     makeGetExampleMiddleware({ context: 'CREATE_EXAMPLE' }),
     makeGetExampleController()
   );
@@ -18,6 +28,16 @@ export default function (route: Route) {
   route.post(
     '/examples',
     makeCreateExampleMiddleware(),
+    makeSaveInCacheMiddleware({
+      key: 'example',
+      value: 'createExample',
+      ttl: 60 * 5 // 5 minutes of cache
+    }),
+    makeMqPublishInExchangeMiddleware({
+      context: 'PUBLISH_EXAMPLE',
+      exchange: 'example',
+      routingKey: 'example'
+    }),
     makeCreateExampleController()
   );
 }

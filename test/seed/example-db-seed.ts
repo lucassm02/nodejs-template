@@ -2,17 +2,27 @@ import { EXAMPLE_DB, sqlConnection } from '@/infra/db/mssql/util';
 import { sumDays } from '@/util';
 
 const {
-  EXAMPLE: { EXAMPLE }
+  EXAMPLE: { EXAMPLE },
+  FOO: { FOO }
 } = EXAMPLE_DB;
 
 export const seedExampleDatabase = async () => {
-  // implement seed here!
   await sqlConnection(EXAMPLE.TABLE).insert({
-    external_id: 'any_external_id',
-    created_at: new Date(),
-    updated_at: sumDays(new Date(), 1), // tomorrow!
-    deleted_at: null,
-    example_id: 1,
-    value: 100
+    [EXAMPLE.COLUMNS.EXAMPLE_ID]: 1,
+    [EXAMPLE.COLUMNS.EXTERNAL_ID]: 'any_external_id',
+    [EXAMPLE.COLUMNS.CREATED_AT]: new Date(),
+    [EXAMPLE.COLUMNS.UPDATED_AT]: sumDays(new Date(), 1), // tomorrow!
+    [EXAMPLE.COLUMNS.DELETED_AT]: null,
+    [EXAMPLE.COLUMNS.VALUE]: 100
+  });
+
+  await sqlConnection(FOO.TABLE).insert({
+    [FOO.COLUMNS.FOO_ID]: 1,
+    [FOO.COLUMNS.EXTERNAL_ID]: 'any_external_id',
+    [FOO.COLUMNS.CREATED_AT]: new Date(),
+    [FOO.COLUMNS.UPDATED_AT]: sumDays(new Date(), 1), // tomorrow!
+    [FOO.COLUMNS.DELETED_AT]: null,
+    [FOO.COLUMNS.EXAMPLE_ID]: 1,
+    [FOO.COLUMNS.VALUE]: 100
   });
 };
