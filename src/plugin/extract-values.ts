@@ -83,7 +83,7 @@ export class ExtractValues {
   protected extractValuesFromSources(
     sources: Sources,
     options?: ValidationParams
-  ): unknown {
+  ): Record<string, unknown> {
     const extractedValue = this.extractValues({
       sources,
       values: this.valuesToExtract
@@ -91,7 +91,9 @@ export class ExtractValues {
 
     if (!options) return extractedValue;
 
-    const validatedExtractedValue = this.validate(extractedValue, options);
+    const validatedExtractedValue = <Record<string, unknown>>(
+      this.validate(extractedValue, options)
+    );
 
     return validatedExtractedValue;
   }
