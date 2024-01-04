@@ -1,7 +1,5 @@
-import k from 'knex';
+import k, { ContextType } from 'knex';
 import { format } from 'date-fns';
-
-import { ContextType } from './types';
 
 function allowConvertDateToString(date: Date) {
   const dateValues = [date.getUTCHours(), date.getMinutes(), date.getSeconds()];
