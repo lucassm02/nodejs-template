@@ -1,10 +1,9 @@
 import { knex as k } from 'knex';
 
 import {
-  noLockPlugin,
   dateToStringInterceptorPlugin,
   formattedSelectPlugin,
-  insertInTestEnvironmentInterceptor,
+  noLockPlugin,
   syntaxInTestEnvironmentInterceptor
 } from './extensions';
 
@@ -16,7 +15,6 @@ export class CustomKnex {
     this.knex = noLockPlugin(k);
     this.knex = dateToStringInterceptorPlugin(this.knex);
     this.knex = formattedSelectPlugin(this.knex);
-    this.knex = insertInTestEnvironmentInterceptor(this.knex);
     this.knex = syntaxInTestEnvironmentInterceptor(this.knex);
   }
 
