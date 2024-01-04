@@ -40,12 +40,6 @@ declare module 'knex' {
       formattedSelect<TRecord, TResult>(
         object: Object
       ): KnexOriginal.QueryBuilder<TRecord, TResult>;
-      insertInTestEnvironment<TRecord, TResult>(data: {
-        builder: {
-          getColumnsObject: (keyCase: 'SNAKE') => { [key: string]: string };
-        };
-        query: Object;
-      }): KnexOriginal.QueryBuilder<TRecord, TResult>;
     }
   }
 }
