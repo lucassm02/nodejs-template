@@ -19,5 +19,20 @@ export const EXAMPLE_DB = {
         'deleted_at'
       ]
     })
+  },
+  FOO: {
+    FOO: builder({
+      table: '[foo].[tb_foo]',
+      columns: <const>[
+        'foo_id',
+        'example_id',
+        'external_id',
+        'value',
+        'description',
+        'created_at',
+        'updated_at',
+        'deleted_at'
+      ]
+    })
   }
 };
