@@ -1,6 +1,8 @@
 import 'dotenv/config';
 import { stringToBoolean } from '../text';
 
+export const ENVIRONMENT = process.env.NODE_ENV || 'development';
+
 export const SERVER = {
   ENABLED: process.env.SERVER_ENABLED === 'true',
   PORT: process.env.SERVER_PORT || 3000,
