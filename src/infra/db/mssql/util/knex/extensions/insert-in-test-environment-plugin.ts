@@ -1,52 +1,71 @@
 import k from 'knex';
 
-import { ENVIRONMENT } from '@/util';
+type Statement = {
+  grouping: string;
+  type: string;
+  column: string;
+  operator: string;
+  value: unknown;
+  not: boolean;
+  bool: string;
+  asColumn: boolean;
+};
 
-export function insertInTestEnvironmentPlugin(knex: typeof k) {
-  type ContextType<Type> = { _single: { table: string } } & Type;
-  type InsertParams = {
-    builder: {
-      getColumnsObject: (keyCase: 'SNAKE') => { [key: string]: string };
-    };
-    query: any;
+type ContextType = {
+  _single?: {
+    table: string;
+    insert?: Record<string, unknown>;
+    update?: Record<string, unknown>;
+    only: boolean;
   };
+  _statements?: Statement[];
+};
 
-  knex.QueryBuilder.extend(
-    'insertInTestEnvironment',
-    function (this, data: InsertParams) {
-      if (ENVIRONMENT !== 'test') return this;
-      if (this.client.config.client !== 'sqlite3') return this;
+type Data = Record<string, unknown>[] | Record<string, unknown>;
 
-      const context = <ContextType<typeof this>>this;
+function removeTableNameOfKeyValue([key, value]: [string, unknown]) {
+  if (!key.includes('.')) return [key, value];
+  const newKey = key.split('.')[1];
+  return [newKey, value];
+}
 
-      const { table } = context._single;
+function removeTableFromKeyValue(data: Data) {
+  if (!Array.isArray(data)) {
+    const entries = Object.entries(data);
+    const newEntries = entries.map(removeTableNameOfKeyValue);
+    return Object.fromEntries(newEntries);
+  }
 
-      const { builder, query } = data;
+  const entries = data.map(Object.entries);
 
-      if (!builder.getColumnsObject) return this;
-
-      const columns = Object.keys(builder.getColumnsObject('SNAKE'));
-
-      const newQueryWithoutTableName: any = Object.entries(query).reduce(
-        (last, actual) => {
-          const newKey = actual[0].split('.')[1];
-          return {
-            ...last,
-            [newKey]: actual[1]
-          };
-        },
-        {}
-      );
-
-      const insertQuery = columns.reduce((last, actual) => {
-        return {
-          ...last,
-          [actual]: newQueryWithoutTableName[actual]
-        };
-      }, {});
-      return this.insert(insertQuery as any).into(table);
-    }
+  const newEntries = entries.map((entry) =>
+    entry.map(removeTableNameOfKeyValue)
   );
 
-  return knex;
+  return newEntries.map(Object.fromEntries);
+}
+
+export function insertInTestEnvironmentInterceptor(knex: typeof k) {
+  const knexProxy = new Proxy(knex, {
+    apply(target, _, [arg]) {
+      const instance = target(arg);
+      instance.on('start', (builder: ContextType) => {
+        if (!builder) return;
+
+        if (String(process.env.NODE_ENV).toLowerCase() !== 'test') return;
+
+        const PROPS_TO_INTERCEPT = <const>['insert'];
+
+        for (const PROP of PROPS_TO_INTERCEPT) {
+          if (builder._single?.[PROP]) {
+            builder._single[PROP] = removeTableFromKeyValue(
+              <Data>builder._single[PROP]
+            );
+          }
+        }
+      });
+      return instance;
+    }
+  });
+  return knexProxy;
 }
