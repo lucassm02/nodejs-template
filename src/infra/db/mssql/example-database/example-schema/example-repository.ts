@@ -41,20 +41,19 @@ export class ExampleRepository
   ): GetFooWithExampleRepository.Result {
     return this.connection(FOO.TABLE)
       .select({
+        fooId: FOO.COLUMNS.FOO_ID,
         exampleId: EXAMPLE.COLUMNS.EXAMPLE_ID,
         createdAt: EXAMPLE.COLUMNS.CREATED_AT,
         deletedAt: EXAMPLE.COLUMNS.DELETED_AT,
         updatedAt: EXAMPLE.COLUMNS.UPDATED_AT,
         description: EXAMPLE.COLUMNS.DESCRIPTION,
-        value: EXAMPLE.COLUMNS.VALUE,
-        fooId: FOO.COLUMNS.FOO_ID
+        value: EXAMPLE.COLUMNS.VALUE
       })
       .innerJoin(
         EXAMPLE.TABLE,
         EXAMPLE.COLUMNS.EXAMPLE_ID,
         FOO.COLUMNS.EXAMPLE_ID
-      )
-      .where(FOO.COLUMNS.FOO_ID, '=', params.fooId);
+      );
   }
   async get(): GetExampleRepository.Result {
     const exampleSchema = transform(EXAMPLE.getColumnsObject('CAMEL'))
