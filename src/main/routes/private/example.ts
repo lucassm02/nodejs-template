@@ -11,6 +11,8 @@ import {
   makeSaveInCacheMiddleware
 } from '@/main/factories/middlewares';
 
+const fiveMinutes = 60 * 5;
+
 export default function (route: Route) {
   route.get(
     '/examples',
@@ -31,7 +33,7 @@ export default function (route: Route) {
     makeSaveInCacheMiddleware({
       key: 'example',
       value: 'createExample',
-      ttl: 60 * 5 // 5 minutes of cache
+      ttl: fiveMinutes
     }),
     makeMqPublishInExchangeMiddleware({
       context: 'PUBLISH_EXAMPLE',
