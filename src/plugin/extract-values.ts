@@ -1,3 +1,8 @@
+import { exceptions } from 'winston';
+import { InferType } from 'yup';
+
+import { UcVanillaDataValidation } from '@/data/usecases/validation';
+import { YupSchema } from '@/presentation/protocols';
 import { getIn } from '@/util';
 
 type Sources = Record<string, Record<string, unknown>>;
@@ -9,8 +14,39 @@ type Option = {
   sources: Sources;
 };
 
+type ValidationParams = {
+  schema: YupSchema;
+  exception?: string | Error;
+};
+
 export class ExtractValues {
-  constructor(protected readonly valuesToExtract: Values = []) {}
+  private readonly validator: UcVanillaDataValidation;
+
+  constructor(protected readonly valuesToExtract: Values = []) {
+    this.validator = UcVanillaDataValidation.getInstance();
+  }
+
+  private validate<Schema extends YupSchema>(
+    value: Record<string, unknown>,
+    options: ValidationParams
+  ): InferType<Schema> {
+    const details = {
+      data: value,
+      exception: options.exception,
+      schema: options.schema
+    };
+
+    if (!exceptions)
+      return this.validator.validate({
+        ...details,
+        options: { throws: false }
+      });
+
+    return this.validator.validate({
+      ...details,
+      options: { throws: true }
+    });
+  }
 
   private extractValues({ sources, values }: Option) {
     const object: Record<string, unknown> = {};
@@ -44,7 +80,19 @@ export class ExtractValues {
     return object;
   }
 
-  protected extractValuesFromSources(sources: Sources) {
-    return this.extractValues({ sources, values: this.valuesToExtract });
+  protected extractValuesFromSources(
+    sources: Sources,
+    options?: ValidationParams
+  ): unknown {
+    const extractedValue = this.extractValues({
+      sources,
+      values: this.valuesToExtract
+    });
+
+    if (!options) return extractedValue;
+
+    const validatedExtractedValue = this.validate(extractedValue, options);
+
+    return validatedExtractedValue;
   }
 }

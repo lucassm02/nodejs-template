@@ -27,7 +27,7 @@ export namespace DataValidation {
   }
   export type Schema = YupSchema;
   export type Exception = string;
-  export type Result<T extends YupSchema> = Promise<InferType<T>>;
+  export type Result<T extends YupSchema> = InferType<T>;
   export type Options = {
     throws?: boolean;
   };

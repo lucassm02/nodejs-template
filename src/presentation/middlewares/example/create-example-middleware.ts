@@ -1,3 +1,5 @@
+import { InferType } from 'yup';
+
 import { Logger } from '@/data/protocols/utils';
 import { CreateExample, DataValidation, ErrorHandler } from '@/domain/usecases';
 import { ExtractValues } from '@/plugin';
@@ -9,6 +11,8 @@ import {
 } from '@/presentation/utils';
 import { DICTIONARY, template } from '@/util';
 import { createExampleSchema } from '@/validation/usecases';
+
+type Schema = typeof createExampleSchema;
 
 export class CreateExampleMiddleware
   extends ExtractValues
@@ -31,16 +35,16 @@ export class CreateExampleMiddleware
     next: Middleware.Next
   ): Middleware.Result {
     try {
-      const values = this.extractValuesFromSources({
-        request: httpRequest,
-        state
-      });
-
-      const params = await this.dataValidation.validate({
-        data: values,
-        exception: DataValidation.Exceptions.INVALID_DATA,
-        schema: createExampleSchema
-      });
+      const params = <InferType<Schema>>this.extractValuesFromSources(
+        {
+          request: httpRequest,
+          state
+        },
+        {
+          schema: createExampleSchema,
+          exception: DataValidation.Exceptions.INVALID_DATA
+        }
+      );
 
       const { record, transaction } = await this.createExample.create(params);
 
