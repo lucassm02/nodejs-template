@@ -15,7 +15,8 @@ export interface ReprocessingModel extends mongoose.Document {
 const schema = new mongoose.Schema(
   {
     reprocessing_id: { type: String, default: () => generateUuid() },
-    created_at: { type: Date, default: () => new Date() }
+    created_at: { type: Date, default: () => new Date() },
+    deleted_at: { type: Date }
   },
   { strict: false }
 );
