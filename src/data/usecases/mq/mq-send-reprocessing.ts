@@ -1,3 +1,4 @@
+import { SaveReprocessingDataRepository } from '@/data/protocols/db/reprocessing';
 import { PublishInExchangeService } from '@/data/protocols/mq/publish-in-exchange';
 import { PublishInQueueService } from '@/data/protocols/mq/publish-in-queue';
 import { SendReprocessing } from '@/domain/usecases';
@@ -6,6 +7,7 @@ export class MqSendReprocessing implements SendReprocessing {
   constructor(
     private readonly publishInExchangeService: PublishInExchangeService,
     private readonly publishInQueueService: PublishInQueueService,
+    private readonly saveReprocessingDataRepository: SaveReprocessingDataRepository,
     private readonly queueOptions: {
       queue: string;
       exchange?: string;
@@ -15,7 +17,7 @@ export class MqSendReprocessing implements SendReprocessing {
     private readonly delays: number[]
   ) {}
 
-  reprocess({
+  async reprocess({
     data: {
       payload,
       state: { reprocessing, ...state }
@@ -77,6 +79,15 @@ export class MqSendReprocessing implements SendReprocessing {
     }
 
     tries.current += TRIES_SCALE;
+
+    if (tries.max + 1 === tries.current) {
+      await this.saveReprocessingDataRepository.save({
+        exchange: this.queueOptions.exchange,
+        message: newPayload,
+        routingKey: this.queueOptions.routingKey ?? '',
+        queue: this.queueOptions.queue ?? ''
+      });
+    }
 
     if (tries.current > tries.max) return;
 
