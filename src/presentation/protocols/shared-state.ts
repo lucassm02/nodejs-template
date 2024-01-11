@@ -3,7 +3,8 @@ import {
   AuthenticationModel,
   ExampleModel,
   DatabaseTransaction,
-  CacheTransaction
+  CacheTransaction,
+  ReprocessingModel
 } from '@/domain/models';
 
 export type SharedState = {
@@ -13,4 +14,5 @@ export type SharedState = {
   cacheValues: CacheTransaction;
   createExample: ExampleModel;
   transactions: DatabaseTransaction[];
+  getReprocessingDataByIdentifier: ReprocessingModel[];
 };
