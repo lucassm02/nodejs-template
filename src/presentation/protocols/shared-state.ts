@@ -15,5 +15,5 @@ export type SharedState = {
   createExample: ExampleModel;
   transactions: DatabaseTransaction[];
   getReprocessingDataByIdentifier: ReprocessingModel[];
-  getProcessingData: ReprocessingModel[];
+  getReprocessingData: ReprocessingModel[];
 };
