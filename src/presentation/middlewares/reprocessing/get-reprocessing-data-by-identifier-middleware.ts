@@ -33,8 +33,7 @@ export class GetReprocessingDataByIdentifierMiddleware implements Middleware {
         case GetReprocessingDataByIdentifier.Exceptions
           .REPROCESSING_DATA_NOT_FOUND:
           return notFound(
-            GetReprocessingDataByIdentifier.Exceptions
-              .REPROCESSING_DATA_NOT_FOUND
+            'Não foi encontrado nenhum dado para reprocessamento.'
           );
         default:
           return serverError(error);

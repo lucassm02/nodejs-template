@@ -1,4 +1,5 @@
 import { Route } from '@/infra/http/utils/http-server/types';
+import { makePublishDataToReprocessController } from '@/main/factories/controllers';
 import {
   makeDeleteProcessingByIdentifierMiddleware,
   makeGetReprocessingDataByIdentifierMiddleware,
@@ -10,6 +11,7 @@ export default function (route: Route) {
     '/reprocessing',
     makeGetReprocessingDataByIdentifierMiddleware(),
     makePublishDataToReprocessingMiddleware(),
-    makeDeleteProcessingByIdentifierMiddleware()
+    makeDeleteProcessingByIdentifierMiddleware(),
+    makePublishDataToReprocessController()
   );
 }
