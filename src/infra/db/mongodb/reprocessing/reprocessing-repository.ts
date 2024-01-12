@@ -44,7 +44,8 @@ export class ReprocessingRepository
     const results = records.map((record) => ({
       reprocessingId: record.reprocessing_id,
       reprocessing: record.message.reprocessing,
-      queue: record.queue
+      queue: record.queue,
+      createdAt: record.created_at
     }));
 
     return convertSnakeCaseKeysToCamelCase(results);
@@ -64,16 +65,29 @@ export class ReprocessingRepository
   async get({
     queue,
     exchange,
-    routingKey
+    routingKey,
+    finalDateTime,
+    initialDateTime
   }: GetReprocessingDataRepository.Params): GetReprocessingDataRepository.Result {
-    const records = await ReprocessingModel.find({
-      $or: [{ queue }, { exchange }, { routing_key: routingKey }, {}]
-    }).exec();
+    const query: Record<string, unknown> = {
+      $or: [{ queue }, { exchange }, { routing_key: routingKey }, {}],
+      deleted_at: null
+    };
+
+    if (initialDateTime && finalDateTime) {
+      query.created_at = {
+        $gte: initialDateTime,
+        $lt: finalDateTime
+      };
+    }
+
+    const records = await ReprocessingModel.find(query).exec();
 
     const results = records.map((record) => ({
       reprocessingId: record.reprocessing_id,
       reprocessing: record.message.reprocessing,
-      queue: record.queue
+      queue: record.queue,
+      createdAt: record.created_at
     }));
 
     return convertSnakeCaseKeysToCamelCase(results);

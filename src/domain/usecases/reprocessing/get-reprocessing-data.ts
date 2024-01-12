@@ -9,6 +9,8 @@ export namespace GetReprocessingData {
     exchange?: string;
     routingKey?: string;
     queue?: string;
+    finalDate?: string;
+    initialDate?: string;
   };
   export type Result = Promise<ReprocessingModel[]>;
   export enum Exceptions {

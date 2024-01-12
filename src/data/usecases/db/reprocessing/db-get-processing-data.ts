@@ -8,12 +8,19 @@ export class DbGetReprocessingData implements GetReprocessingData {
   async get({
     queue,
     exchange,
-    routingKey
+    finalDate,
+    routingKey,
+    initialDate
   }: GetReprocessingData.Params): GetReprocessingData.Result {
+    const initialDateTime = initialDate ? `${initialDate} 00:00:00` : undefined;
+    const finalDateTime = finalDate ? `${finalDate} 23:59:59` : undefined;
+
     const reprocessing = await this.getReprocessingDataRepository.get({
       queue,
       exchange,
-      routingKey
+      routingKey,
+      finalDateTime,
+      initialDateTime
     });
 
     if (!reprocessing.length)

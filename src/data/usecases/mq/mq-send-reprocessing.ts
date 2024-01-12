@@ -80,16 +80,15 @@ export class MqSendReprocessing implements SendReprocessing {
 
     tries.current += TRIES_SCALE;
 
-    if (tries.max + 1 === tries.current) {
+    if (tries.current > tries.max) {
       await this.saveReprocessingDataRepository.save({
         exchange: this.queueOptions.exchange,
         message: newPayload,
         routingKey: this.queueOptions.routingKey ?? '',
         queue: this.queueOptions.queue ?? ''
       });
+      return;
     }
-
-    if (tries.current > tries.max) return;
 
     if (!this.queueOptions.exchange) {
       this.publishInQueueService.publishInQueue(

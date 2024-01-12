@@ -18,7 +18,9 @@ export class GetReprocessingDataMiddleware implements Middleware {
       const reprocessing = await this.getReprocessingData.get({
         queue: <string>httpRequest.query?.queue,
         exchange: <string>httpRequest.query?.exchange,
-        routingKey: <string>httpRequest.query?.routingKey
+        finalDate: <string>httpRequest.query?.finalDate,
+        routingKey: <string>httpRequest.query?.routingKey,
+        initialDate: <string>httpRequest.query?.initialDate
       });
 
       setState({ getReprocessingData: reprocessing });

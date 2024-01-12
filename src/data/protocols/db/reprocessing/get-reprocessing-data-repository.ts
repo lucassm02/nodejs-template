@@ -11,6 +11,8 @@ export namespace GetReprocessingDataRepository {
     exchange?: string;
     routingKey?: string;
     queue?: string;
+    initialDateTime?: string;
+    finalDateTime?: string;
   };
   export type Result = Promise<ReprocessingModel[] | []>;
 }
