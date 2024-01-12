@@ -1,4 +1,5 @@
 import { Route } from '@/infra/http/utils/http-server/types';
+import { requestValidationAdapter } from '@/main/adapters';
 import {
   makeGetReprocessingDataController,
   makePublishDataToReprocessController
@@ -9,10 +10,12 @@ import {
   makeGetReprocessingDataByIdentifierMiddleware,
   makePublishDataToReprocessingMiddleware
 } from '@/main/factories/middlewares';
+import { publishDataToReprocessSchema } from '@/validation/usecases';
 
 export default function (route: Route) {
   route.post(
     '/reprocessings',
+    requestValidationAdapter(publishDataToReprocessSchema),
     makeGetReprocessingDataByIdentifierMiddleware(),
     makePublishDataToReprocessingMiddleware(),
     makeDeleteReprocessingByIdentifierMiddleware(),
