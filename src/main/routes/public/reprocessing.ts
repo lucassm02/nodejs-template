@@ -10,7 +10,10 @@ import {
   makeGetReprocessingDataByIdentifierMiddleware,
   makePublishDataToReprocessingMiddleware
 } from '@/main/factories/middlewares';
-import { publishDataToReprocessSchema } from '@/validation/usecases';
+import {
+  getReprocessingDataSchema,
+  publishDataToReprocessSchema
+} from '@/validation/usecases';
 
 export default function (route: Route) {
   route.post(
@@ -24,6 +27,7 @@ export default function (route: Route) {
 
   route.get(
     '/reprocessings',
+    requestValidationAdapter(getReprocessingDataSchema),
     makeGetReprocessingDataMiddleware(),
     makeGetReprocessingDataController()
   );
