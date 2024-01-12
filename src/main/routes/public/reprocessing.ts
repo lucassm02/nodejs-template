@@ -4,7 +4,7 @@ import {
   makePublishDataToReprocessController
 } from '@/main/factories/controllers';
 import {
-  makeDeleteProcessingByIdentifierMiddleware,
+  makeDeleteReprocessingByIdentifierMiddleware,
   makeGetReprocessingDataMiddleware,
   makeGetReprocessingDataByIdentifierMiddleware,
   makePublishDataToReprocessingMiddleware
@@ -15,7 +15,7 @@ export default function (route: Route) {
     '/reprocessings',
     makeGetReprocessingDataByIdentifierMiddleware(),
     makePublishDataToReprocessingMiddleware(),
-    makeDeleteProcessingByIdentifierMiddleware(),
+    makeDeleteReprocessingByIdentifierMiddleware(),
     makePublishDataToReprocessController()
   );
 

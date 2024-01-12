@@ -1,5 +1,5 @@
 import {
-  DeleteProcessingByIdentifierRepository,
+  DeleteReprocessingByIdentifierRepository,
   GetReprocessingDataRepository,
   GetReprocessingDataByIdentifierRepository,
   SaveReprocessingDataRepository
@@ -15,7 +15,7 @@ export class ReprocessingRepository
   implements
     SaveReprocessingDataRepository,
     GetReprocessingDataByIdentifierRepository,
-    DeleteProcessingByIdentifierRepository,
+    DeleteReprocessingByIdentifierRepository,
     GetReprocessingDataRepository
 {
   async save({
@@ -52,7 +52,7 @@ export class ReprocessingRepository
 
   async delete({
     reprocessingIds
-  }: DeleteProcessingByIdentifierRepository.Params): DeleteProcessingByIdentifierRepository.Result {
+  }: DeleteReprocessingByIdentifierRepository.Params): DeleteReprocessingByIdentifierRepository.Result {
     await ReprocessingModel.updateMany(
       {
         reprocessing_id: { $in: reprocessingIds }

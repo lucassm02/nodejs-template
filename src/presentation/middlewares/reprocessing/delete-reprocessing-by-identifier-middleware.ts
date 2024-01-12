@@ -1,10 +1,13 @@
-import { DeleteProcessingByIdentifier, ErrorHandler } from '@/domain/usecases';
+import {
+  DeleteReprocessingByIdentifier,
+  ErrorHandler
+} from '@/domain/usecases';
 import { Middleware } from '@/presentation/protocols';
 import { serverError, stateDependencies } from '@/presentation/utils';
 
-export class DeleteProcessingByIdentifierMiddleware implements Middleware {
+export class DeleteReprocessingByIdentifierMiddleware implements Middleware {
   constructor(
-    private readonly deleteProcessingByIdentifier: DeleteProcessingByIdentifier,
+    private readonly deleteReprocessingByIdentifier: DeleteReprocessingByIdentifier,
     private readonly errorHandler: ErrorHandler
   ) {}
 
@@ -15,7 +18,7 @@ export class DeleteProcessingByIdentifierMiddleware implements Middleware {
     next: Middleware.Next
   ): Middleware.Result {
     try {
-      await this.deleteProcessingByIdentifier.delete(
+      await this.deleteReprocessingByIdentifier.delete(
         getReprocessingDataByIdentifier
       );
       return next();
