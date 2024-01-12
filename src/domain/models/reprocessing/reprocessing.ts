@@ -7,5 +7,5 @@ export type ReprocessingModel = {
     state: object;
   };
   queue: string;
-  createdAt: string;
+  createdAt: Date;
 };
