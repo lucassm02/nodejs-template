@@ -1,5 +1,6 @@
 import {
   DeleteProcessingByIdentifierRepository,
+  GetReprocessingDataRepository,
   GetReprocessingDataByIdentifierRepository,
   SaveReprocessingDataRepository
 } from '@/data/protocols/db/reprocessing';
@@ -14,7 +15,8 @@ export class ReprocessingRepository
   implements
     SaveReprocessingDataRepository,
     GetReprocessingDataByIdentifierRepository,
-    DeleteProcessingByIdentifierRepository
+    DeleteProcessingByIdentifierRepository,
+    GetReprocessingDataRepository
 {
   async save({
     queue,
@@ -57,5 +59,23 @@ export class ReprocessingRepository
       },
       { deleted_at: new Date() }
     ).exec();
+  }
+
+  async get({
+    queue,
+    exchange,
+    routingKey
+  }: GetReprocessingDataRepository.Params): GetReprocessingDataRepository.Result {
+    const records = await ReprocessingModel.find({
+      $or: [{ queue }, { exchange }, { routing_key: routingKey }, {}]
+    }).exec();
+
+    const results = records.map((record) => ({
+      reprocessingId: record.reprocessing_id,
+      reprocessing: record.message.reprocessing,
+      queue: record.queue
+    }));
+
+    return convertSnakeCaseKeysToCamelCase(results);
   }
 }
