@@ -4,5 +4,5 @@ export interface UpdateEvent {
 
 export namespace UpdateEvent {
   export type Params = Record<string, unknown>;
-  export type Result = Promise<{ id: string } | void>;
+  export type Result = Promise<{ id: string } | undefined>;
 }

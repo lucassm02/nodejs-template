@@ -1,6 +1,7 @@
 export type ExampleModel = {
-  exampleId: string | number;
-  value: number;
+  exampleId: number;
+  externalId: string;
+  value: string;
   description: string;
   createdAt: Date;
   updatedAt: Date;
