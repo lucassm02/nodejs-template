@@ -20,7 +20,7 @@ const makeSut = (): SutTypes => {
 };
 
 describe('DbGetReprocessingDataByIdentifier UseCase', () => {
-  it('Should call GetReprocessingDataByIdentifierRepository witch correct values', async () => {
+  it('Should call getReprocessingDataByIdentifierRepository witch correct values', async () => {
     const { sut, getReprocessingDataByIdentifierRepositoryStub } = makeSut();
 
     const getByIdentifier = jest.spyOn(
