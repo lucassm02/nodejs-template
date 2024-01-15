@@ -1,4 +1,4 @@
-import { PublishInQueueService } from '@/data/protocols/mq/publish-in-queue';
+import { PublishInQueueService } from '@/data/protocols/mq';
 
 export class PublishInQueueServiceStub implements PublishInQueueService {
   async publishInQueue(): Promise<void> {}

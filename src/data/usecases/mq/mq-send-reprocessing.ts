@@ -85,7 +85,7 @@ export class MqSendReprocessing implements SendReprocessing {
         exchange: this.queueOptions.exchange,
         message: newPayload,
         routingKey: this.queueOptions.routingKey ?? '',
-        queue: this.queueOptions.queue ?? ''
+        queue: this.queueOptions.queue
       });
       return;
     }
