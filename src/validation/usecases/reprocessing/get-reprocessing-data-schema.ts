@@ -42,7 +42,7 @@ export const getReprocessingDataSchema = yup.object().shape({
     .string()
     .notRequired()
     .test('is-boolean', 'O verbose deve ser um boolean', (value) => {
-      return value ? value === 'true' || value === 'false' : false;
+      return value ? value === 'true' || value === 'false' : true;
     }),
   queue: string.notRequired(),
   routing_key: string.notRequired(),
