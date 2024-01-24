@@ -6,5 +6,5 @@ export interface SendReprocessing {
 export namespace SendReprocessing {
   export type Params = ReprocessingData;
 
-  export type Result = void;
+  export type Result = Promise<void>;
 }

@@ -13,13 +13,13 @@ export namespace CreateExampleRepository {
   };
 
   type Model = {
-    exampleId: string;
+    exampleId: number;
     externalId: string;
     value: string;
     description: string;
-    createdAt: string;
-    updatedAt: string;
-    deletedAt: string;
+    createdAt: Date;
+    updatedAt: Date;
+    deletedAt: Date;
   };
 
   export type Result = Promise<DatabaseTransactionWrapper<Model>>;

@@ -1,9 +1,11 @@
 import { MqSendReprocessing } from '@/data/usecases/mq';
+import { ReprocessingRepository } from '@/infra/db/mongodb/reprocessing';
 import { rabbitMqServer } from '@/infra/mq/utils';
 import { overrideState } from '@/job/utils';
 import { REPROCESSING } from '@/util';
 
 const mqServer = rabbitMqServer();
+const reprocessingRepository = new ReprocessingRepository();
 
 const skipMiddleware = (
   reprocessingState: any,
@@ -64,6 +66,7 @@ export function reprocessing(options: Options = {}) {
       const mqSendReprocessing = new MqSendReprocessing(
         mqServer,
         mqServer,
+        reprocessingRepository,
         { queue: payload.properties.queue, ...queueOptions },
         maxTries,
         delays

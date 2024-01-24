@@ -26,7 +26,7 @@ describe('Example DB', () => {
 
     const result = await sut.update({
       exampleId: 1,
-      value: 100,
+      value: '100',
       description: 'foo'
     });
 

@@ -6,7 +6,9 @@
     "hokify",
     "italog",
     "memjs",
+    "reprocessings",
     "sonarsource",
-    "sqlite"
+    "sqlite",
+    "uuidv"
   ]
 }

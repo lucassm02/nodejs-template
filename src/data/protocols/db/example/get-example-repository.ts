@@ -1,16 +1,18 @@
+import { ExampleModel } from '@/domain/models';
+
 export interface GetExampleRepository {
   get(): GetExampleRepository.Result;
 }
 
 export namespace GetExampleRepository {
   type Model = {
-    exampleId: string;
+    exampleId: number;
     externalId: string;
     value: string;
     description: string;
-    createdAt: string;
-    updatedAt: string;
-    deletedAt: string;
+    createdAt: Date;
+    updatedAt: Date;
+    deletedAt: Date;
   };
-  export type Result = Promise<Model[]>;
+  export type Result = Promise<ExampleModel[]>;
 }
