@@ -4,9 +4,8 @@ import { convertDateToUnix, isDateValid } from '@/util';
 
 function parseValueToUnixTimestamp(statement: Statement): Statement {
   if (
-    !(statement.value instanceof Date) &&
-    typeof statement.value !== 'string' &&
-    typeof statement.value !== 'number'
+    !(statement.value instanceof Date) ||
+    typeof statement.value !== 'string'
   ) {
     return statement;
   }
