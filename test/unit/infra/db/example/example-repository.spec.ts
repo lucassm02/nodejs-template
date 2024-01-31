@@ -44,7 +44,7 @@ describe('Example DB', () => {
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
         deletedAt: null,
-        description: null,
+        description: 'foo',
         exampleId: 1,
         fooId: 1,
         value: 100

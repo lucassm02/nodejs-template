@@ -1,5 +1,5 @@
 import { DbDeleteReprocessingByIdentifier } from '@/data/usecases/db';
-import { DeleteReprocessingByIdentifierRepositoryStub } from '@/test/unit/data/db/mocks';
+import { DeleteReprocessingByIdentifierRepositoryStub } from '@/test/unit/data/protocols';
 
 type SutTypes = {
   sut: DbDeleteReprocessingByIdentifier;

@@ -1,5 +1,5 @@
 import { DbGetReprocessingDataByIdentifier } from '@/data/usecases/db';
-import { GetReprocessingDataByIdentifierRepositoryStub } from '@/test/unit/data/db/mocks';
+import { GetReprocessingDataByIdentifierRepositoryStub } from '@/test/unit/data/protocols';
 
 type SutTypes = {
   sut: DbGetReprocessingDataByIdentifier;

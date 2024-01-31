@@ -1,5 +1,5 @@
 import { MqPublishDataToReprocessing } from '@/data/usecases/mq';
-import { PublishInQueueServiceStub } from '@/test/unit/data/mq/mocks';
+import { PublishInQueueServiceStub } from '@/test/unit/data/protocols';
 
 type SutTypes = {
   sut: MqPublishDataToReprocessing;

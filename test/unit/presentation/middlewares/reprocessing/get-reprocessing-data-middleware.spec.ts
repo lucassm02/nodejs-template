@@ -1,7 +1,9 @@
 import { ErrorHandler } from '@/domain/usecases';
 import { GetReprocessingDataMiddleware } from '@/presentation/middlewares';
-import { mockReprocessingModel } from '@/test/unit/domain';
-import { GetReprocessingDataStub } from '@/test/unit/presentation/mocks';
+import {
+  GetReprocessingDataStub,
+  mockReprocessingModel
+} from '@/test/unit/domain';
 import {
   makeErrorHandlerStub,
   makeNotFoundMock,

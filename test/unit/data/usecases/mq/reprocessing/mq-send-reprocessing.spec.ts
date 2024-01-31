@@ -1,9 +1,9 @@
+import { MqSendReprocessing } from '@/data/usecases/mq';
 import {
   PublishInExchangeServiceStub,
   PublishInQueueServiceStub,
   SaveReprocessingDataRepositoryStub
-} from '@/test/unit/data/mq/mocks';
-import { MqSendReprocessing } from '@/data/usecases/mq';
+} from '@/test/unit/data/protocols';
 
 type SutTypes = {
   sut: MqSendReprocessing;
