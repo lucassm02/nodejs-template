@@ -6,3 +6,4 @@ export * from './rename-keys';
 export * from './tree-object';
 export * from './override-attribute-value';
 export * from './merge';
+export * from './remove-undefined-values';
