@@ -8,7 +8,7 @@ import {
   makeErrorHandlerStub,
   makeNotFoundMock,
   makeServerErrorMock
-} from '@/test/unit/utils';
+} from '@/test/utils';
 
 type SutTypes = {
   sut: GetReprocessingDataMiddleware;
