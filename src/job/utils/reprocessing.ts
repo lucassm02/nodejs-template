@@ -75,7 +75,10 @@ export function reprocessing(options: Options = {}) {
       try {
         normalizePayload(payload, [state, setState]);
 
-        if (skipMiddleware(state.reprocessing, target.constructor.name)) {
+        if (
+          skipMiddleware(state.reprocessing, target.constructor.name) &&
+          REPROCESSING.MODE === 'STOPPED_MIDDLEWARE'
+        ) {
           return next();
         }
 
