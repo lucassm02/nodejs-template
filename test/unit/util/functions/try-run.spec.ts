@@ -1,6 +1,6 @@
 import { tryToRun } from '@/util';
 
-describe('tryToRun function', () => {
+describe('tryToRun Function', () => {
   it('Returns the callback when it is not a function', async () => {
     const nonFunctionCallback = 'Not a function';
     const result = await tryToRun(nonFunctionCallback);

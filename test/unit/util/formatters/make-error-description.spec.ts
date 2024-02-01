@@ -1,6 +1,6 @@
 import { makeErrorDescription } from '@/util';
 
-describe('makeErrorDescription function', () => {
+describe('makeErrorDescription Function', () => {
   it('Returns an array with the correct structure', () => {
     const param = 'any_param';
     const error = 'any_error';

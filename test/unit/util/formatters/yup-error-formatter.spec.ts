@@ -1,6 +1,6 @@
 import { formatYupError, PrettyYupError } from '@/util';
 
-describe('formatYupError function', () => {
+describe('formatYupError Function', () => {
   it('Formats Yup validation error correctly', () => {
     const yupError: any = {
       inner: [

@@ -4,7 +4,7 @@ import { template } from '@/util';
 
 jest.mock('string-template', () => jest.fn((str: string) => str));
 
-describe('template function', () => {
+describe('template Function', () => {
   it('Formats string with a single value correctly', () => {
     const inputString = 'Any, {value}!';
     const value = 'Any';
