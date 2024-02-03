@@ -75,7 +75,7 @@ describe('GetReprocessingDataMiddleware', () => {
     expect(setState).toHaveBeenCalledWith(expected);
   });
 
-  it('Should return if getReprocessingData not find data to reprocessing', async () => {
+  it('Should return 404 if getReprocessingData not find data to reprocessing', async () => {
     const { sut, getReprocessingDataStub, errorHandler } = makeSut();
 
     jest
