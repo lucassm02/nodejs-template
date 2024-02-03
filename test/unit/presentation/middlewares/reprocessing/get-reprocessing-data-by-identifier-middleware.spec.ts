@@ -1,7 +1,7 @@
 import { ErrorHandler } from '@/domain/usecases';
-import { GetReprocessingDataMiddleware } from '@/presentation/middlewares';
+import { GetReprocessingDataByIdentifierMiddleware } from '@/presentation/middlewares';
 import {
-  GetReprocessingDataStub,
+  GetReprocessingDataByIdentifierStub,
   mockReprocessingModel
 } from '@/test/unit/domain';
 import {
@@ -11,75 +11,67 @@ import {
 } from '@/test/utils';
 
 type SutTypes = {
-  sut: GetReprocessingDataMiddleware;
-  getReprocessingDataStub: GetReprocessingDataStub;
+  sut: GetReprocessingDataByIdentifierMiddleware;
+  getReprocessingDataByIdentifierStub: GetReprocessingDataByIdentifierStub;
   errorHandler: ErrorHandler;
 };
 
 const makeSut = (): SutTypes => {
-  const getReprocessingDataStub = new GetReprocessingDataStub();
+  const getReprocessingDataByIdentifierStub =
+    new GetReprocessingDataByIdentifierStub();
   const errorHandler = makeErrorHandlerStub();
-  const sut = new GetReprocessingDataMiddleware(
-    getReprocessingDataStub,
+  const sut = new GetReprocessingDataByIdentifierMiddleware(
+    getReprocessingDataByIdentifierStub,
     errorHandler
   );
 
   return {
     sut,
-    getReprocessingDataStub,
+    getReprocessingDataByIdentifierStub,
     errorHandler
   };
 };
 
-describe('GetReprocessingDataMiddleware', () => {
-  const request: any = {
-    query: {
-      queue: 'any_queue',
-      finalDate: '2024-01-13',
-      exchange: 'any_exchange',
-      initialDate: '2024-01-13',
-      routingKey: 'any_routing_key'
-    }
-  };
+describe('GetReprocessingDataByIdentifierMiddleware', () => {
+  const request: any = { body: { reprocessingIds: ['any_reprocessing_id'] } };
   const state: any = {};
   const setState = jest.fn();
   const next = jest.fn();
 
-  it('Should call getReprocessingData witch correct values', async () => {
-    const { sut, getReprocessingDataStub } = makeSut();
+  it('Should call getReprocessingDataByIdentifier witch correct values', async () => {
+    const { sut, getReprocessingDataByIdentifierStub } = makeSut();
 
-    const getSpy = jest.spyOn(getReprocessingDataStub, 'get');
+    const getSpy = jest.spyOn(getReprocessingDataByIdentifierStub, 'get');
 
     await sut.handle(request, [state, setState], next);
 
     const expected = {
-      queue: 'any_queue',
-      finalDate: '2024-01-13',
-      exchange: 'any_exchange',
-      initialDate: '2024-01-13',
-      routingKey: 'any_routing_key'
+      reprocessingIds: request.body.reprocessingIds
     };
 
     expect(getSpy).toHaveBeenCalledTimes(1);
     expect(getSpy).toHaveBeenCalledWith(expected);
   });
 
-  it('Should call setState with getReprocessingData result', async () => {
+  it('Should call setState with getReprocessingDataByIdentifier result', async () => {
     const { sut } = makeSut();
 
     await sut.handle(request, [state, setState], next);
 
-    const expected = { getReprocessingData: [mockReprocessingModel] };
+    const expected = {
+      getReprocessingDataByIdentifier: [mockReprocessingModel]
+    };
 
     expect(setState).toHaveBeenCalledTimes(1);
     expect(setState).toHaveBeenCalledWith(expected);
   });
 
-  it('Should return 404 if getReprocessingData not find data to reprocessing', async () => {
-    const { sut, getReprocessingDataStub, errorHandler } = makeSut();
+  it('Should return 404 if getReprocessingDataByIdentifier not find data to reprocessing', async () => {
+    const { sut, getReprocessingDataByIdentifierStub, errorHandler } =
+      makeSut();
 
     jest
-      .spyOn(getReprocessingDataStub, 'get')
+      .spyOn(getReprocessingDataByIdentifierStub, 'get')
       .mockRejectedValueOnce(new Error('Reprocessing data not found.'));
 
     const errorHandlerSpy = jest.spyOn(errorHandler, 'handle');
@@ -87,8 +79,7 @@ describe('GetReprocessingDataMiddleware', () => {
     const result = await sut.handle(request, [state, setState], next);
 
     const expected = makeNotFoundMock(
-      'Dados para reprocessamento não encontrado(a).',
-      {}
+      'Não foi encontrado nenhum dado para reprocessamento.'
     );
 
     expect(result).toStrictEqual(expected);
@@ -96,10 +87,11 @@ describe('GetReprocessingDataMiddleware', () => {
   });
 
   it('Should return 500 if a unknown error throws', async () => {
-    const { sut, getReprocessingDataStub, errorHandler } = makeSut();
+    const { sut, getReprocessingDataByIdentifierStub, errorHandler } =
+      makeSut();
 
     jest
-      .spyOn(getReprocessingDataStub, 'get')
+      .spyOn(getReprocessingDataByIdentifierStub, 'get')
       .mockRejectedValueOnce(new Error('Unknown Error.'));
 
     const errorHandlerSpy = jest.spyOn(errorHandler, 'handle');
