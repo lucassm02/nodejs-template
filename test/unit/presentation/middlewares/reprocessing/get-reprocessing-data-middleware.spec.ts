@@ -1,12 +1,14 @@
 import { ErrorHandler } from '@/domain/usecases';
 import { GetReprocessingDataMiddleware } from '@/presentation/middlewares';
-import { mockReprocessingModel } from '@/test/unit/domain';
-import { GetReprocessingDataStub } from '@/test/unit/presentation/mocks';
+import {
+  GetReprocessingDataStub,
+  mockReprocessingModel
+} from '@/test/unit/domain';
 import {
   makeErrorHandlerStub,
   makeNotFoundMock,
   makeServerErrorMock
-} from '@/test/unit/utils';
+} from '@/test/utils';
 
 type SutTypes = {
   sut: GetReprocessingDataMiddleware;
@@ -73,7 +75,7 @@ describe('GetReprocessingDataMiddleware', () => {
     expect(setState).toHaveBeenCalledWith(expected);
   });
 
-  it('Should return if getReprocessingData not find data to reprocessing', async () => {
+  it('Should return 404 if getReprocessingData not find data to reprocessing', async () => {
     const { sut, getReprocessingDataStub, errorHandler } = makeSut();
 
     jest
