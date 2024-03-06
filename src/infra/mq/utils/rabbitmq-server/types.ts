@@ -5,10 +5,7 @@ export type Credentials = {
   port: number;
 };
 
-export type Payload = {
-  body: object;
-  headers: object;
-};
+export type Payload = Record<string, unknown>;
 
 export type ConsumerCallback = (payload: Payload) => Promise<void>;
 
