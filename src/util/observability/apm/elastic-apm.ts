@@ -37,10 +37,8 @@ export class ElasticAPM {
       captureHeaders: true,
       captureErrorLogStackTraces: 'always',
       captureExceptions: true,
-      asyncHooks: true,
       logLevel: 'off',
       payloadLogFile: filePath,
-      logUncaughtExceptions: true,
       instrument: true,
       instrumentIncomingHTTPRequests: true,
       captureSpanStackTraces: true

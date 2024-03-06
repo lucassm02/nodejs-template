@@ -21,9 +21,8 @@ export class ValidateAuthenticationKeyMiddleware implements Middleware {
 
       if (!authentication) throw new Error('AUTHENTICATION_NOT_PROVIDED');
 
-      const authenticationKey = await this.validateAuthenticationKey.validate(
-        authentication
-      );
+      const authenticationKey =
+        await this.validateAuthenticationKey.validate(authentication);
 
       this.logger.log({
         level: 'debug',

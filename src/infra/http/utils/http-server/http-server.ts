@@ -84,8 +84,8 @@ export class HttpServer {
     if (this.isStarted) return;
     this.isStarted = true;
 
-    const promises = this.startupCallbacks.map(
-      async (callback) => callback?.()
+    const promises = this.startupCallbacks.map(async (callback) =>
+      callback?.()
     );
 
     await Promise.all(promises);
