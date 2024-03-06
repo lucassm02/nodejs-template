@@ -4,7 +4,7 @@ import {
   PublishDataToReprocessingStub,
   mockReprocessingModel
 } from '@/test/unit/domain';
-import { makeErrorHandlerStub, makeServerErrorMock } from '@/test/utils';
+import { makeErrorHandlerStub, makeServerErrorMock } from '@/test/util';
 
 type SutTypes = {
   sut: PublishDataToReprocessingMiddleware;

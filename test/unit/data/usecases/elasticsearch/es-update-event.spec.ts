@@ -4,7 +4,7 @@ import {
   GetDocumentByIdServiceStub,
   UpdateDocumentServiceStub
 } from '@/test/unit/data/protocols';
-import { getApmTransactionIdsStub } from '@/test/utils';
+import { getApmTransactionIdsStub } from '@/test/util';
 import { formatDate, merge } from '@/util';
 
 type SutTypes = {

@@ -6,7 +6,7 @@ import {
   LoggerStub,
   makeErrorHandlerStub,
   makeServerErrorMock
-} from '@/test/utils';
+} from '@/test/util';
 import { logger as StateLogger } from '@/util';
 
 type SutTypes = {

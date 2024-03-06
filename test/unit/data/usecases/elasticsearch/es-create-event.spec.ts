@@ -1,7 +1,7 @@
 import { GetAPMTransactionIds } from '@/data/protocols/apm';
 import { EsCreateEvent } from '@/data/usecases/elasticsearch';
 import { CreateDocumentServiceStub } from '@/test/unit/data/protocols';
-import { getApmTransactionIdsStub } from '@/test/utils';
+import { getApmTransactionIdsStub } from '@/test/util';
 import { formatDate } from '@/util';
 
 type SutTypes = {
