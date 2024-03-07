@@ -6,6 +6,10 @@ interface Handler {
 
 type HandlerOrFunction = Handler | Function;
 
+export enum ParallelizeExceptions {
+  NOT_FOUND_NEXT = 'The args provided should contains next function as parameter'
+}
+
 export function parallelize(
   handler: HandlerOrFunction,
   ...handlers: HandlerOrFunction[]
@@ -13,7 +17,10 @@ export function parallelize(
   return async (...args: unknown[]) => {
     const next = <Middleware.Next>args.find((arg) => typeof arg === 'function');
 
+    if (!next) throw new Error(ParallelizeExceptions.NOT_FOUND_NEXT);
+
     const indexOfNext = args.indexOf(next);
+
     const toResolveMiddlewares = [handler, ...handlers];
 
     const decoratedNext = function (limit: number) {
