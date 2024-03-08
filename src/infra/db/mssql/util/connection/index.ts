@@ -20,9 +20,7 @@ const configs = {
   },
   test: {
     client: 'sqlite3',
-    connection: {
-      filename: `${__dirname}/test_database.sqlite`
-    },
+    connection: ':memory:',
     useNullAsDefault: true
   }
 };
