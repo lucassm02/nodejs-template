@@ -4,6 +4,7 @@ export const equals = (a: any, b: any): boolean => {
     return a.getTime() === b.getTime();
   if (!a || !b || (typeof a !== 'object' && typeof b !== 'object'))
     return a === b;
+  // TODO: I don't find any condition to this
   if (a?.prototype !== b?.prototype) return false;
   const keys = Object.keys(a);
   if (keys.length !== Object.keys(b).length) return false;
