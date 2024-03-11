@@ -74,6 +74,12 @@ describe('UcVanillaDataValidation', () => {
     const result = async () => sut.validate(schema, {}, exception);
     expect(result).rejects.toThrow(exception);
   });
+  it('should throws yup exception when options is undefined and exception is an Error', async () => {
+    const { sut, schema } = makeSut();
+    const errorException = new Error('INVALID_DATA_EXCEPTION');
+    const result = async () => sut.validate(schema, {}, errorException);
+    expect(result).rejects.toThrow(errorException);
+  });
   it('should return undefined with validation process throws but options throws is set as false', async () => {
     const { sut, exception, schema } = makeSut();
     const result = await sut.validate(schema, {}, exception, { throws: false });
