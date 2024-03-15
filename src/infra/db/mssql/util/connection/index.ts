@@ -25,6 +25,8 @@ const configs = {
   }
 };
 
-const config = process.env.NODE_ENV !== 'test' ? configs.default : configs.test;
+export const getConfig = () => {
+  return process.env.NODE_ENV !== 'test' ? configs.default : configs.test;
+};
 
-export const sqlConnection = knex(config);
+export const sqlConnection = knex(getConfig());
