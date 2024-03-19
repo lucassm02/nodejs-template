@@ -1,6 +1,6 @@
+import { AxiosInstance, isCancel } from 'axios';
 import http from 'http';
 import https from 'https';
-import { AxiosInstance } from 'axios';
 
 import {
   HttpClient,
@@ -37,14 +37,18 @@ export class RequestAdapter implements HttpClient {
   constructor(
     private readonly axios: AxiosInstance,
     private readonly httpAgent?: http.Agent,
-    private readonly httpsAgent?: https.Agent
+    private readonly httpsAgent?: https.Agent,
+    private readonly abortSignal?: AbortSignal
   ) {
+    this.axios.defaults.signal = this.abortSignal;
     this.axios.defaults.httpAgent =
       this.httpAgent ?? new http.Agent(AgentOptions);
     this.axios.defaults.httpsAgent =
       this.httpsAgent ?? new https.Agent(AgentOptions);
     this.axios.interceptors.response.use(undefined, (error) => {
       logger.log(error);
+
+      if (isCancel(error)) throw new Error('ABORTED_REQUEST');
 
       if (!error.response) {
         throw new Error('REQUEST_ERROR');

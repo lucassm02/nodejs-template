@@ -10,6 +10,7 @@ export type HttpRequest = {
   auth?: AxiosRequestConfig['auth'];
   httpAgent?: http.Agent;
   httpsAgent?: https.Agent;
+  signal?: AbortSignal;
 };
 
 export interface HttpClient<R = any> {
