@@ -8,10 +8,7 @@ import {
 } from '@/data/protocols/http/adapters';
 import { logger } from '@/util';
 import { apmSpan } from '@/util/observability/apm';
-import {
-  datoraHttpLogger,
-  logger as customLogger
-} from '@/util/observability/loggers/decorators';
+import { datoraHttpLogger } from '@/util/observability/loggers/decorators';
 
 const decorators = {
   options: { subType: 'http', name: 'Http Request' },
@@ -36,9 +33,14 @@ const AgentOptions = {
 };
 
 export class RequestAdapter implements HttpClient {
-  constructor(private readonly axios: AxiosInstance) {
-    this.axios.defaults.httpAgent = new Agent(AgentOptions);
-    this.axios.defaults.httpsAgent = new Agent.HttpsAgent(AgentOptions);
+  constructor(
+    private readonly axios: AxiosInstance,
+    private readonly httpAgent?: Agent,
+    private readonly httpsAgent?: Agent.HttpsAgent
+  ) {
+    this.axios.defaults.httpAgent = httpAgent ?? new Agent(AgentOptions);
+    this.axios.defaults.httpsAgent =
+      httpsAgent ?? new Agent.HttpsAgent(AgentOptions);
     this.axios.interceptors.response.use(undefined, (error) => {
       logger.log(error);
 
