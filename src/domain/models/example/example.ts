@@ -5,7 +5,7 @@ import { YupErrorHandler } from '@/domain/models';
 type Data = {
   exampleId: string;
   externalId: string;
-  value: string;
+  value: number;
   description: string;
   createdAt: Date;
   updatedAt?: Date;
@@ -43,12 +43,12 @@ export class ExampleModel extends YupErrorHandler {
     return this.data.externalId;
   }
 
-  set value(value: string) {
+  set value(value: number) {
     this.data.value = value;
     this.validate();
   }
 
-  get value(): string {
+  get value(): number {
     return this.data.value;
   }
 
@@ -91,7 +91,7 @@ export class ExampleModel extends YupErrorHandler {
   #schema = {
     exampleId: yup.string().required('O campo "exampleId" é obrigatório.'),
     externalId: yup.string().required('O campo "externalId" é obrigatório.'),
-    value: yup.string().required('O campo "value" é obrigatório.'),
+    value: yup.number().required('O campo "value" é obrigatório.'),
     description: yup.string().required('O campo "description" é obrigatório.'),
     createdAt: yup.date().required('O campo "createdAt" é obrigatório.'),
     updatedAt: yup.date().optional(),
