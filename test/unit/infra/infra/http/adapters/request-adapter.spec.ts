@@ -11,7 +11,11 @@ type SutType = {
   axiosInstance: AxiosInstance;
 };
 
-type FactoryParams = { httpAgent?: http.Agent; httpsAgent?: https.Agent };
+type FactoryParams = {
+  httpAgent?: http.Agent;
+  httpsAgent?: https.Agent;
+  signal?: AbortSignal;
+};
 
 const makeSut = (params?: FactoryParams): SutType => {
   const axiosInstance = axios.create({
@@ -21,7 +25,8 @@ const makeSut = (params?: FactoryParams): SutType => {
   const sut = new RequestAdapter(
     axiosInstance,
     params?.httpAgent,
-    params?.httpsAgent
+    params?.httpsAgent,
+    params?.signal
   );
   return {
     axiosInstance,
@@ -96,5 +101,36 @@ describe('RequestAdapter', () => {
 
     expect(headers.connection).toBe('close');
     expect(headers['content-length']).toBe('2');
+  });
+
+  it('should abort a request when called abort method at abort controller used in DI', async () => {
+    const abortController = new AbortController();
+    const { sut } = makeSut({
+      signal: abortController.signal
+    });
+
+    const promise = sut.request({
+      method: 'GET',
+      url: '/'
+    });
+
+    abortController.abort();
+
+    expect(promise).rejects.toThrow('ABORTED_REQUEST');
+  });
+  it('should abort a request when called abort method at abort controller used in request method params', async () => {
+    const abortController = new AbortController();
+
+    const { sut } = makeSut();
+
+    const promise = sut.request({
+      method: 'GET',
+      url: '/',
+      signal: abortController.signal
+    });
+
+    abortController.abort();
+
+    expect(promise).rejects.toThrow('ABORTED_REQUEST');
   });
 });
