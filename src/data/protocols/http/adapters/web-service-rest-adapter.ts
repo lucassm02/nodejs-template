@@ -1,5 +1,6 @@
-import Agent from 'agentkeepalive';
 import { AxiosRequestConfig, RawAxiosRequestHeaders } from 'axios';
+import http from 'http';
+import https from 'https';
 
 export type HttpRequest = {
   url: AxiosRequestConfig['url'];
@@ -7,8 +8,8 @@ export type HttpRequest = {
   body?: AxiosRequestConfig['data'];
   headers?: RawAxiosRequestHeaders;
   auth?: AxiosRequestConfig['auth'];
-  httpAgent?: Agent;
-  httpsAgent?: Agent.HttpsAgent;
+  httpAgent?: http.Agent;
+  httpsAgent?: https.Agent;
 };
 
 export interface HttpClient<R = any> {

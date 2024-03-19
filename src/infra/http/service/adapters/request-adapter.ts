@@ -1,4 +1,5 @@
-import Agent from 'agentkeepalive';
+import http from 'http';
+import https from 'https';
 import { AxiosInstance } from 'axios';
 
 import {
@@ -35,12 +36,13 @@ const AgentOptions = {
 export class RequestAdapter implements HttpClient {
   constructor(
     private readonly axios: AxiosInstance,
-    private readonly httpAgent?: Agent,
-    private readonly httpsAgent?: Agent.HttpsAgent
+    private readonly httpAgent?: http.Agent,
+    private readonly httpsAgent?: https.Agent
   ) {
-    this.axios.defaults.httpAgent = httpAgent ?? new Agent(AgentOptions);
+    this.axios.defaults.httpAgent =
+      this.httpAgent ?? new http.Agent(AgentOptions);
     this.axios.defaults.httpsAgent =
-      httpsAgent ?? new Agent.HttpsAgent(AgentOptions);
+      this.httpsAgent ?? new https.Agent(AgentOptions);
     this.axios.interceptors.response.use(undefined, (error) => {
       logger.log(error);
 
