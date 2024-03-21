@@ -25,7 +25,8 @@ import {
 } from './types';
 
 export enum Exceptions {
-  INVALID_PORT_VALUE = 'Port must be a number or a valid numerical string'
+  INVALID_PORT_VALUE = 'Port must be a number or a valid numerical string',
+  REGISTER_ROUTE_AFTER_BOOTSTRAP_SERVER = 'Sorry, you cannot register routes after bootstraping the HTTP server'
 }
 
 export class HttpServer {
@@ -59,6 +60,8 @@ export class HttpServer {
   }
 
   public route() {
+    if (this.isStarted)
+      throw new Error(Exceptions.REGISTER_ROUTE_AFTER_BOOTSTRAP_SERVER);
     return new Route(
       this.fastify,
       this.adapterWithFlow.bind(this),
