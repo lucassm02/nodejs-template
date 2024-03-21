@@ -1,6 +1,7 @@
 import fastify from 'fastify';
 
 import { HttpServer } from '@/infra/http/utils/http-server/http-server';
+import { Route } from '@/infra/http/utils/http-server/route';
 
 const register = jest.fn();
 const ready = jest.fn().mockImplementation((callback) => {
@@ -177,6 +178,21 @@ describe('HttpServer', () => {
 
       expect(close).toHaveBeenCalledTimes(1);
       expect(close).toHaveBeenCalledWith(expect.any(Function));
+    });
+  });
+  describe('#route', () => {
+    it('should return an Route instance', () => {
+      const { sut } = makeSut();
+      const router = sut.route();
+      expect(router).toBeInstanceOf(Route);
+    });
+    it('should throw an error if server is already started', () => {
+      const { sut } = makeSut();
+      sut.listen(8080);
+      const rejects = async () => sut.route();
+      expect(rejects()).rejects.toThrow(
+        'Sorry, you cannot register routes after bootstraping the HTTP server'
+      );
     });
   });
 });
