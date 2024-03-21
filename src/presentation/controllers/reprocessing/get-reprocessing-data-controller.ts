@@ -1,11 +1,11 @@
-import { Controller, HttpRequest } from '@/presentation/protocols';
+import { Controller } from '@/presentation/protocols';
 import { ok, stateDependencies } from '@/presentation/utils';
 import { DICTIONARY, stringToBoolean, template } from '@/util';
 
 export class GetReprocessingDataController implements Controller {
   @stateDependencies(['getReprocessingData'])
   async handle(
-    httpRequest: HttpRequest,
+    httpRequest: Controller.HttpRequest,
     [{ getReprocessingData }]: Controller.State
   ): Controller.Result {
     const reprocessingIds = getReprocessingData.map(

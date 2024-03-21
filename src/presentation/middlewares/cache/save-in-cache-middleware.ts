@@ -1,4 +1,3 @@
-import { Logger } from '@/data/protocols/utils';
 import { ErrorHandler, SaveInCache } from '@/domain/usecases';
 import { ExtractValues } from '@/plugin';
 import { Middleware } from '@/presentation/protocols';
@@ -26,7 +25,11 @@ export class SaveInCacheMiddleware extends ExtractValues implements Middleware {
   ): Middleware.Result {
     try {
       const extractValue = this.extractValuesFromSources({
-        request: httpRequest,
+        request: {
+          body: httpRequest.body,
+          params: httpRequest.params,
+          query: httpRequest.query
+        },
         state
       });
 
