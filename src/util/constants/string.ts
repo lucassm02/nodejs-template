@@ -1,6 +1,8 @@
 export const DICTIONARY = {
   RESPONSE: {
     MESSAGE: {
+      BAD_GATEWAY:
+        'Desculpe, ocorreu um problema ao acessar o recurso solicitado, a resposta não foi enviada. Por favor, tente novamente mais tarde.',
       INVALID_DATA:
         'foram fornecidos valores inválidos na operação de {value}.',
       OK: '{value} com sucesso.',
