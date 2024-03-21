@@ -21,9 +21,12 @@ import {
   REPLY_KEY,
   REQUEST_KEY,
   RouteMiddleware,
-  Router,
   STATE_KEY
 } from './types';
+
+export enum Exceptions {
+  INVALID_PORT_VALUE = 'Port must be a number or a valid numerical string'
+}
 
 export class HttpServer {
   private fastify!: FastifyInstance;
@@ -31,11 +34,12 @@ export class HttpServer {
   private baseUrl = '';
   private addressInfo!: AddressInfo | null | string;
   private startupCallbacks: Function[] = [];
+  private paths: string[] = [];
   private isStarted = false;
   private static instance: HttpServer;
 
-  constructor() {
-    this.fastify = fastify();
+  constructor(private readonly _fastify: typeof fastify) {
+    this.fastify = this._fastify();
   }
 
   public use(plugin: FastifyPluginCallback, configs?: any): void {
@@ -44,7 +48,7 @@ export class HttpServer {
 
   public static getInstance(): HttpServer {
     if (!HttpServer.instance) {
-      HttpServer.instance = new HttpServer();
+      HttpServer.instance = new HttpServer(fastify);
     }
 
     return HttpServer.instance;
@@ -55,8 +59,13 @@ export class HttpServer {
   }
 
   public listen(port: number | string, callback: () => void = () => {}) {
+    if (typeof port !== 'number' || !Number(port))
+      throw new Error(Exceptions.INVALID_PORT_VALUE);
+
     if (this.isStarted) return;
+
     this.isStarted = true;
+
     this.listenerOptions = { callback, port: +port };
 
     this.fastify.ready(() => {
@@ -83,6 +92,9 @@ export class HttpServer {
     port: number | string,
     callback: () => void = () => {}
   ) {
+    if (typeof port !== 'number' || !Number(port))
+      throw new Error(Exceptions.INVALID_PORT_VALUE);
+
     if (this.isStarted) return;
     this.isStarted = true;
 
@@ -120,11 +132,14 @@ export class HttpServer {
     this.startupCallbacks = callbackList;
   }
 
-  public refresh() {
+  public async refresh() {
     if (!this.isStarted) return;
+
     this.fastify.server.close(() => {
       logger.log({ level: 'info', message: 'Refreshing server' });
     });
+
+    await Promise.all(this.paths.map((path) => this.routesDirectory(path)));
 
     this.listen(this.listenerOptions.port, this.listenerOptions.callback);
   }
@@ -142,7 +157,6 @@ export class HttpServer {
         level: 'warn',
         message: 'Only set the default base url if the server is not started'
       });
-
       return;
     }
     this.baseUrl = url;
@@ -170,6 +184,8 @@ export class HttpServer {
   ): Promise<void> {
     const extensionsToSearch = ['.TS', '.JS'];
     const ignoreIfIncludes = ['.MAP.', '.SPEC.', '.TEST.'];
+
+    this.paths.push(path);
 
     const files = readdirSync(path);
 
