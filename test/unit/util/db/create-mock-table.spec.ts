@@ -15,7 +15,7 @@ describe('Create Mock Table', () => {
     process.env.NODE_ENV = 'test';
   });
 
-  it('should throw error when NODE_ENV is diff od test', async () => {
+  it('should throw error when NODE_ENV is diff of test', async () => {
     process.env.NODE_ENV = 'environment';
 
     try {
