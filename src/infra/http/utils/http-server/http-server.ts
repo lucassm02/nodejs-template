@@ -11,7 +11,7 @@ import { resolve } from 'path';
 import makeFlow from '@/main/adapters/flow-adapter';
 import { Middleware } from '@/presentation/protocols';
 import { SharedState } from '@/presentation/protocols/shared-state';
-import { serverError } from '@/presentation/utils';
+import { internalImplementationError, serverError } from '@/presentation/utils';
 import { DICTIONARY, convertCamelCaseKeysToSnakeCase, logger } from '@/util';
 
 import { Route } from './route';
@@ -253,6 +253,15 @@ export class HttpServer {
 
         if (response?.headers) reply.headers(response.headers);
 
+        if (!response.statusCode || !response.body)
+          return reply
+            .status(500)
+            .send(
+              internalImplementationError(
+                DICTIONARY.RESPONSE.MESSAGE.INTERNAl.INCORRECT_CALLBACK_RETURN
+              )
+            );
+
         return reply
           .status(response.statusCode)
           .send(convertCamelCaseKeysToSnakeCase(response.body));
@@ -281,6 +290,15 @@ export class HttpServer {
       if (!response) return;
 
       if (response?.headers) reply.headers(response.headers);
+
+      if (!response.statusCode || !response.body)
+        return reply
+          .status(500)
+          .send(
+            internalImplementationError(
+              DICTIONARY.RESPONSE.MESSAGE.INTERNAl.INCORRECT_CALLBACK_RETURN
+            )
+          );
 
       return reply
         .status(response.statusCode)
