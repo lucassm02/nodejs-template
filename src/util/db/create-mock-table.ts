@@ -17,6 +17,7 @@ type StrictTypesConversion<T extends readonly string[]> = {
   [P in T[number]]: DateSchema | StringSchema | BooleanSchema | NumberSchema;
 };
 
+// TODO: I don't know what this code do
 export const allowMethodsInKnex = (knex: Knex.CreateTableBuilder) => ({
   string: knex.string,
   date: knex.date,
@@ -33,7 +34,9 @@ export const createMockTable = async <
 ) => {
   if (String(process.env.NODE_ENV).toLowerCase() !== 'test')
     throw new Error('Need to be in a test environment to use this function');
+  // TODO: I don't know why this case
   if (typeof table !== 'object') return;
+  // TODO: I don't know why this case
   if (!table.getColumnsObject)
     throw new Error('Missing dependency getColumnsObject at table object');
   await sqlConnection.schema.createTable(table.TABLE, (builder) => {
