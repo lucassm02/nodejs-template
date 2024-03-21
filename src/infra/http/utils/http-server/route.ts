@@ -1,76 +1,56 @@
-import { Router } from 'express';
+import { FastifyInstance } from 'fastify';
 
-import { RouteAlias } from './route-alias';
-import { ExpressRoute, RouteMiddleware } from './types';
+import { RouteMiddleware } from './types';
 
 export class Route {
   constructor(
-    private readonly router: Router,
-    private readonly middlewareAdapter: Function
+    private readonly router: FastifyInstance,
+    private readonly middlewareAdapter: Function,
+    private readonly basePath: string
   ) {}
 
-  public use(
-    value: string | RouteMiddleware | ExpressRoute | Function,
-    ...middlewares: RouteMiddleware[] | ExpressRoute[]
-  ) {
-    if (typeof value === 'string') {
-      this.router.use(value, ...this.middlewareAdapter(middlewares));
-      return;
-    }
-
-    this.router.use(...this.middlewareAdapter([value, ...middlewares]));
+  private getFullPathRoute(path: string): string {
+    return this.basePath + path;
   }
 
   public post(route: string, ...middlewares: RouteMiddleware[]) {
-    this.router.post(route, ...this.middlewareAdapter(middlewares));
-    return new RouteAlias(
-      this.router,
-      'POST',
+    this.router.post(
+      this.getFullPathRoute(route),
       this.middlewareAdapter(middlewares)
     );
   }
 
   public get(route: string, ...middlewares: RouteMiddleware[]) {
-    this.router.get(route, ...this.middlewareAdapter(middlewares));
-    return new RouteAlias(
-      this.router,
-      'GET',
+    this.router.get(
+      this.getFullPathRoute(route),
       this.middlewareAdapter(middlewares)
     );
   }
 
   public delete(route: string, ...middlewares: RouteMiddleware[]) {
-    this.router.delete(route, ...this.middlewareAdapter(middlewares));
-    return new RouteAlias(
-      this.router,
-      'DELETE',
+    this.router.delete(
+      this.getFullPathRoute(route),
       this.middlewareAdapter(middlewares)
     );
   }
 
   public put(route: string, ...middlewares: RouteMiddleware[]) {
-    this.router.put(route, ...this.middlewareAdapter(middlewares));
-    return new RouteAlias(
-      this.router,
-      'PUT',
+    this.router.put(
+      this.getFullPathRoute(route),
       this.middlewareAdapter(middlewares)
     );
   }
 
   public options(route: string, ...middlewares: RouteMiddleware[]) {
-    this.router.options(route, ...this.middlewareAdapter(middlewares));
-    return new RouteAlias(
-      this.router,
-      'OPTIONS',
+    this.router.options(
+      this.getFullPathRoute(route),
       this.middlewareAdapter(middlewares)
     );
   }
 
   public patch(route: string, ...middlewares: RouteMiddleware[]) {
-    this.router.patch(route, ...this.middlewareAdapter(middlewares));
-    return new RouteAlias(
-      this.router,
-      'PATCH',
+    this.router.patch(
+      this.getFullPathRoute(route),
       this.middlewareAdapter(middlewares)
     );
   }
