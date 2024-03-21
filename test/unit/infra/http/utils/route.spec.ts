@@ -6,17 +6,20 @@ import { RouterStub } from '../mocks';
 type SutType = {
   routerStub: Router;
   sut: Route;
-  middlewareAdapterStub: Function;
+  adapterStub: Function;
+  saveStub: Function;
   baseUrl: string;
 };
 
 const makeSut = ({ baseUrl }: { baseUrl: string }): SutType => {
   const routerStub = new RouterStub();
-  const middlewareAdapterStub = jest.fn().mockReturnValue('ADAPTED');
-  const sut = new Route(routerStub, middlewareAdapterStub, baseUrl);
+  const adapterStub = jest.fn().mockReturnValue('ADAPTED');
+  const saveStub = jest.fn();
+  const sut = new Route(routerStub, adapterStub, saveStub, baseUrl);
   return {
     baseUrl,
-    middlewareAdapterStub,
+    saveStub,
+    adapterStub,
     routerStub,
     sut
   };
@@ -41,14 +44,29 @@ describe('Route', () => {
     });
   });
 
-  it('should call middlewareAdapter with the correct params', () => {
-    const { sut, middlewareAdapterStub } = makeSut({ baseUrl: '/test' });
+  it('should call adapterStub with the correct params', () => {
+    const { sut, adapterStub } = makeSut({ baseUrl: '/test' });
 
     for (const method of METHODS) {
       sut[<keyof Route>method](path, ...middlewares);
     }
 
-    expect(middlewareAdapterStub).toHaveBeenCalledTimes(METHODS.length);
-    expect(middlewareAdapterStub).toHaveBeenCalledWith([expect.any(Function)]);
+    expect(adapterStub).toHaveBeenCalledTimes(METHODS.length);
+    expect(adapterStub).toHaveBeenCalledWith([expect.any(Function)]);
+  });
+
+  it('should call save with the correct params', () => {
+    const { sut, saveStub } = makeSut({ baseUrl: '/test' });
+
+    for (const method of METHODS) {
+      sut[<keyof Route>method](path, ...middlewares);
+    }
+
+    expect(saveStub).toHaveBeenCalledTimes(METHODS.length);
+    expect(saveStub).toHaveBeenCalledWith({
+      method: expect.stringMatching(/(get|post|put|patch|options|delete)/i),
+      uri: '/test/any_route',
+      handler: 'ADAPTED'
+    });
   });
 });
