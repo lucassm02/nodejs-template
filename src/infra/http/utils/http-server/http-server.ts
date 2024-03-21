@@ -21,6 +21,7 @@ import {
   REPLY_KEY,
   REQUEST_KEY,
   RouteMiddleware,
+  Router,
   STATE_KEY
 } from './types';
 
@@ -29,7 +30,14 @@ export enum Exceptions {
   REGISTER_ROUTE_AFTER_BOOTSTRAP_SERVER = 'Sorry, you cannot register routes after bootstraping the HTTP server'
 }
 
+type Endpoint = {
+  method: keyof Router;
+  uri: string;
+  handler: Function;
+};
+
 export class HttpServer {
+  private endpoints: Endpoint[] = [];
   private fastify!: FastifyInstance;
   private listenerOptions!: { port: number; callback: Callback };
   private baseUrl = '';
@@ -65,6 +73,7 @@ export class HttpServer {
     return new Route(
       this.fastify,
       this.adapterWithFlow.bind(this),
+      this.saveEndpoint.bind(this),
       this.baseUrl
     );
   }
@@ -150,7 +159,7 @@ export class HttpServer {
       logger.log({ level: 'info', message: 'Refreshing server' });
     });
 
-    await Promise.all(this.paths.map((path) => this.routesDirectory(path)));
+    this.refreshEndpoints();
 
     this.listen(this.listenerOptions.port, this.listenerOptions.callback);
   }
@@ -228,8 +237,19 @@ export class HttpServer {
     return new Route(
       this.fastify,
       this.adapterWithFlow.bind(this),
+      this.saveEndpoint.bind(this),
       this.baseUrl
     );
+  }
+
+  private saveEndpoint(args: Endpoint): void {
+    this.endpoints.push(args);
+  }
+
+  private refreshEndpoints(): void {
+    this.endpoints.forEach((endpoint) => {
+      this.fastify[endpoint.method](endpoint.uri, <any>endpoint.handler);
+    });
   }
 
   private makeSetStateInRequest(_state: Record<string, unknown>) {
