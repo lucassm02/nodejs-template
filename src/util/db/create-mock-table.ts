@@ -6,12 +6,13 @@ import { Table, sqlConnection } from '@/infra/db/mssql/util';
 
 import { tryToRun } from '../functions';
 import {
-  StringSchema,
   BooleanSchema,
   DateSchema,
-  NumberSchema
-} from './types/';
-import { PermittedTypes, TypeSchema } from './types/schema';
+  NumberSchema,
+  PermittedTypes,
+  StringSchema,
+  TypeSchema
+} from './schemas';
 
 type StrictTypesConversion<T extends readonly string[]> = {
   [P in T[number]]: DateSchema | StringSchema | BooleanSchema | NumberSchema;

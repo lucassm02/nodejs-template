@@ -26,6 +26,7 @@ export abstract class TypeSchema<
     this.__default = args;
   }
 
+  // TODO: I don't know why this method
   private validate(value: Maybe<unknown>) {
     if (!value)
       throw new Error('The type is undefined or null, not accepted in Schema');
