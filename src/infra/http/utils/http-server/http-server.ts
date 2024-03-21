@@ -21,6 +21,7 @@ import {
   REPLY_KEY,
   REQUEST_KEY,
   RouteMiddleware,
+  Router,
   STATE_KEY
 } from './types';
 

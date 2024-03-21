@@ -1,10 +1,8 @@
-import { FastifyInstance } from 'fastify';
-
-import { RouteMiddleware } from './types';
+import { RouteMiddleware, Router } from './types';
 
 export class Route {
   constructor(
-    private readonly router: FastifyInstance,
+    private readonly router: Router,
     private readonly middlewareAdapter: Function,
     private readonly basePath: string
   ) {}

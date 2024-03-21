@@ -37,3 +37,12 @@ export type State = Record<string, unknown>;
 export type Payload = { [REQUEST_KEY]: HttpRequest } & {
   [key: string | symbol]: State;
 } & { [REPLY_KEY]: FastifyReply };
+
+export interface Router {
+  post(...args: any): void;
+  put(...args: any): void;
+  patch(...args: any): void;
+  get(...args: any): void;
+  delete(...args: any): void;
+  options(...args: any): void;
+}
