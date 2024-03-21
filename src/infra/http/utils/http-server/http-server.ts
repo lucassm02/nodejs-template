@@ -70,7 +70,7 @@ export class HttpServer {
   }
 
   public listen(port: number | string, callback: () => void = () => {}) {
-    if (typeof port !== 'number' || !Number(port))
+    if (Number.isNaN(Number(port)))
       throw new Error(Exceptions.INVALID_PORT_VALUE);
 
     if (this.isStarted) return;
@@ -103,7 +103,7 @@ export class HttpServer {
     port: number | string,
     callback: () => void = () => {}
   ) {
-    if (typeof port !== 'number' || !Number(port))
+    if (Number.isNaN(Number(port)))
       throw new Error(Exceptions.INVALID_PORT_VALUE);
 
     if (this.isStarted) return;
