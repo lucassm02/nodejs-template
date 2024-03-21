@@ -1,6 +1,3 @@
-import e from 'express';
-import { middleware } from 'yargs';
-
 import { Route } from '@/infra/http/utils/http-server/route';
 import { Router } from '@/infra/http/utils/http-server/types';
 
