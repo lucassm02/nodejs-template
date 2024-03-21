@@ -58,6 +58,14 @@ export class HttpServer {
     return this?.addressInfo;
   }
 
+  public route() {
+    return new Route(
+      this.fastify,
+      this.adapterWithFlow.bind(this),
+      this.baseUrl
+    );
+  }
+
   public listen(port: number | string, callback: () => void = () => {}) {
     if (typeof port !== 'number' || !Number(port))
       throw new Error(Exceptions.INVALID_PORT_VALUE);
