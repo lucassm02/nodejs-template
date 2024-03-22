@@ -4,6 +4,7 @@ import {
   GetFooWithExampleRepository,
   UpdateExampleRepository
 } from '@/data/protocols/db/example';
+import { makeExampleModel } from '@/domain/models';
 import { EXAMPLE_DB, Repository } from '@/infra/db/mssql/util';
 import {
   convertCamelCaseKeysToSnakeCase,
@@ -86,7 +87,7 @@ export class ExampleRepository
       .returning('*');
 
     return {
-      record,
+      record: makeExampleModel(record),
       transaction: this.transactionAdapter(connection)
     };
   }
