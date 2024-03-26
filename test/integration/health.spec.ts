@@ -7,10 +7,11 @@ import { seedExampleDatabase } from '../seed/example-db-seed';
 
 application.setBaseUrl('/api/v1');
 
-const server = application.getServer();
+const getServer = () => application.getServer();
 
 describe('Health Route', () => {
   beforeAll(async () => {
+    await application.ready();
     await migrate.up.HealthIntegrationTest();
     await seedExampleDatabase();
   });
@@ -18,6 +19,6 @@ describe('Health Route', () => {
     await migrate.down();
   });
   it('Should return 200 when the server is online', async () => {
-    await request(server).get('/api/v1/health').expect(200);
+    await request(getServer()).get('/api/v1/health').expect(200);
   });
 });

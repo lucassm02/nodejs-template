@@ -1,6 +1,13 @@
-import { Request } from 'express';
+import { FastifyRequest, RequestGenericInterface } from 'fastify';
 
-export type HttpRequest = Request;
+export type HttpRequest<
+  R extends RequestGenericInterface = {
+    Body: Record<string, unknown>;
+    Querystring: Record<string, unknown>;
+    Params: Record<string, unknown>;
+    Headers: Record<string, unknown>;
+  }
+> = FastifyRequest<R>;
 
 export interface HttpResponse {
   statusCode: number;

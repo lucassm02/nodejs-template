@@ -73,3 +73,7 @@ export const unauthorized = (message: string, error?: any) => ({
     error
   }
 });
+
+export const internalImplementationError = (message: string) => ({
+  error: message
+});

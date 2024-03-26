@@ -31,7 +31,11 @@ export class MqPublishInExchangeMiddleware
       const { exchange, routingKey } = this.args;
 
       const payload = this.extractValuesFromSources({
-        request: httpRequest,
+        request: {
+          body: httpRequest.body,
+          params: httpRequest.params,
+          query: httpRequest.query
+        },
         state
       });
 
