@@ -22,6 +22,7 @@ type ValidationParams = {
 export class ExtractValues {
   private readonly validator: UcVanillaDataValidation;
 
+  // TODO: Maybe this not make sense, cause valuesToExtract is a mandatory params
   constructor(protected readonly valuesToExtract: Values = []) {
     this.validator = UcVanillaDataValidation.getInstance();
   }
@@ -36,6 +37,7 @@ export class ExtractValues {
       schema: options.schema
     };
 
+    // TODO: I don't know why here use winston exceptions
     if (!exceptions)
       return this.validator.validate({
         ...details,
