@@ -27,7 +27,7 @@ describe('InputAndOutputLog Repository', () => {
     await InputAndOutputLogModel.deleteMany({});
   });
 
-  it('should call model create method', async () => {
+  it('should create a inputAndOutputLog', async () => {
     const { sut } = makeSut();
 
     const mockLog = {
