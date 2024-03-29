@@ -1,4 +1,3 @@
-import { Logger } from '@/data/protocols/utils';
 import { ErrorHandler, SaveInCache } from '@/domain/usecases';
 import { ExtractValues } from '@/plugin';
 import { Middleware } from '@/presentation/protocols';
@@ -31,10 +30,11 @@ export class SaveInCacheMiddleware extends ExtractValues implements Middleware {
       });
 
       const { key } = this.args;
+      const { subKey, ...value } = extractValue;
 
       const params = this.args.ttl
-        ? { key, value: extractValue, ttl: this.args.ttl }
-        : { key, value: extractValue };
+        ? { key, subKey, value, ttl: this.args.ttl }
+        : { key, subKey, value };
 
       await this.saveInCache.save(params);
 
@@ -44,12 +44,7 @@ export class SaveInCacheMiddleware extends ExtractValues implements Middleware {
 
       if (!this.args?.throws) return next();
 
-      switch (error.message) {
-        case SaveInCache.Exceptions.ERROR_ON_SAVE_IN_CACHE:
-          return serverError(error);
-        default:
-          return serverError(error);
-      }
+      return serverError(error);
     }
   }
 }

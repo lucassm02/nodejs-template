@@ -1,18 +1,30 @@
 import { ChGetCacheValue } from '@/data/usecases/cache';
 import { makeCacheServer } from '@/infra/cache';
-import { GetCacheValueMiddleware } from '@/presentation/middlewares';
 import { logger } from '@/util';
+import { GetCacheValueMiddleware } from '@/presentation/middlewares';
+import { SharedState } from '@/presentation/protocols';
 
 import { makeErrorHandler } from '../../usecases';
 
-type FactoryParams = {
+type Value = keyof SharedState;
+
+type FactoryParams<K extends Value> = {
   key: string;
   throws?: boolean;
+  value: K;
+  subKey: keyof SharedState[K];
   options?: { parseToJson?: boolean; parseBufferToString?: boolean };
 };
 
-export const makeGetCacheValueMiddleware = (params: FactoryParams) => {
+export const makeGetCacheValueMiddleware = <K extends Value>(
+  params: FactoryParams<K>
+) => {
   const chGetCacheValue = new ChGetCacheValue(makeCacheServer());
+
+  const extractValues: Record<string, string>[] = [
+    { subKey: `state.${params.value}.${String(params.subKey)}` }
+  ];
+
   return new GetCacheValueMiddleware(
     {
       key: params.key,
@@ -24,6 +36,7 @@ export const makeGetCacheValueMiddleware = (params: FactoryParams) => {
     },
     chGetCacheValue,
     logger,
-    makeErrorHandler()
+    makeErrorHandler(),
+    extractValues
   );
 };

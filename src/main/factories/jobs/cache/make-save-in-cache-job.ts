@@ -1,6 +1,6 @@
 import { ChSaveInCache } from '@/data/usecases/cache';
 import { makeCacheServer } from '@/infra/cache';
-import { SharedState } from '@/presentation/protocols/shared-state';
+import { SharedState } from '@/job/protocols';
 import { SaveInCacheJob } from '@/job';
 
 import { makeErrorHandler } from '../../usecases';
@@ -9,20 +9,11 @@ type Value = keyof SharedState;
 
 type FactoryParams<K extends Value> = {
   key: string;
+  subKey: keyof SharedState[K];
   throws?: boolean;
   ttl?: number;
   value: K;
   extractField?: keyof SharedState[K];
-};
-
-const getExtractValue = (params: {
-  field?: string;
-  value: string;
-}): string[] => {
-  if (!params.field) {
-    return [`state.${params.value}`];
-  }
-  return [`state.${params.value}.${params.field}`];
 };
 
 export const makeSaveInCacheJob = <K extends Value>(
@@ -32,10 +23,11 @@ export const makeSaveInCacheJob = <K extends Value>(
 
   const chSaveInCache = new ChSaveInCache(cacheServer);
 
-  const extractValue = getExtractValue({
-    field: params.extractField as string,
-    value: params.value
-  });
+  const extractValues: (string | Record<string, string>)[] = [
+    { field: !params.extractField ? `state.${params.value}` : '' },
+    { subKey: `state.${params.value}.${String(params.subKey)}` },
+    `state.${params.value}.${String(params.extractField)}`
+  ];
 
   return new SaveInCacheJob(
     {
@@ -43,6 +35,6 @@ export const makeSaveInCacheJob = <K extends Value>(
     },
     makeErrorHandler(),
     chSaveInCache,
-    extractValue
+    extractValues
   );
 };

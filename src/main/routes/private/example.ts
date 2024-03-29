@@ -17,7 +17,9 @@ export default function (route: Route) {
   route.get(
     '/examples',
     makeGetCacheValueMiddleware({
-      key: 'example',
+      value: 'createExample',
+      key: 'BACKEND.EXAMPLE',
+      subKey: 'exampleId',
       options: {
         parseToJson: true
       },
@@ -31,8 +33,10 @@ export default function (route: Route) {
     '/examples',
     makeCreateExampleMiddleware(),
     makeSaveInCacheMiddleware({
-      key: 'example',
       value: 'createExample',
+      key: 'BACKEND.EXAMPLE',
+      subKey: 'exampleId',
+      extractField: 'exampleId',
       ttl: DEFAULT_CACHE_TTL
     }),
     makeMqPublishInExchangeMiddleware({

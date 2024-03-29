@@ -1,5 +1,6 @@
 import { Logger } from '@/data/protocols/utils';
 import { ErrorHandler, GetCacheValue } from '@/domain/usecases';
+import { ExtractValues } from '@/plugin';
 import { Middleware } from '@/presentation/protocols';
 import { serverError } from '@/presentation/utils';
 
@@ -9,20 +10,32 @@ type ArgsType = {
   options?: { parseToJson: boolean; parseBufferToString?: boolean };
 };
 
-export class GetCacheValueMiddleware implements Middleware {
+export class GetCacheValueMiddleware
+  extends ExtractValues
+  implements Middleware
+{
   constructor(
     private readonly args: ArgsType,
     private readonly getCacheValue: GetCacheValue,
     private readonly logger: Logger,
-    private readonly errorHandler: ErrorHandler
-  ) {}
+    private readonly errorHandler: ErrorHandler,
+    valuesToExtract: (string | Record<string, string>)[]
+  ) {
+    super(valuesToExtract);
+  }
   async handle(
-    _httpRequest: Middleware.HttpRequest,
+    httpRequest: Middleware.HttpRequest,
     [state, setState]: Middleware.State,
     next: Middleware.Next
   ): Middleware.Result {
     try {
-      const { key } = this.args;
+      const extractValue = this.extractValuesFromSources({
+        payload: httpRequest,
+        state
+      });
+
+      const subKeyToBuffer = btoa(String(extractValue.subKey));
+      const key = `${this.args.key}.${subKeyToBuffer}`;
 
       const value = await this.getCacheValue.get({
         key,
@@ -52,12 +65,7 @@ export class GetCacheValueMiddleware implements Middleware {
         payload: { error }
       });
 
-      switch (error.message) {
-        case GetCacheValue.Exceptions.ERROR_ON_GET_CACHE_VALUE:
-          return serverError(error);
-        default:
-          return serverError(error);
-      }
+      return serverError(error);
     }
   }
 }
