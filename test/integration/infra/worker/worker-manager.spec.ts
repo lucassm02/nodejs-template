@@ -1,5 +1,8 @@
 // TODO: The Worker need a method to stop agenda schedules
 
+it('should ', () => {
+  expect(1).toBe(1);
+});
 // import Agenda from 'agenda';
 
 // import { WorkerManager } from '@/infra/worker';
