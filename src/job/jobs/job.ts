@@ -9,7 +9,9 @@ type Option = {
   sources: Sources;
 };
 
+// TODO: I think this code is not used
 export class Job {
+  // TODO: Maybe this not make sense, cause valuesToExtract is a mandatory params
   constructor(protected readonly valuesToExtract: Values = []) {}
 
   private extractValues({ sources, values }: Option) {
