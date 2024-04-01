@@ -54,6 +54,7 @@ export class ExtractValues {
     const object: Record<string, unknown> = {};
 
     const setKeyValue = (keyName: string, target: string, path: string) => {
+      // TODO: this condition block extract value from payload and queue consumer works with payload and state
       if (target !== 'state' && target !== 'request') return;
       const targetValue = getIn(sources[target], path);
       if (object[keyName] !== undefined && !targetValue) return;
