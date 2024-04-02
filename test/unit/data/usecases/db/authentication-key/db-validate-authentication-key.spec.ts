@@ -7,7 +7,7 @@ type SutTypes = {
 const makeSut = (): SutTypes => ({ sut: new DbValidateAuthenticationKey() });
 
 describe('DbValidateAuthenticationKey UseCase', () => {
-  it('Should return ', async () => {
+  it('Should return an authentication on success', async () => {
     const { sut } = makeSut();
 
     const result = await sut.validate('any_authentication');
