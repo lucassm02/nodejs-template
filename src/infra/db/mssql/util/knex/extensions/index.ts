@@ -3,3 +3,4 @@ export * from './date-to-string-interceptor-plugin';
 export * from './formatted-select-plugin';
 export * from './date-converter-to-sqlite';
 export * from './syntax-in-test-environment-interceptor';
+export * from './date-converter-to-default-date';
