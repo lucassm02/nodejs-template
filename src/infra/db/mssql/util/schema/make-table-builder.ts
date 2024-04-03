@@ -35,7 +35,6 @@ export const makeTableBuilder =
   <T extends string>(options: Options<T>) => {
     type Columns = typeof options.columns;
 
-    // TODO: This function could be segregate to be more testable
     function makeColumns(
       array: string[],
       tableName: string,
@@ -83,7 +82,6 @@ export const makeTableBuilder =
       return handler[<'CAMEL' | 'SNAKE'>keyCase](object);
     }
 
-    // TODO: This function could be segregate to be more testable
     function getColumnsObject(keyCase: 'UPPER'): {
       [P in Uppercase<Columns[number]>]: string;
     };

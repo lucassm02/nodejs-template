@@ -5,6 +5,7 @@ import { sqlConnection } from '@/infra/db/mssql/util';
 import { WorkerManager } from '@/infra/worker';
 import { logger, MONGO } from '@/util';
 
+// TODO: USe factory
 const manager = WorkerManager.getInstance();
 
 (async () => {
