@@ -1,2 +1,2 @@
-export * from './es-create-event-stub';
-export * from './es-update-event-stub';
+export * from './create-event-stub';
+export * from './update-event-stub';
