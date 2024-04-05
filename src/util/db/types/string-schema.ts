@@ -1,8 +1,8 @@
 import { TypeSchema } from './schema';
 
-type DefaultStringValue = (() => string) | string;
+type DefaultStringValue = (() => Nullable<string>) | Nullable<string>;
 
-export class StringSchema extends TypeSchema<'string', DefaultStringValue> {
+export class StringSchema extends TypeSchema {
   constructor() {
     super({
       type: 'string'

@@ -1,8 +1,8 @@
 import { TypeSchema } from './schema';
 
-type DefaultBooleanValue = (() => boolean) | boolean;
+type DefaultBooleanValue = (() => Nullable<boolean>) | Nullable<boolean>;
 
-export class BooleanSchema extends TypeSchema<'boolean', DefaultBooleanValue> {
+export class BooleanSchema extends TypeSchema {
   constructor() {
     super({
       type: 'boolean'
