@@ -1,3 +1,3 @@
-import { UcVanillaDataValidation } from '@/data/usecases/validation';
+import { DataValidation } from '@/data/usecases/other';
 
-export const makeDataValidation = () => UcVanillaDataValidation.getInstance();
+export const makeDataValidation = () => DataValidation.getInstance();

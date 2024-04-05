@@ -22,9 +22,11 @@ export interface DataValidation {
 }
 
 export namespace DataValidation {
-  export enum Exceptions {
-    INVALID_DATA = 'sorry, the data provided is invalid.'
-  }
+  export const Exceptions = {
+    ERROR_REFERENCE: Symbol('Ref'),
+    VALIDATION_ERROR:
+      'One or more validation errors occurred during data extraction.'
+  };
   export type Schema = YupSchema;
   export type Exception = string;
   export type Result<T extends YupSchema> = InferType<T>;

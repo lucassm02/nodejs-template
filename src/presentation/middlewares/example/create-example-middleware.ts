@@ -42,7 +42,7 @@ export class CreateExampleMiddleware
         },
         {
           schema: createExampleSchema,
-          exception: DataValidation.Exceptions.INVALID_DATA
+          exception: DataValidation.Exceptions.VALIDATION_ERROR
         }
       );
 
@@ -63,7 +63,7 @@ export class CreateExampleMiddleware
     } catch (error) {
       await this.errorHandler.handle(error, state.transactions);
       switch (error.message) {
-        case DataValidation.Exceptions.INVALID_DATA:
+        case DataValidation.Exceptions.VALIDATION_ERROR:
           return unprocessableEntity(
             template(
               DICTIONARY.RESPONSE.MESSAGE.INVALID_DATA,

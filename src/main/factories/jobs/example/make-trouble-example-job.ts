@@ -1,4 +1,4 @@
-import { ExampleTrouble } from '@/data/usecases/example';
+import { ExampleTrouble } from '@/data/usecases/other/example';
 import { TroubleExampleJob } from '@/job';
 import { logger } from '@/util';
 
