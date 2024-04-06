@@ -43,6 +43,7 @@ export const API = {
 };
 
 export const DB = {
+  CONFIG: process.env.DB_CONFIG || 'default',
   DIALECT: process.env.DB_DIALECT || 'mssql',
   HOST: process.env.DB_HOST || '',
   USERNAME: process.env.DB_USERNAME || '',

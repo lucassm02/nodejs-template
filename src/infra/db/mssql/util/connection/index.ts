@@ -19,7 +19,7 @@ const configs = {
     }
   },
   test: {
-    client: 'sqlite3',
+    client: 'sqlite3+',
     connection: {
       filename: `${__dirname}/test_database.sqlite`
     },
@@ -27,6 +27,7 @@ const configs = {
   }
 };
 
-const config = process.env.NODE_ENV !== 'test' ? configs.default : configs.test;
+const config =
+  DB.CONFIG.toUpperCase() === 'TEST' ? configs.test : configs.default;
 
 export const sqlConnection = knex(config);
