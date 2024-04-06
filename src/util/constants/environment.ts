@@ -23,6 +23,7 @@ export const WORKER = {
 };
 
 export const LOGGER = {
+  ENABLED: stringToBoolean(process.env.LOGGER_ENABLED) || false,
   DB: {
     ENABLED: stringToBoolean(process.env.LOGGER_DB_ENABLED) || false
   },

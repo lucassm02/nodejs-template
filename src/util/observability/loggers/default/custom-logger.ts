@@ -45,6 +45,8 @@ export class CustomLogger {
   private offlineLogger!: Logger;
 
   constructor() {
+    if (!LOGGER.ENABLED) return;
+
     const fileTransport = new DailyRotateFile({
       filename: 'logs',
       extension: '.log',
@@ -114,6 +116,7 @@ export class CustomLogger {
   public log(error: Error, type?: LoggerType): void;
   public log(params: LogParams, type?: LoggerType): void;
   public log(data: LogParams | Error, type: LoggerType = 'default'): void {
+    if (!LOGGER.ENABLED) return;
     const logger = type === 'offline' ? this.offlineLogger : this.defaultLogger;
     this.handler(data, logger);
   }
