@@ -1,6 +1,6 @@
 import k from 'knex';
 
-import { ENVIRONMENT, isDateValid } from '@/util';
+import { isDateValid } from '@/util';
 
 function convertToDateValue([key, value]: [string, unknown]): [
   string,
@@ -17,7 +17,7 @@ function convertToDateValue([key, value]: [string, unknown]): [
   return [key, date];
 }
 
-export function resolveWrapper(resolve: (data: Object | Object[]) => void) {
+function resolveWrapper(resolve: (data: Object | Object[]) => void) {
   return (data: Object | Object[]) => {
     if (typeof data !== 'object') return resolve(data);
 
@@ -38,8 +38,6 @@ export function resolveWrapper(resolve: (data: Object | Object[]) => void) {
 }
 
 export function dateConverterToDefaultDate(knex: typeof k) {
-  if (ENVIRONMENT.toLowerCase() !== 'test') return knex;
-
   const knexProxy = new Proxy(knex, {
     apply(target, _, [arg]) {
       const instanceOfKnex = target(arg);

@@ -1,12 +1,10 @@
 import { knex as k } from 'knex';
 
 import {
-  dateConverterToDefaultDate,
-  dateConverterToSqliteDriver,
   dateToStringInterceptorPlugin,
   formattedSelectPlugin,
   noLockPlugin,
-  syntaxInTestEnvironmentInterceptor
+  sqLitePlus
 } from './extensions';
 
 export class CustomKnex {
@@ -17,9 +15,7 @@ export class CustomKnex {
     this.knex = noLockPlugin(k);
     this.knex = dateToStringInterceptorPlugin(this.knex);
     this.knex = formattedSelectPlugin(this.knex);
-    this.knex = dateConverterToSqliteDriver(this.knex);
-    this.knex = syntaxInTestEnvironmentInterceptor(this.knex);
-    this.knex = dateConverterToDefaultDate(this.knex);
+    this.knex = sqLitePlus(this.knex);
   }
 
   public static getInstance(): CustomKnex {
