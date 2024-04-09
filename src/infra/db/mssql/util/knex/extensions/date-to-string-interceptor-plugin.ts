@@ -1,14 +1,11 @@
-import k, { ContextType } from 'knex';
 import { format } from 'date-fns';
+import k, { ContextType } from 'knex';
 
-function allowConvertDateToString(date: Date) {
-  const dateValues = [date.getUTCHours(), date.getMinutes(), date.getSeconds()];
-  return !dateValues.every((value) => value === 0);
-}
+import { isDateValid } from '@/util';
 
 function formatDateEntries([key, value]: [string, unknown]) {
-  if (value instanceof Date && allowConvertDateToString(value)) {
-    const dateToString = format(value, 'yyyy-MM-dd HH:mm:ss');
+  if (isDateValid(<Date>value)) {
+    const dateToString = format(<Date>value, 'yyyy-MM-dd HH:mm:ss');
     return [key, dateToString];
   }
 

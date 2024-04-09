@@ -1,17 +1,18 @@
 import { object, string } from 'yup';
 
-import { UcVanillaDataValidation } from '@/data/usecases/validation';
+import { DataValidation as IDataValidation } from '@/domain/usecases/validation';
+import { DataValidation } from '@/data/usecases/other';
 import { YupSchema } from '@/presentation/protocols';
 
 type SutType = {
   schema: YupSchema;
-  sut: UcVanillaDataValidation;
+  sut: DataValidation;
   exception: string;
   data: Record<string, any>;
 };
 
 export const makeSut = (): SutType => {
-  const sut = UcVanillaDataValidation.getInstance();
+  const sut = DataValidation.getInstance();
   const exception = 'INVALID_DATA_EXCEPTION';
   const data = { foo: 'bar' };
   const schema = object().shape({
@@ -74,9 +75,16 @@ describe('UcVanillaDataValidation', () => {
     const result = async () => sut.validate(schema, {}, exception);
     expect(result).rejects.toThrow(exception);
   });
-  it('should return undefined with validation process throws but options throws is set as false', async () => {
+  it('should return error reference with validation process throws but options throws is set as false', async () => {
     const { sut, exception, schema } = makeSut();
     const result = await sut.validate(schema, {}, exception, { throws: false });
-    expect(result).toBeUndefined();
+    expect(result).toStrictEqual({
+      [IDataValidation.Exceptions.ERROR_REFERENCE]: [
+        {
+          key: 'foo',
+          message: 'foo is a required field'
+        }
+      ]
+    });
   });
 });

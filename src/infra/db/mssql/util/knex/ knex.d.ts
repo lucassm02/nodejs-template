@@ -1,6 +1,10 @@
 import { Knex as KnexOriginal } from 'knex';
 
 declare module 'knex' {
+  // export interface Config extends KnexOriginal.Config {
+  //   client: KnexOriginal.Config['client'] & 'sqlite3+';
+  // }
+
   export type Statement = {
     grouping: string;
     type: string;
@@ -11,6 +15,7 @@ declare module 'knex' {
     bool: string;
     asColumn: boolean;
   };
+
   export type ContextType = {
     _single?: {
       table: string;

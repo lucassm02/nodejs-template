@@ -1,7 +1,10 @@
-export async function tryToRun(callback: Function | unknown) {
+type Callback = Function | (() => unknown) | unknown | null;
+
+export function tryToRun<C extends Callback, R>(
+  callback: C
+): C | R | Promise<R> | null {
   if (typeof callback !== 'function') {
     return callback;
   }
-  const result = await callback();
-  return result;
+  return callback();
 }

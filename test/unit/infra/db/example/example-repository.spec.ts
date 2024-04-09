@@ -21,12 +21,13 @@ describe('Example DB', () => {
   afterAll(async () => {
     await migrate.down();
   });
+
   it('should not throws if update works correctly', async () => {
     const { sut } = makeSut();
 
     const result = await sut.update({
-      exampleId: 1,
-      value: '100',
+      exampleId: '1',
+      value: 100,
       description: 'foo'
     });
 
@@ -41,8 +42,8 @@ describe('Example DB', () => {
 
     expect(result).toEqual([
       {
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
         deletedAt: null,
         description: 'foo',
         exampleId: 1,

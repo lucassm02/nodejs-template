@@ -1,8 +1,8 @@
 import { TypeSchema } from './schema';
 
-type DefaultDateValue = (() => Date) | Date;
+type DefaultDateValue = (() => Nullable<Date>) | Nullable<Date>;
 
-export class DateSchema extends TypeSchema<'date', DefaultDateValue> {
+export class DateSchema extends TypeSchema {
   constructor() {
     super({
       type: 'date'

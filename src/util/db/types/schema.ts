@@ -2,27 +2,26 @@ type Maybe<T> = T | null | undefined;
 
 export type PermittedTypes = 'string' | 'boolean' | 'number' | 'date';
 
-export interface ITypeSchema<T extends PermittedTypes, D> {
-  __type: T;
-  __default: D | undefined;
-}
+type DefaultValue = Function | (() => unknown) | unknown | null;
 
-type DefaultValue = (() => unknown) | unknown | null;
+export abstract class TypeSchema {
+  protected __default!: DefaultValue | undefined;
+  protected readonly __type!: PermittedTypes;
 
-export abstract class TypeSchema<
-  T extends PermittedTypes,
-  D extends DefaultValue
-> implements ITypeSchema<T, D>
-{
-  __default!: D | undefined;
-  readonly __type!: T;
-
-  constructor(args: { type: Maybe<T> }) {
+  constructor(args: { type: Maybe<PermittedTypes> }) {
     this.validate(args.type);
     this.__type = args.type!;
   }
 
-  public setDefault(args?: D) {
+  get getType(): PermittedTypes {
+    return this.__type;
+  }
+
+  get getDefault(): DefaultValue {
+    return this.__default;
+  }
+
+  protected setDefault(args?: DefaultValue) {
     this.__default = args;
   }
 

@@ -1,8 +1,8 @@
 import { TypeSchema } from './schema';
 
-type DefaultNumberValue = (() => number) | number;
+type DefaultNumberValue = (() => Nullable<number>) | Nullable<number>;
 
-export class NumberSchema extends TypeSchema<'number', DefaultNumberValue> {
+export class NumberSchema extends TypeSchema {
   constructor() {
     super({
       type: 'number'
