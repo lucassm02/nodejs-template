@@ -25,7 +25,7 @@ const configs = {
   }
 };
 
-const config =
+export const getConfig = () =>
   DB.CONFIG.toUpperCase() === 'TEST' ? configs.test : configs.default;
 
-export const sqlConnection = knex(config);
+export const sqlConnection = knex(getConfig());
