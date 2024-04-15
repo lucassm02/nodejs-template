@@ -1,4 +1,4 @@
-import { ExampleTrouble } from '@/data/usecases/example';
+import { ExampleTrouble } from '@/data/usecases/other';
 
 type SutTypes = {
   sut: ExampleTrouble;

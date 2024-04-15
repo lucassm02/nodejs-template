@@ -1,5 +1,5 @@
 import { ErrorHandlerProtocol } from '@/data/protocols/exception';
-import { ExErrorHandler } from '@/data/usecases/exception';
+import { ExErrorHandler } from '@/data/usecases/other';
 
 type SutTypes = {
   sut: ExErrorHandler;
