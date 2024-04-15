@@ -1,17 +1,18 @@
 import { object, string } from 'yup';
 
-import { UcVanillaDataValidation } from '@/data/usecases/validation';
+import { DataValidation as IDataValidation } from '@/domain/usecases/validation';
+import { DataValidation } from '@/data/usecases/other';
 import { YupSchema } from '@/presentation/protocols';
 
 type SutType = {
   schema: YupSchema;
-  sut: UcVanillaDataValidation;
+  sut: DataValidation;
   exception: string;
   data: Record<string, any>;
 };
 
 export const makeSut = (): SutType => {
-  const sut = UcVanillaDataValidation.getInstance();
+  const sut = DataValidation.getInstance();
   const exception = 'INVALID_DATA_EXCEPTION';
   const data = { foo: 'bar' };
   const schema = object().shape({
@@ -50,6 +51,7 @@ describe('UcVanillaDataValidation', () => {
       schema
     });
   });
+
   it('should work with object sequencial overload params', async () => {
     const { sut, data, exception, schema } = makeSut();
     const spyOnSutValidate = jest.spyOn(sut, 'validate');
@@ -61,6 +63,7 @@ describe('UcVanillaDataValidation', () => {
       exception
     );
   });
+
   it('should return the correctly result the according of the schema provided', async () => {
     const { sut, data, exception, schema } = makeSut();
     const result = await sut.validate(schema, data, exception);
@@ -69,20 +72,23 @@ describe('UcVanillaDataValidation', () => {
     };
     expect(result).toStrictEqual(expected);
   });
+
   it('should throws if invalid data is provided and passed default options or throws true in options', async () => {
-    const { sut, data, exception, schema } = makeSut();
+    const { sut, exception, schema } = makeSut();
     const result = async () => sut.validate(schema, {}, exception);
     expect(result).rejects.toThrow(exception);
   });
-  it('should throws yup exception when options is undefined and exception is an Error', async () => {
-    const { sut, schema } = makeSut();
-    const errorException = new Error('INVALID_DATA_EXCEPTION');
-    const result = async () => sut.validate(schema, {}, errorException);
-    expect(result).rejects.toThrow(errorException);
-  });
-  it('should return undefined with validation process throws but options throws is set as false', async () => {
+
+  it('should return error reference with validation process throws but options throws is set as false', async () => {
     const { sut, exception, schema } = makeSut();
     const result = await sut.validate(schema, {}, exception, { throws: false });
-    expect(result).toBeUndefined();
+    expect(result).toStrictEqual({
+      [IDataValidation.Exceptions.ERROR_REFERENCE]: [
+        {
+          key: 'foo',
+          message: 'foo is a required field'
+        }
+      ]
+    });
   });
 });

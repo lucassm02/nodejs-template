@@ -1,35 +1,35 @@
-import { exceptions } from 'winston';
 import { InferType } from 'yup';
 
-import { UcVanillaDataValidation } from '@/data/usecases/validation';
+import { DataValidation as DataValidationInterface } from '@/domain/usecases/validation';
+import { DataValidation } from '@/data/usecases/other';
 import { YupSchema } from '@/presentation/protocols';
 import { getIn } from '@/util';
 
 type Sources = Record<string, Record<string, unknown>>;
 
-type Values = (string | Record<string, string>)[];
+type Config = (string | Record<string, string>)[];
 
 type Option = {
-  values: Values;
+  values: Config;
   sources: Sources;
 };
 
-type ValidationParams = {
-  schema: YupSchema;
+type ValidationParams<Schema> = {
+  schema: Schema;
   exception?: string | Error;
+  throws?: boolean;
 };
 
 export class ExtractValues {
-  private readonly validator: UcVanillaDataValidation;
+  private readonly validator: DataValidation;
 
-  // TODO: Maybe this not make sense, cause valuesToExtract is a mandatory params
-  constructor(protected readonly valuesToExtract: Values = []) {
-    this.validator = UcVanillaDataValidation.getInstance();
+  constructor(protected readonly config: Config = []) {
+    this.validator = DataValidation.getInstance();
   }
 
   private validate<Schema extends YupSchema>(
     value: Record<string, unknown>,
-    options: ValidationParams
+    options: ValidationParams<Schema>
   ): InferType<Schema> {
     const details = {
       data: value,
@@ -37,12 +37,12 @@ export class ExtractValues {
       schema: options.schema
     };
 
-    // TODO: I don't know why here use winston exceptions
-    if (!exceptions)
+    if (options.throws === false) {
       return this.validator.validate({
         ...details,
         options: { throws: false }
       });
+    }
 
     return this.validator.validate({
       ...details,
@@ -83,21 +83,29 @@ export class ExtractValues {
     return object;
   }
 
-  protected extractValuesFromSources(
+  protected extractValuesFromSources<T extends Record<string, unknown>>(
+    sources: Sources
+  ): T;
+  protected extractValuesFromSources<Schema extends YupSchema>(
     sources: Sources,
-    options?: ValidationParams
-  ): Record<string, unknown> {
+    options?: ValidationParams<Schema>
+  ): InferType<Schema>;
+  protected extractValuesFromSources<Schema extends YupSchema>(
+    sources: Sources,
+    options?: ValidationParams<Schema>
+  ) {
     const extractedValue = this.extractValues({
       sources,
-      values: this.valuesToExtract
+      values: this.config
     });
 
     if (!options) return extractedValue;
-
-    const validatedExtractedValue = <Record<string, unknown>>(
-      this.validate(extractedValue, options)
-    );
-
-    return validatedExtractedValue;
+    const validatedExtractedValue = this.validate(extractedValue, options);
+    return validatedExtractedValue as InferType<typeof options.schema>;
   }
+}
+
+export namespace ExtractValues {
+  export type Config = (string | Record<string, string>)[];
+  export const { Exceptions } = DataValidationInterface;
 }

@@ -1,4 +1,4 @@
-import { DatabaseTransactionWrapper } from '@/domain/models';
+import { DatabaseTransactionWrapper, ExampleModel } from '@/domain/models';
 
 export interface CreateExampleRepository {
   create(
@@ -12,15 +12,5 @@ export namespace CreateExampleRepository {
     description: string;
   };
 
-  type Model = {
-    exampleId: number;
-    externalId: string;
-    value: string;
-    description: string;
-    createdAt: Date;
-    updatedAt: Date;
-    deletedAt: Date;
-  };
-
-  export type Result = Promise<DatabaseTransactionWrapper<Model>>;
+  export type Result = Promise<DatabaseTransactionWrapper<ExampleModel>>;
 }

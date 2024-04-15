@@ -1,4 +1,6 @@
 import { AxiosRequestConfig, RawAxiosRequestHeaders } from 'axios';
+import http from 'http';
+import https from 'https';
 
 export type HttpRequest = {
   url: AxiosRequestConfig['url'];
@@ -6,6 +8,9 @@ export type HttpRequest = {
   body?: AxiosRequestConfig['data'];
   headers?: RawAxiosRequestHeaders;
   auth?: AxiosRequestConfig['auth'];
+  httpAgent?: http.Agent;
+  httpsAgent?: https.Agent;
+  signal?: AbortSignal;
 };
 
 export interface HttpClient<R = any> {
