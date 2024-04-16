@@ -121,7 +121,7 @@ describe('HttpServer', () => {
       const { sut } = makeSut();
       const result = await sut.ready();
       expect(result).toBeUndefined();
-      expect(ready).toHaveBeenCalledWith();
+      expect(ready).toHaveBeenCalledWith(expect.any(Function));
       expect(ready).toHaveBeenCalledTimes(1);
     });
   });
