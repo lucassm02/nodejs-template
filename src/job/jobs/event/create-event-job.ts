@@ -1,12 +1,11 @@
 import { Logger } from '@/data/protocols/utils';
-import { EsCreateEvent } from '@/data/usecases/elasticsearch';
-import { ErrorHandler } from '@/domain/usecases';
+import { CreateEvent, ErrorHandler } from '@/domain/usecases';
 import { Job } from '@/job/protocols';
 import { ELASTICSEARCH } from '@/util';
 
 export class CreateEventJob implements Job {
   constructor(
-    private createEvent: EsCreateEvent,
+    private readonly createEvent: CreateEvent,
     private readonly logger: Logger,
     private readonly errorHandler: ErrorHandler
   ) {}
@@ -16,7 +15,7 @@ export class CreateEventJob implements Job {
     next: Job.Next
   ): Job.Result {
     try {
-      if (!ELASTICSEARCH.ENABLED) next();
+      if (!ELASTICSEARCH.ENABLED) return next();
 
       const event = await this.createEvent.create({
         event: '',

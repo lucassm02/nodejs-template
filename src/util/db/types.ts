@@ -1,7 +1,9 @@
-import { BooleanSchema } from './types/boolean-schema';
-import { DateSchema } from './types/date-schema';
-import { NumberSchema } from './types/number-schema';
-import { StringSchema } from './types/string-schema';
+import {
+  BooleanSchema,
+  DateSchema,
+  NumberSchema,
+  StringSchema
+} from './schemas';
 
 export function number(): NumberSchema {
   return new NumberSchema();

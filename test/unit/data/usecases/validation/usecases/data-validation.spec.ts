@@ -51,6 +51,7 @@ describe('UcVanillaDataValidation', () => {
       schema
     });
   });
+
   it('should work with object sequencial overload params', async () => {
     const { sut, data, exception, schema } = makeSut();
     const spyOnSutValidate = jest.spyOn(sut, 'validate');
@@ -62,6 +63,7 @@ describe('UcVanillaDataValidation', () => {
       exception
     );
   });
+
   it('should return the correctly result the according of the schema provided', async () => {
     const { sut, data, exception, schema } = makeSut();
     const result = await sut.validate(schema, data, exception);
@@ -70,11 +72,13 @@ describe('UcVanillaDataValidation', () => {
     };
     expect(result).toStrictEqual(expected);
   });
+
   it('should throws if invalid data is provided and passed default options or throws true in options', async () => {
-    const { sut, data, exception, schema } = makeSut();
+    const { sut, exception, schema } = makeSut();
     const result = async () => sut.validate(schema, {}, exception);
     expect(result).rejects.toThrow(exception);
   });
+
   it('should return error reference with validation process throws but options throws is set as false', async () => {
     const { sut, exception, schema } = makeSut();
     const result = await sut.validate(schema, {}, exception, { throws: false });

@@ -1,9 +1,7 @@
 import { ErrorHandler } from '@/domain/usecases';
 import { PublishDataToReprocessingMiddleware } from '@/presentation/middlewares';
-import {
-  PublishDataToReprocessingStub,
-  mockReprocessingModel
-} from '@/test/unit/domain';
+import { mockReprocessingModel } from '@/test/unit/domain/models';
+import { PublishDataToReprocessingStub } from '@/test/unit/domain/usecases';
 import { makeErrorHandlerStub, makeServerErrorMock } from '@/test/util';
 
 type SutTypes = {

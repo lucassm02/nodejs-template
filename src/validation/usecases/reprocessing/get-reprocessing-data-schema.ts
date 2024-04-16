@@ -15,7 +15,7 @@ export const date = yup
     return isDate(new Date(<string>value));
   });
 
-const optionalFinalDate = date.test(
+export const optionalFinalDate = date.test(
   'is-big',
   'A data final não pode ser maior que hoje',
   function (value) {

@@ -1,10 +1,8 @@
 import { ErrorHandler } from '@/domain/usecases';
 import { DeleteReprocessingByIdentifierMiddleware } from '@/presentation/middlewares';
-import {
-  DeleteReprocessingByIdentifierStub,
-  mockReprocessingModel
-} from '@/test/unit/domain';
 import { makeErrorHandlerStub, makeServerErrorMock } from '@/test/util';
+import { DeleteReprocessingByIdentifierStub } from '@/test/unit/domain/usecases';
+import { mockReprocessingModel } from '@/test/unit/domain/models';
 
 type SutTypes = {
   sut: DeleteReprocessingByIdentifierMiddleware;
