@@ -1,6 +1,7 @@
 import fastify, {
   FastifyInstance,
   FastifyPluginCallback,
+  HookHandlerDoneFunction,
   RouteHandlerMethod
 } from 'fastify';
 import { readdirSync } from 'fs';
@@ -43,7 +44,6 @@ export class HttpServer {
   private baseUrl = '';
   private addressInfo!: AddressInfo | null | string;
   private startupCallbacks: Function[] = [];
-  private paths: string[] = [];
   private isStarted = false;
   private static instance: HttpServer;
 
@@ -51,7 +51,10 @@ export class HttpServer {
     this.fastify = this._fastify();
   }
 
-  public use(plugin: FastifyPluginCallback, configs?: any): void {
+  public use(
+    plugin: FastifyPluginCallback,
+    configs?: Record<string, unknown>
+  ): void {
     this.fastify.register(plugin, configs);
   }
 
@@ -67,14 +70,17 @@ export class HttpServer {
     return this?.addressInfo;
   }
 
-  public route() {
+  public router(params?: { path?: string; baseUrl?: string }) {
     if (this.isStarted)
       throw new Error(Exceptions.REGISTER_ROUTE_AFTER_BOOTSTRAP_SERVER);
+
     return new Route(
       this.fastify,
       this.adapterWithFlow.bind(this),
+      this.adapterHookWithFlow.bind(this),
       this.saveEndpoint.bind(this),
-      this.baseUrl
+      params?.baseUrl ?? this.baseUrl,
+      params?.path ?? ''
     );
   }
 
@@ -166,6 +172,7 @@ export class HttpServer {
 
   public close() {
     if (!this.isStarted) return;
+
     this.fastify.server.close(() => {
       logger.log({ level: 'info', message: 'Shutting down server' });
     });
@@ -205,11 +212,25 @@ export class HttpServer {
     const extensionsToSearch = ['.TS', '.JS'];
     const ignoreIfIncludes = ['.MAP.', '.SPEC.', '.TEST.'];
 
-    this.paths.push(path);
+    const baseUrl = typeof arg1 === 'string' ? arg1 : this.baseUrl;
+
+    const route =
+      arg1 instanceof Route
+        ? arg1
+        : this.createRoute({
+            baseUrl
+          });
 
     const files = readdirSync(path);
 
-    const route = arg1 instanceof Route ? arg1 : this.createRoute();
+    const middlewares =
+      typeof arg1 !== 'string' && arg1 !== undefined && !(arg1 instanceof Route)
+        ? [arg1, ...args]
+        : args;
+
+    if (middlewares.length) {
+      route.use(...middlewares);
+    }
 
     for await (const fileName of files) {
       const fileNameToUpperCase = fileName.toLocaleUpperCase();
@@ -233,12 +254,14 @@ export class HttpServer {
     }
   }
 
-  private createRoute(): Route {
+  private createRoute(params?: { path?: string; baseUrl?: string }): Route {
     return new Route(
       this.fastify,
       this.adapterWithFlow.bind(this),
+      this.adapterHookWithFlow.bind(this),
       this.saveEndpoint.bind(this),
-      this.baseUrl
+      params?.baseUrl ?? this.baseUrl,
+      params?.path ?? ''
     );
   }
 
@@ -247,9 +270,9 @@ export class HttpServer {
   }
 
   private refreshEndpoints(): void {
-    this.endpoints.forEach((endpoint) => {
+    for (const endpoint of this.endpoints) {
       this.fastify[endpoint.method](endpoint.uri, <any>endpoint.handler);
-    });
+    }
   }
 
   private makeSetStateInRequest(_state: Record<string, unknown>) {
@@ -334,6 +357,22 @@ export class HttpServer {
       return reply
         .status(response.statusCode)
         .send(convertCamelCaseKeysToSnakeCase(response.body));
+    };
+  }
+
+  private adapterHookWithFlow(
+    middlewares: RouteMiddleware[]
+  ): RouteHandlerMethod {
+    return async (request, reply) => {
+      try {
+        await makeFlow({
+          [REQUEST_KEY]: request,
+          [STATE_KEY]: {},
+          [REPLY_KEY]: reply
+        })(...this.adaptMiddlewares(middlewares))();
+      } catch (error) {
+        reply.status(500).send(serverError(error));
+      }
     };
   }
 
