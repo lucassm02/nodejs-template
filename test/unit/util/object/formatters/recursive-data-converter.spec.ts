@@ -40,15 +40,26 @@ describe('recursiveDataConvertFilterLayer Function', () => {
   it('should return data when data is an array of object', () => {
     const data = [
       { id: 1, name: 'name1', payload: ['item1', { item: 'item2' }, 1] },
-      { id: 2, name: 'name2', createdAt: new Date('2023-01-01') }
+      { id: 2, name: 'name2', createdAt: new Date('2023-01-01') },
+      new Date('2023-01-01')
     ];
     const formatter = jest.fn((value) => value);
     const result = recursiveDataConvertFilterLayer(data, formatter);
 
     const expected = [
       { id: 1, name: 'name1', payload: ['item1', { item: 'item2' }, 1] },
-      { id: 2, name: 'name2', createdAt: new Date('2023-01-01') }
+      { createdAt: new Date('2023-01-01'), id: 2, name: 'name2' },
+      new Date('2023-01-01')
     ];
+    expect(result).toStrictEqual(expected);
+  });
+
+  it('should return data when data is an array of null or undefined', () => {
+    const data = [null, undefined];
+    const formatter = jest.fn((value) => value);
+    const result = recursiveDataConvertFilterLayer(data, formatter);
+
+    const expected = [null, undefined];
     expect(result).toStrictEqual(expected);
   });
 });

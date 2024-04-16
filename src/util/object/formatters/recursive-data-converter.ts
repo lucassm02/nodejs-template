@@ -4,8 +4,7 @@ export const recursiveDataConvertFilterLayer = (
 ) => {
   if (Array.isArray(data)) {
     return data.map((item) => {
-      // TODO: this condition is correct? This should get instanceof item or data?
-      if (data instanceof Date) return data;
+      if (item instanceof Date) return item;
       if (typeof item === 'object')
         return recursiveDataConvertApplyLayer(item, formatter);
       return item;
@@ -21,7 +20,6 @@ const recursiveDataConvertApplyLayer = (
   object: Record<string, unknown>,
   formatter: (params: any) => any
 ): Record<string, unknown> => {
-  // TODO: I don't know how to get this case
   if (!object) return object;
   const objectWithNewKeys = formatter(object);
   const objectEntries = Object.entries(objectWithNewKeys);
