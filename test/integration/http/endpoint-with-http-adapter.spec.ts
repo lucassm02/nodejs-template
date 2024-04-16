@@ -10,7 +10,7 @@ describe('Endpoint With HTTP Adapter', () => {
   const beCalledMock = jest.fn();
   beforeAll(async () => {
     const server = httpServer();
-    server.route().get(
+    server.router().get(
       '/test/:id',
       httpAdapter(
         (_req, _res, next) => {

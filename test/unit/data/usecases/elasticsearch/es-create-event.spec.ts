@@ -27,6 +27,9 @@ const makeSut = (): SutTypes => {
 };
 
 describe('EsCreateEvent UseCase', () => {
+  beforeAll(() => {
+    jest.useFakeTimers().setSystemTime(new Date('2024-04-16 11:50:03'));
+  });
   it('Should call createDocumentService witch correct values', async () => {
     const { sut, createDocumentServiceStub } = makeSut();
 

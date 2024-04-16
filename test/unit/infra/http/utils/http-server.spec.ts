@@ -183,13 +183,13 @@ describe('HttpServer', () => {
   describe('#route', () => {
     it('should return an Route instance', () => {
       const { sut } = makeSut();
-      const router = sut.route();
+      const router = sut.router();
       expect(router).toBeInstanceOf(Route);
     });
     it('should throw an error if server is already started', () => {
       const { sut } = makeSut();
       sut.listen(8080);
-      const rejects = async () => sut.route();
+      const rejects = async () => sut.router();
       expect(rejects()).rejects.toThrow(
         'Sorry, you cannot register routes after bootstraping the HTTP server'
       );
