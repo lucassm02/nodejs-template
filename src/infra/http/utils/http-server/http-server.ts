@@ -110,8 +110,17 @@ export class HttpServer {
     return this.fastify.server;
   }
 
-  public async ready() {
-    await this.fastify.ready();
+  public ready(callback: () => void): void;
+  public ready(): Promise<void>;
+  public ready(callback?: () => void): void | Promise<void> {
+    if (callback) {
+      this.fastify.ready(() => callback());
+      return;
+    }
+
+    return new Promise((resolve) => {
+      this.fastify.ready(() => resolve());
+    });
   }
 
   public async listenAsync(
