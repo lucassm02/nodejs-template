@@ -39,10 +39,10 @@ export type Payload = { [REQUEST_KEY]: HttpRequest } & {
 } & { [REPLY_KEY]: FastifyReply };
 
 export interface Router {
-  post(...args: any): void;
-  put(...args: any): void;
-  patch(...args: any): void;
-  get(...args: any): void;
-  delete(...args: any): void;
-  options(...args: any): void;
+  post(path: string, handler: Function): void;
+  put(path: string, handler: Function): void;
+  patch(path: string, handler: Function): void;
+  get(path: string, handler: Function): void;
+  delete(path: string, handler: Function): void;
+  options(path: string, handler: Function): void;
 }
