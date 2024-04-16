@@ -1,7 +1,8 @@
 import { Logger } from '@/data/protocols/utils';
 import { ErrorHandler } from '@/domain/usecases';
 import { MqPublishInExchangeMiddleware } from '@/presentation/middlewares';
-import { ModelMock, PublishInExchangeStub } from '@/test/unit/domain';
+import { ModelMock } from '@/test/unit/domain/models';
+import { PublishInExchangeStub } from '@/test/unit/domain/usecases';
 import {
   LoggerStub,
   makeErrorHandlerStub,

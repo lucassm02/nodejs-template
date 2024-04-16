@@ -6,9 +6,9 @@ import {
   BooleanSchema,
   DateSchema,
   NumberSchema,
-  StringSchema
-} from './types/';
-import { TypeSchema } from './types/schema';
+  StringSchema,
+  TypeSchema
+} from './schemas';
 
 type StrictTypesConversion<T extends readonly string[]> = {
   [P in T[number]]: DateSchema | StringSchema | BooleanSchema | NumberSchema;

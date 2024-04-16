@@ -5,14 +5,5 @@ export interface GetExampleRepository {
 }
 
 export namespace GetExampleRepository {
-  type Model = {
-    exampleId: number;
-    externalId: string;
-    value: string;
-    description: string;
-    createdAt: Date;
-    updatedAt: Date;
-    deletedAt: Date;
-  };
   export type Result = Promise<ExampleModel[]>;
 }

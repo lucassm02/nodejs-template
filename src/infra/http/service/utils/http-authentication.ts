@@ -3,5 +3,5 @@ import axios from 'axios';
 import { API } from '@/util/constants';
 
 export const httpAuthenticator = axios.create({
-  baseURL: API.AUTHENTICATOR
+  baseURL: API.BASE_URL
 });

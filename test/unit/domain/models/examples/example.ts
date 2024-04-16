@@ -1,3 +1,5 @@
+import { ExampleModel } from '@/domain/models';
+
 type Model = {
   exampleId: string;
   externalId: string;
@@ -17,3 +19,13 @@ export const ModelMock: Model = {
   updatedAt: 'any_updated_at',
   deletedAt: 'any_deleted_at'
 };
+
+export const exampleModelMock: ExampleModel = new ExampleModel({
+  createdAt: new Date('2023-01-01'),
+  description: 'any_description',
+  exampleId: 'any_example_id',
+  externalId: 'any_external_id',
+  value: 1,
+  deletedAt: new Date('2023-01-01'),
+  updatedAt: new Date('2023-01-01')
+});
