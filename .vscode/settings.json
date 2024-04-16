@@ -4,6 +4,8 @@
     "agentkeepalive",
     "codegen",
     "datora",
+    "fastify",
+    "Fastify",
     "hokify",
     "italog",
     "memjs",

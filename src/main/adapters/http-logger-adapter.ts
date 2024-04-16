@@ -1,4 +1,5 @@
-import { NextFunction, Request, Response } from 'express';
+import { DoneFuncWithErrOrRes, FastifyReply, FastifyRequest } from 'fastify';
+import fp from 'fastify-plugin';
 
 type LoggerParams = {
   url: string;
@@ -8,47 +9,57 @@ type LoggerParams = {
 
 type Logger = (params: LoggerParams) => Promise<void> | void;
 
-export const httpLoggerAdapter =
-  (logger: Logger) =>
-  (expressRequest: Request, expressResponse: Response, next: NextFunction) => {
-    const makeDecorator = (method: Function) => (unknownBody: unknown) => {
-      const request = {
-        body: expressRequest?.body,
-        params: expressRequest?.params,
-        query: expressRequest?.query,
-        headers: expressRequest?.headers
-      };
+export const httpLoggerAdapter = (logger: Logger) =>
+  fp((fastify, opts, done) => {
+    fastify.addHook(
+      'onRequest',
+      (
+        fastifyRequest: FastifyRequest,
+        fastifyResponse: FastifyReply,
+        done: DoneFuncWithErrOrRes
+      ) => {
+        const makeDecorator = (method: Function) => (unknownBody: unknown) => {
+          const request = {
+            body: fastifyRequest?.body,
+            params: fastifyRequest?.params,
+            query: fastifyRequest?.query,
+            headers: fastifyRequest?.headers
+          };
 
-      const body = (() => {
-        try {
-          if (typeof unknownBody === 'object') return unknownBody;
-          if (typeof unknownBody === 'string') return JSON.parse(unknownBody);
-          return { content: unknownBody };
-        } catch (_error) {
-          return { content: unknownBody };
-        }
-      })();
+          const body = (() => {
+            try {
+              if (typeof unknownBody === 'object') return unknownBody;
+              if (typeof unknownBody === 'string')
+                return JSON.parse(unknownBody);
+              return { content: unknownBody };
+            } catch (_error) {
+              return { content: unknownBody };
+            }
+          })();
 
-      const response = {
-        body,
-        headers: expressResponse?.getHeaders(),
-        code: expressResponse.statusCode
-      };
+          const response = {
+            body,
+            headers: fastifyResponse?.getHeaders(),
+            code: fastifyResponse.statusCode
+          };
 
-      (async () => {
-        await logger?.({
-          url: expressRequest.originalUrl,
-          request,
-          response
-        });
-      })();
+          (async () => {
+            await logger?.({
+              url: fastifyRequest.originalUrl,
+              request,
+              response
+            });
+          })();
 
-      return method.call(expressResponse, unknownBody);
-    };
+          return method.call(fastifyResponse, unknownBody);
+        };
 
-    const sendDecorator = makeDecorator(expressResponse.send);
+        const sendDecorator = makeDecorator(fastifyResponse.send);
 
-    expressResponse.send = sendDecorator;
+        fastifyResponse.send = sendDecorator;
 
-    next();
-  };
+        done();
+      }
+    );
+    done();
+  });

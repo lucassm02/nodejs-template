@@ -1,12 +1,12 @@
-import { HttpRequest as Request, HttpResponse } from './http';
+import { HttpResponse, HttpRequest as Request } from './http';
 import { SharedState } from './shared-state';
 
 export interface Middleware {
-  handle: (
+  handle(
     httpRequest: Middleware.HttpRequest,
     state: Middleware.State,
     next: Middleware.Next
-  ) => Middleware.Result;
+  ): Middleware.Result;
 }
 
 export namespace Middleware {

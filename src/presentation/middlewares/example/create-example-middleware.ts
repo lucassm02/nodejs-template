@@ -37,7 +37,11 @@ export class CreateExampleMiddleware
     try {
       const params = <InferType<Schema>>this.extractValuesFromSources(
         {
-          request: httpRequest,
+          request: {
+            body: httpRequest.body,
+            params: httpRequest.params,
+            query: httpRequest.query
+          },
           state
         },
         {

@@ -1,17 +1,8 @@
 import { GetExampleRepository } from '@/data/protocols/db';
+import { exampleModelMock } from '@/test/unit/domain/models';
 
 export class GetExampleRepositoryStub implements GetExampleRepository {
   get(): GetExampleRepository.Result {
-    return Promise.resolve([
-      {
-        exampleId: 1,
-        externalId: 'external_id',
-        value: 'value',
-        description: 'description',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        deletedAt: new Date()
-      }
-    ]);
+    return Promise.resolve([exampleModelMock]);
   }
 }

@@ -1,37 +1,35 @@
+import { FastifyReply, FastifyRequest } from 'fastify';
+
 import { httpServer } from '@/infra/http/utils/http-server';
+import {
+  REPLY_KEY,
+  REQUEST_KEY,
+  RouteMiddleware,
+  STATE_KEY
+} from '@/infra/http/utils/http-server/types';
 import makeFlow from '@/main/adapters/flow-adapter';
 
-type Payload = {
-  state: Record<string, unknown>;
-  request: Record<string, unknown>;
-  response: Record<string, unknown>;
-};
-
-export const httpAdapter = (...args: (Function | { handle: Function })[]) => {
+export const httpAdapter = (...args: RouteMiddleware[]) => {
   return async (
-    request: Record<string, unknown>,
-    response: Record<string, unknown>,
+    request: FastifyRequest,
+    response: FastifyReply,
     finish: Function,
     state: [Record<string, unknown>, Function]
   ) => {
     const server = httpServer();
 
     const middlewares = args.map((middleware) => {
-      return ({ state, request, response }: Payload, next: Function) => {
-        if (typeof middleware === 'function')
-          return middleware(request, response, next, state);
-
-        // TODO: Change typology
-        return server.adapter(<any>middleware)(
-          <any>request,
-          <any>response,
-          <any>next
-        );
-      };
+      return server.adapter(middleware);
     });
 
-    await makeFlow({ state, request, response })(...middlewares)();
-    if (response.headersSent) return;
+    await makeFlow({
+      [REQUEST_KEY]: request,
+      [STATE_KEY]: state,
+      [REPLY_KEY]: response
+    })(...middlewares)();
+
+    if (response.sent) return;
+
     return finish();
   };
 };
