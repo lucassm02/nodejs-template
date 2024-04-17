@@ -65,17 +65,6 @@ export const MONGO = {
   AUTH_SOURCE: process.env.MONGO_AUTH_SOURCE || '',
   URL() {
     return `mongodb://${this?.USER}:${this.PASSWORD}@${this.HOST}:${this.PORT}`;
-  },
-  TEST: {
-    USER: process.env.MONGO_USER_TEST || '',
-    PASSWORD: process.env.MONGO_PASSWORD_TEST || '',
-    HOST: process.env.MONGO_HOST_TEST || '',
-    PORT: +(() => process.env.MONGO_PORT_TEST || 27017)(),
-    NAME: process.env.MONGO_NAME_TEST || '',
-    AUTH_SOURCE: process.env.MONGO_AUTH_SOURCE_TEST || '',
-    URL() {
-      return `mongodb://${this?.USER}:${this.PASSWORD}@${this.HOST}:${this.PORT}`;
-    }
   }
 };
 

@@ -2,7 +2,7 @@ import { APM } from '@/util';
 import { ElasticAPM } from '@/util/observability/apm/elastic-apm';
 
 describe('Elastic APM', () => {
-  it('should return null apm when APM is not ENABLED', async () => {
+  it('should return null apm when APM is not ENABLED', () => {
     APM.ENABLED = false;
 
     const elasticApm = new ElasticAPM();
@@ -16,6 +16,7 @@ describe('Elastic APM', () => {
     const elasticApm = new ElasticAPM();
 
     const apm = elasticApm.getAPM();
+
     expect(apm).toBeTruthy();
 
     await apm?.destroy();

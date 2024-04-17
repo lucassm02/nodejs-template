@@ -1,8 +1,9 @@
 import mongoose from 'mongoose';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { MongoMemoryServer } from 'mongodb-memory-server';
 
 import { InputAndOutputLogModel } from '@/infra/db/mongodb/input-and-output-log/input-and-output-log-model';
 import { InputAndOutputLogRepository } from '@/infra/db/mongodb/input-and-output-log/input-and-output-log-repository';
-import { MONGO } from '@/util';
 
 type SutTypes = {
   sut: InputAndOutputLogRepository;
@@ -10,17 +11,18 @@ type SutTypes = {
 
 const makeSut = (): SutTypes => ({ sut: new InputAndOutputLogRepository() });
 
+let mongo: MongoMemoryServer;
+
 describe('InputAndOutputLog Repository', () => {
   beforeAll(async () => {
-    await mongoose.connect(MONGO.TEST.URL(), {
-      dbName: MONGO.TEST.NAME,
-      authSource: MONGO.TEST.AUTH_SOURCE,
-      authMechanism: 'SCRAM-SHA-1'
-    });
+    mongo = await MongoMemoryServer.create();
+    const uri = mongo.getUri();
+    await mongoose.connect(uri);
   });
 
   afterAll(async () => {
     await mongoose.disconnect();
+    await mongo.stop();
   });
 
   beforeEach(async () => {
