@@ -259,11 +259,19 @@ export class HttpServer {
 
       if (haveAValidName && hasAValidExtension) {
         const filePath = resolve(path, fileName);
-        const setup = (await import(filePath)).default;
 
-        if (typeof setup !== 'function') continue;
+        try {
+          const setup = (await import(filePath)).default;
 
-        setup(route);
+          if (typeof setup !== 'function') continue;
+
+          setup(route);
+        } catch (error) {
+          logger.log({
+            level: 'error',
+            message: `Attempted to load route file ${fileName}, but encountered an error. Verify that the file exists and is correctly formatted.`
+          });
+        }
       }
     }
   }
