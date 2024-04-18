@@ -13,7 +13,12 @@ import makeFlow from '@/main/adapters/flow-adapter';
 import { Middleware } from '@/presentation/protocols';
 import { SharedState } from '@/presentation/protocols/shared-state';
 import { internalImplementationError, serverError } from '@/presentation/utils';
-import { DICTIONARY, convertCamelCaseKeysToSnakeCase, logger } from '@/util';
+import {
+  DICTIONARY,
+  convertCamelCaseKeysToSnakeCase,
+  convertSnakeCaseKeysToCamelCase,
+  logger
+} from '@/util';
 
 import { Route } from './route';
 import {
@@ -374,6 +379,10 @@ export class HttpServer {
   ): RouteHandlerMethod {
     return async (request, reply) => {
       try {
+        request.body = convertSnakeCaseKeysToCamelCase(request.body);
+        request.params = convertSnakeCaseKeysToCamelCase(request.params);
+        request.query = convertSnakeCaseKeysToCamelCase(request.query);
+
         await makeFlow({
           [REQUEST_KEY]: request,
           [STATE_KEY]: {},
@@ -388,6 +397,10 @@ export class HttpServer {
   private adapterWithFlow(middlewares: RouteMiddleware[]): RouteHandlerMethod {
     return async (request, reply) => {
       try {
+        request.body = convertSnakeCaseKeysToCamelCase(request.body);
+        request.params = convertSnakeCaseKeysToCamelCase(request.params);
+        request.query = convertSnakeCaseKeysToCamelCase(request.query);
+
         await makeFlow({
           [REQUEST_KEY]: request,
           [STATE_KEY]: {},
