@@ -33,6 +33,7 @@ function transformResponse(response: Object[] | Object) {
       if (key.includes(DELIMITER)) {
         const pathChunks = key.split(DELIMITER);
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         pathChunks.reduce((acc: Record<string, any>, curr, index) => {
           if (typeof acc === 'undefined') acc = {};
 
@@ -103,6 +104,7 @@ export function formattedSelectPlugin(knex: typeof k) {
           const instanceOfQueryBuilder = target(arg);
 
           return new Proxy(instanceOfQueryBuilder, {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             get(target: any, property) {
               const method = target[property];
 

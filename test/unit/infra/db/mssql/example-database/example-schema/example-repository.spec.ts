@@ -36,9 +36,7 @@ describe('Example DB', () => {
   it('should return all the example not deleted by the fooId', async () => {
     const { sut } = makeSut();
 
-    const result = await sut.getFooWithExample({
-      fooId: 1
-    });
+    const result = await sut.getFooWithExample();
 
     expect(result).toEqual([
       {

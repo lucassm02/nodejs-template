@@ -15,13 +15,13 @@ export function makeDecorator<Logger extends Function>(
 ) {
   return function ({ options, input, output }: LoggerParams) {
     return function (
-      target: Object,
-      key: string | symbol,
+      _target: Object,
+      _key: string | symbol,
       descriptor: PropertyDescriptor
     ) {
       const originalMethod = descriptor.value;
 
-      descriptor.value = async function (...args: any[]) {
+      descriptor.value = async function <T>(...args: T[]) {
         const name = getName(args, options);
         const methodResult = await originalMethod.apply(this, args);
 

@@ -1,5 +1,3 @@
-import { RequestGenericInterface } from 'fastify';
-
 import { HttpResponse, HttpRequest as Request } from './http';
 import { SharedState } from './shared-state';
 

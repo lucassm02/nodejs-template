@@ -30,6 +30,10 @@ export class EsUpdateEvent implements UpdateEvent {
     const now = new Date();
     const nowToString = this.formatDate(now, 'yyyy-MM-dd HH:mm:ss');
 
+    if (!document) {
+      return;
+    }
+
     const newDocument = this.merge(document, params, {
       updatedAt: nowToString
     });

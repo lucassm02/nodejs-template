@@ -10,15 +10,15 @@ type TransactionParams = {
 
 export function apmTransaction({ options, params, result }: TransactionParams) {
   return function (
-    target: Object,
-    key: string | symbol,
+    _target: Object,
+    _key: string | symbol,
     descriptor: PropertyDescriptor
   ) {
     const apm = elasticAPM().getAPM();
 
     const originalMethod = descriptor.value;
 
-    descriptor.value = async function (...args: any[]) {
+    descriptor.value = async function <T>(...args: T[]) {
       const transactionName = getName(args, options);
 
       const transaction = apm?.startTransaction(transactionName);

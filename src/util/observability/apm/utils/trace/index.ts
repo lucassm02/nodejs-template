@@ -1,3 +1,5 @@
+// TODO: We should seek better alternatives in the future, but for now, it's not a problem.
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { traceLabels, TransactionOptions } from './trace-protocols';
 
 export const searchLabels = (

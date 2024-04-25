@@ -28,7 +28,7 @@ export const treeObject = (object: object, options: Options) => {
   // TODO: .filter when many
   const [exceptionKey, exceptionValue] = Object.entries(object).find(
     ([key]) => key === options.exception
-  ) as [string, any];
+  ) as [string, unknown];
 
   return {
     ...Object.fromEntries(rest),

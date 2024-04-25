@@ -1,3 +1,5 @@
+// TODO: We should seek better alternatives in the future, but for now, it's not a problem.
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export const equals = (a: any, b: any): boolean => {
   if (a === b) return true;
   if (a instanceof Date && b instanceof Date)

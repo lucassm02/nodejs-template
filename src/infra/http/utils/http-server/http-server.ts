@@ -1,7 +1,6 @@
 import fastify, {
   FastifyInstance,
   FastifyPluginCallback,
-  HookHandlerDoneFunction,
   RouteHandlerMethod
 } from 'fastify';
 import { readdirSync } from 'fs';
@@ -280,6 +279,7 @@ export class HttpServer {
 
   private refreshEndpoints(): void {
     for (const endpoint of this.endpoints) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       this.fastify[endpoint.method](endpoint.uri, <any>endpoint.handler);
     }
   }

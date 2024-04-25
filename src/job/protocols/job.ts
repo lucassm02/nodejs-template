@@ -12,7 +12,10 @@ export namespace Job {
     routingKey: string;
   };
 
-  export type Payload<B = any, H = any> = {
+  export type Payload<
+    B extends Object = Record<string, unknown>,
+    H extends Object = Record<string, unknown>
+  > = {
     body: B;
     headers: H;
     properties: Properties;

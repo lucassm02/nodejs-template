@@ -2,11 +2,7 @@ import { AxiosInstance, isCancel } from 'axios';
 import http from 'http';
 import https from 'https';
 
-import {
-  HttpClient,
-  HttpRequest,
-  HttpResponse
-} from '@/data/protocols/http/adapters';
+import { HttpClient, Data, HttpResponse } from '@/data/protocols/http/adapters';
 import { logger } from '@/util';
 import { apmSpan } from '@/util/observability/apm';
 import { datoraHttpLogger } from '@/util/observability/loggers/decorators';
@@ -64,7 +60,7 @@ export class RequestAdapter implements HttpClient {
     params: decorators.params,
     result: decorators.result
   })
-  async request(data: HttpRequest): Promise<HttpResponse> {
+  async request(data: Data): Promise<HttpResponse> {
     const axiosResponse = await this.axios({
       data: data?.body,
       ...data

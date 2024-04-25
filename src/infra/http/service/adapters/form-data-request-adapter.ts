@@ -2,11 +2,7 @@ import Agent from 'agentkeepalive';
 import { AxiosInstance } from 'axios';
 import FormData from 'form-data';
 
-import {
-  HttpClient,
-  HttpRequest,
-  HttpResponse
-} from '@/data/protocols/http/adapters';
+import { HttpClient, Data, HttpResponse } from '@/data/protocols/http/adapters';
 import { logger } from '@/util';
 import { apmSpan } from '@/util/observability/apm';
 import {
@@ -62,7 +58,7 @@ export class FormDataRequestAdapter implements HttpClient {
     params: decorators.params,
     result: decorators.result
   })
-  async request(data: HttpRequest): Promise<HttpResponse> {
+  async request(data: Data): Promise<HttpResponse> {
     const formData = new FormData();
 
     Object.entries(data.body).forEach(([key, value]) => {

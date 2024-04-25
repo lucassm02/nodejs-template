@@ -8,7 +8,7 @@ function removeTableNameOfKeyValue([key, value]: [string, unknown]) {
   return [newKey, value];
 }
 
-function singleDataRemoveTableInterceptor(data: any) {
+function singleDataRemoveTableInterceptor(data: Record<string, unknown>) {
   if (typeof data !== 'object') return data;
 
   if (!Array.isArray(data)) {

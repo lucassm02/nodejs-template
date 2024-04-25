@@ -17,6 +17,7 @@ export class Repository {
     return sqlConnection;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected transactionAdapter(connection: Record<string, any>) {
     if (
       typeof connection.commit === 'function' &&

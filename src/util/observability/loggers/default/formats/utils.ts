@@ -1,4 +1,4 @@
-export const sanitizedParams = (params: { [key: string]: any }) => {
+export const sanitizedParams = (params: Record<string, unknown>) => {
   const entries = Object.entries(params);
 
   const sanitizedEntries = entries.map(([key, value]) => {

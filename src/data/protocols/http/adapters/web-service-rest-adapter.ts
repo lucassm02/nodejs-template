@@ -2,7 +2,9 @@ import { AxiosRequestConfig, RawAxiosRequestHeaders } from 'axios';
 import http from 'http';
 import https from 'https';
 
-export type HttpRequest = {
+type GenericObject = Record<string, unknown>;
+
+export type Data = {
   url: AxiosRequestConfig['url'];
   method: AxiosRequestConfig['method'];
   body?: AxiosRequestConfig['data'];
@@ -13,8 +15,11 @@ export type HttpRequest = {
   signal?: AbortSignal;
 };
 
-export interface HttpClient<R = any> {
-  request: (data: HttpRequest) => Promise<HttpResponse<R>>;
+export interface HttpClient<
+  B extends Object = GenericObject,
+  H extends Object = GenericObject
+> {
+  request: (data: Data) => Promise<HttpResponse<B, H>>;
 }
 
 export enum HttpStatusCode {
@@ -28,8 +33,11 @@ export enum HttpStatusCode {
   serverError = 500
 }
 
-export type HttpResponse<T = any> = {
+export type HttpResponse<
+  B extends Object = GenericObject,
+  H extends Object = GenericObject
+> = {
   statusCode: HttpStatusCode;
-  body?: T;
-  headers?: any;
+  body: B;
+  headers: H;
 };

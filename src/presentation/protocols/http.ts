@@ -11,6 +11,6 @@ export type HttpRequest<
 
 export interface HttpResponse {
   statusCode: number;
-  body?: any;
-  headers?: any;
+  body?: Record<string, unknown>;
+  headers?: Record<string, unknown>;
 }

@@ -37,9 +37,7 @@ export class ExampleRepository
       })
       .where(EXAMPLE.COLUMNS.EXAMPLE_ID, '=', params.exampleId);
   }
-  async getFooWithExample(
-    params: GetFooWithExampleRepository.Params
-  ): GetFooWithExampleRepository.Result {
+  async getFooWithExample(): GetFooWithExampleRepository.Result {
     return this.connection(FOO.TABLE)
       .select({
         fooId: FOO.COLUMNS.FOO_ID,

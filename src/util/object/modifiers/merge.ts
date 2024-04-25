@@ -1,7 +1,6 @@
 type UnknownObject = Record<string, unknown>;
 type Args = UnknownObject[];
-
-export function merge(...objects: Args) {
+export function merge<T extends Args = Args>(...objects: T) {
   const isObject = (obj: unknown) => obj && typeof obj === 'object';
 
   return objects.reduce((prev, obj) => {

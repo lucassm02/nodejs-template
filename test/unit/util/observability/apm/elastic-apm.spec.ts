@@ -19,6 +19,8 @@ describe('Elastic APM', () => {
 
     expect(apm).toBeTruthy();
 
-    await apm?.destroy();
+    if (apm?.isStarted) {
+      await apm.destroy();
+    }
   });
 });

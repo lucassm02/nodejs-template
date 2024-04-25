@@ -47,6 +47,7 @@ export function dateConverterToDefaultDate(knex: typeof k) {
           const instanceOfQueryBuilder = target(arg);
 
           return new Proxy(instanceOfQueryBuilder, {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             get(target: any, property) {
               const method = target[property];
 

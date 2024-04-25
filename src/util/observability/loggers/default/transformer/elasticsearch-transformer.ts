@@ -15,7 +15,7 @@ type Param = {
 };
 
 export const elasticSearchTransformer = (param: Param) => {
-  const { application: _, traceId, transactionId, payload, meta } = param.meta;
+  const { traceId, transactionId, payload, meta } = param.meta;
 
   const data = {
     application: {

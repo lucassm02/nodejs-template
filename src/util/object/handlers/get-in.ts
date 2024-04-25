@@ -3,6 +3,7 @@ export const getIn = (object: Object, path: string) => {
 
   const splittedPath = path.split('.');
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const targetValue = splittedPath.reduce((memo: any, key: string) => {
     const index = key.match(INDEX_PATTERN);
     if (index) {

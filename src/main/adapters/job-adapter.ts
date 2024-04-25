@@ -17,6 +17,7 @@ export const jobAdapter = (...jobs: (Job | Function)[]) => {
         }
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const stateHook = <[any, any]>[state, setState];
 
       if (typeof job === 'function') return job(payload, stateHook, next);
