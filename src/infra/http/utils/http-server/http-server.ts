@@ -12,7 +12,12 @@ import makeFlow from '@/main/adapters/flow-adapter';
 import { Middleware } from '@/presentation/protocols';
 import { SharedState } from '@/presentation/protocols/shared-state';
 import { internalImplementationError, serverError } from '@/presentation/utils';
-import { DICTIONARY, convertCamelCaseKeysToSnakeCase, logger } from '@/util';
+import {
+  DICTIONARY,
+  convertCamelCaseKeysToSnakeCase,
+  convertSnakeCaseKeysToCamelCase,
+  logger
+} from '@/util';
 
 import { Route } from './route';
 import {
@@ -253,11 +258,19 @@ export class HttpServer {
 
       if (haveAValidName && hasAValidExtension) {
         const filePath = resolve(path, fileName);
-        const setup = (await import(filePath)).default;
 
-        if (typeof setup !== 'function') continue;
+        try {
+          const setup = (await import(filePath)).default;
 
-        setup(route);
+          if (typeof setup !== 'function') continue;
+
+          setup(route);
+        } catch (error) {
+          logger.log({
+            level: 'error',
+            message: `Attempted to load route file ${fileName}, but encountered an error. Verify that the file exists and is correctly formatted.`
+          });
+        }
       }
     }
   }
@@ -374,6 +387,10 @@ export class HttpServer {
   ): RouteHandlerMethod {
     return async (request, reply) => {
       try {
+        request.body = convertSnakeCaseKeysToCamelCase(request.body);
+        request.params = convertSnakeCaseKeysToCamelCase(request.params);
+        request.query = convertSnakeCaseKeysToCamelCase(request.query);
+
         await makeFlow({
           [REQUEST_KEY]: request,
           [STATE_KEY]: {},
@@ -388,6 +405,10 @@ export class HttpServer {
   private adapterWithFlow(middlewares: RouteMiddleware[]): RouteHandlerMethod {
     return async (request, reply) => {
       try {
+        request.body = convertSnakeCaseKeysToCamelCase(request.body);
+        request.params = convertSnakeCaseKeysToCamelCase(request.params);
+        request.query = convertSnakeCaseKeysToCamelCase(request.query);
+
         await makeFlow({
           [REQUEST_KEY]: request,
           [STATE_KEY]: {},

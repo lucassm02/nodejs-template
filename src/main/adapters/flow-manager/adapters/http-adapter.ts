@@ -14,7 +14,7 @@ export const httpAdapter = (...args: RouteMiddleware[]) => {
     request: FastifyRequest,
     response: FastifyReply,
     finish: Function,
-    state: [Record<string, unknown>, Function]
+    [state]: [Record<string, unknown>, Function]
   ) => {
     const server = httpServer();
 
