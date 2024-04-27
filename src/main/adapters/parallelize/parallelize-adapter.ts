@@ -1,7 +1,7 @@
 import { Middleware } from '@/presentation/protocols';
 
 interface Handler {
-  handle: (...args: unknown[]) => Promise<void>;
+  handle(...args: unknown[]): Promise<unknown>;
 }
 
 type HandlerOrFunction = Handler | Function;
@@ -16,10 +16,13 @@ export function parallelize(
 ) {
   return async (...args: unknown[]) => {
     const next = <Middleware.Next>args.find((arg) => typeof arg === 'function');
+    const stateHook = args.find((arg) => Array.isArray(arg));
 
     if (!next) throw new Error(ParallelizeExceptions.NOT_FOUND_NEXT);
 
+    const indexOfPayload = 0;
     const indexOfNext = args.indexOf(next);
+    const indexOfStatehook = args.indexOf(stateHook);
 
     const toResolveMiddlewares = [handler, ...handlers];
 
@@ -35,7 +38,11 @@ export function parallelize(
 
     const promises = toResolveMiddlewares.map((handler) => {
       if (typeof handler === 'function') return handler(...args);
-      return handler.handle(...args);
+      return handler.handle(
+        args[indexOfPayload],
+        args[indexOfStatehook],
+        args[indexOfNext]
+      );
     });
 
     await Promise.allSettled(promises);
