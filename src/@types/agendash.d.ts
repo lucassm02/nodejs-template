@@ -1,7 +1,7 @@
 import Agenda from 'agenda';
-import { NextFunction, Request, Response } from 'express';
+import { FastifyPluginCallback } from 'fastify';
 
-type Middleware = (req: Request, res: Response, next: NextFunction) => void;
+type Middleware = FastifyPluginCallback;
 type Options = {
   title?: string;
   middleware?: string;

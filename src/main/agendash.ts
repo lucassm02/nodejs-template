@@ -1,26 +1,30 @@
 import { Agenda } from 'agenda';
-import express from 'express';
 import agendash from 'agendash';
+import Fastify from 'fastify';
 
 import { MONGO, WORKER, logger } from '@/util';
 
-const app = express();
-
-const mongoUrl = `${MONGO.URL()}/${MONGO.NAME}?authSource=${MONGO.AUTH_SOURCE}`;
-const mongoCollection = 'agenda';
-
-const agenda = new Agenda().database(mongoUrl, mongoCollection);
-
-const middleware = agendash(agenda, {
-  title: 'Agenda Dashboard'
-});
-
 const { BASE_URI, PORT } = WORKER.DASHBOARD;
 
-app.use(BASE_URI, middleware);
-app.set('port', PORT);
+const connection = `${MONGO.URL()}/${MONGO.NAME}?authSource=${MONGO.AUTH_SOURCE}`;
+const collection = 'agenda';
 
-app.listen(PORT, () => {
+const agenda = new Agenda().database(connection, collection);
+
+const fastify = Fastify();
+
+const middleware = agendash(agenda, {
+  title: 'Agenda Dashboard',
+  middleware: 'fastify'
+});
+
+fastify.register(middleware, { prefix: BASE_URI });
+fastify.listen({ port: +PORT }, (error) => {
+  if (error) {
+    logger.log(error);
+    process.exit(1);
+  }
+
   logger.log(
     {
       level: 'info',
