@@ -57,7 +57,7 @@ export class HttpServer {
   }
 
   private initializeStateInRequest() {
-    this.fastify.decorateRequest('state');
+    this.fastify.decorateRequest(STATE_KEY);
   }
 
   public use(
@@ -392,8 +392,8 @@ export class HttpServer {
   ): RouteHandlerMethod {
     return async (request, reply) => {
       try {
-        if (!request.state) {
-          request.state = {};
+        if (!request[STATE_KEY]) {
+          request[STATE_KEY] = {};
         }
 
         request.body = convertSnakeCaseKeysToCamelCase(request.body);
@@ -402,7 +402,7 @@ export class HttpServer {
 
         await makeFlow({
           [REQUEST_KEY]: request,
-          [STATE_KEY]: request.state,
+          [STATE_KEY]: request[STATE_KEY],
           [REPLY_KEY]: reply
         })(...this.adaptMiddlewares(middlewares))();
       } catch (error) {
@@ -414,8 +414,8 @@ export class HttpServer {
   private adapterWithFlow(middlewares: RouteMiddleware[]): RouteHandlerMethod {
     return async (request, reply) => {
       try {
-        if (!request.state) {
-          request.state = {};
+        if (!request[STATE_KEY]) {
+          request[STATE_KEY] = {};
         }
 
         request.body = convertSnakeCaseKeysToCamelCase(request.body);
@@ -424,7 +424,7 @@ export class HttpServer {
 
         await makeFlow({
           [REQUEST_KEY]: request,
-          [STATE_KEY]: request.state,
+          [STATE_KEY]: request[STATE_KEY],
           [REPLY_KEY]: reply
         })(...this.adaptMiddlewares(middlewares))();
 

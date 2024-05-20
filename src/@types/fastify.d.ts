@@ -1,7 +1,8 @@
+import type { STATE_KEY } from '@/infra/http/utils/http-server/types';
 import type { SharedState } from '@/presentation/protocols/shared-state';
 
 declare module 'fastify' {
   interface FastifyRequest {
-    state: Partial<SharedState>;
+    [STATE_KEY]: Partial<SharedState>;
   }
 }
