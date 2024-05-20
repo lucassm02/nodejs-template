@@ -53,6 +53,11 @@ export class HttpServer {
 
   constructor(private readonly _fastify: typeof fastify) {
     this.fastify = this._fastify();
+    this.initializeStateInRequest();
+  }
+
+  private initializeStateInRequest() {
+    this.fastify.decorateRequest('state');
   }
 
   public use(
@@ -297,11 +302,11 @@ export class HttpServer {
     }
   }
 
-  private makeSetStateInRequest(_state: Record<string, unknown>) {
+  private makeSetStateInRequest(source: Record<string, unknown>) {
     return <T>(state: T) => {
       for (const key in state) {
         if (typeof key === 'string' || typeof key === 'number')
-          _state[key] = state[key];
+          source[key] = state[key];
       }
     };
   }
@@ -387,13 +392,17 @@ export class HttpServer {
   ): RouteHandlerMethod {
     return async (request, reply) => {
       try {
+        if (!request.state) {
+          request.state = {};
+        }
+
         request.body = convertSnakeCaseKeysToCamelCase(request.body);
         request.params = convertSnakeCaseKeysToCamelCase(request.params);
         request.query = convertSnakeCaseKeysToCamelCase(request.query);
 
         await makeFlow({
           [REQUEST_KEY]: request,
-          [STATE_KEY]: {},
+          [STATE_KEY]: request.state,
           [REPLY_KEY]: reply
         })(...this.adaptMiddlewares(middlewares))();
       } catch (error) {
@@ -405,13 +414,17 @@ export class HttpServer {
   private adapterWithFlow(middlewares: RouteMiddleware[]): RouteHandlerMethod {
     return async (request, reply) => {
       try {
+        if (!request.state) {
+          request.state = {};
+        }
+
         request.body = convertSnakeCaseKeysToCamelCase(request.body);
         request.params = convertSnakeCaseKeysToCamelCase(request.params);
         request.query = convertSnakeCaseKeysToCamelCase(request.query);
 
         await makeFlow({
           [REQUEST_KEY]: request,
-          [STATE_KEY]: {},
+          [STATE_KEY]: request.state,
           [REPLY_KEY]: reply
         })(...this.adaptMiddlewares(middlewares))();
 
