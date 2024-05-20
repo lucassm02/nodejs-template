@@ -22,8 +22,7 @@ describe('Route Directory Implementations', () => {
 
       expect(response.statusCode).toBe(200);
       expect(response.body).toStrictEqual({
-        statusCode: 200,
-        message: 'works!'
+        statusCode: 200
       });
     });
   });
@@ -53,8 +52,7 @@ describe('Route Directory Implementations', () => {
 
       expect(response.statusCode).toBe(200);
       expect(response.body).toStrictEqual({
-        statusCode: 200,
-        message: 'works!'
+        statusCode: 200
       });
     });
   });
@@ -62,7 +60,7 @@ describe('Route Directory Implementations', () => {
     const application = new HttpServer(fastify);
     application.setBaseUrl('/api/v1');
 
-    const hookMock = jest.fn().mockImplementation((req, res, next) => {
+    const hookMock = jest.fn().mockImplementation((req, res, next, state) => {
       next();
     });
     const getServer = () => application.getServer();
@@ -87,8 +85,7 @@ describe('Route Directory Implementations', () => {
 
       expect(response.statusCode).toBe(200);
       expect(response.body).toStrictEqual({
-        statusCode: 200,
-        message: 'works!'
+        statusCode: 200
       });
       expect(hookMock).toHaveBeenCalled();
       expect(hookMock).toHaveBeenCalledTimes(1);
@@ -119,8 +116,7 @@ describe('Route Directory Implementations', () => {
 
       expect(response.statusCode).toBe(200);
       expect(response.body).toStrictEqual({
-        statusCode: 200,
-        message: 'works!'
+        statusCode: 200
       });
       expect(hookMock).toHaveBeenCalled();
       expect(hookMock).toHaveBeenCalledTimes(1);
@@ -131,9 +127,15 @@ describe('Route Directory Implementations', () => {
     const application = new HttpServer(fastify);
     application.setBaseUrl('/api/v1');
 
-    const hookMock = jest.fn().mockImplementation((req, res, next) => {
-      next();
-    });
+    const hookMock = jest
+      .fn()
+      .mockImplementation((req, res, next, [_state, setState]) => {
+        setState({
+          message: 'works!'
+        });
+        next();
+      });
+
     const getServer = () => application.getServer();
 
     afterAll(() => {
