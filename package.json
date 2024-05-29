@@ -47,7 +47,8 @@
     "test:coverage": "yarn test --coverage",
     "prepare": "husky install",
     "sonar": "docker run --rm --env-file .env -v $(pwd):/usr/src sonarsource/sonar-scanner-cli",
-    "gen": "codegen"
+    "gen": "codegen",
+    "s-code": "node script/s-code/index.mjs"
   },
   "keywords": [],
   "author": "badass-team",
