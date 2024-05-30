@@ -1,7 +1,7 @@
-export const filterBy = <T>(
+export const filterBy = <T, V>(
   records: T[],
   by: (keyof T)[],
-  value: any[]
+  value: V[]
 ): T[] => {
   if (!value?.[0]) return records;
 

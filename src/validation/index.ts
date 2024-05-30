@@ -4,11 +4,10 @@ import * as yup from 'yup';
 export const string = yup.string().nullable();
 
 export const number = (field: string) =>
-  yup.string().matches(/[0-9]/, `${field} precisa ser um número`);
+  yup.string().matches(/^[0-9]+$/, `${field} precisa ser um número`);
 
 export const cpf = yup
   .mixed()
-  .nullable()
   .test('is-cpf-or-cnpj', 'O CPF/CNPJ informado não é válido', (value) => {
     const stringValue = String(value);
     if (stringValue.length <= 11) {
@@ -25,7 +24,6 @@ export const email = yup
     /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i,
     'Valor inserido não corresponde a um e-mail'
   )
-  .nullable()
   .required('O e-mail é obrigatório');
 
 export const url = yup
@@ -34,7 +32,6 @@ export const url = yup
     /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\\.-]+)+[\w\-\\._~:\\/?#[\]@!\\$&'\\(\\)\\*\\+,;=.]+$/,
     'A url está inválida'
   )
-  .nullable()
   .required('A url é obrigatória');
 
 export const typePlan = yup
@@ -46,26 +43,21 @@ export const uuid = yup.string().uuid('O id não é válido');
 export const cvv = number('O cvv')
   .min(3, 'O mínimo para o cvv é 3 caracteres')
   .max(4, 'O limite para o cvv é 4 caracteres')
-  .nullable()
   .required('O cvv é obrigatório');
 
 export const numberCard = number('O número do cartão')
   .min(13, 'O mínimo para o cartão é 13 caracteres')
   .max(19, 'O limite para o cartão é 19 caracteres')
-  .required('O ddd é obrigatório');
+  .required('O número do cartão é obrigatório');
 
 export const zipCode = yup
   .string()
   .matches(/^(\d{8})$/, 'O cep está inválido')
-  .nullable()
   .required('O Cep é obrigatório');
 
 export const address = {
   zip_code: zipCode,
-  number: yup
-    .string()
-    .nullable()
-    .required('O número da residência é obrigatório'),
+  number: yup.string().required('O número da residência é obrigatório'),
   street: string.required('O nome da rua é obrigatório'),
   neighborhood: string.required('O bairro é obrigatório'),
   city: string.required('A cidade é obrigatória'),

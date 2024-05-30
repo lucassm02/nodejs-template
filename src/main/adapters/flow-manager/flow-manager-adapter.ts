@@ -1,12 +1,14 @@
 import { equals } from '@/util/comparation';
 import { getIn } from '@/util/object';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type RecordValue = any;
 
 type When =
   | string
   | string[]
   | Record<string, RecordValue>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   | ((...args: any[]) => boolean);
 
 export type Option = {

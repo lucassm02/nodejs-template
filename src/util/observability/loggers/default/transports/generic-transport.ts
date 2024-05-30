@@ -1,3 +1,5 @@
+// TODO: We should seek better alternatives in the future, but for now, it's not a problem.
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import Transport from 'winston-transport';
 
 import { isJson } from '@/util/text';

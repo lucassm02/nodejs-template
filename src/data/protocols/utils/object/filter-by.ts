@@ -1,1 +1,1 @@
-export type FilterBy = <T>(records: T[], by: (keyof T)[], value: any[]) => T[];
+export type FilterBy = <T, V>(records: T[], by: (keyof T)[], value: V[]) => T[];

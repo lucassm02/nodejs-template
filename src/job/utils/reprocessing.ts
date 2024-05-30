@@ -1,3 +1,5 @@
+// TODO: We should seek better alternatives in the future, but for now, it's not a problem.
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { MqSendReprocessing } from '@/data/usecases/mq';
 import { ReprocessingRepository } from '@/infra/db/mongodb/reprocessing';
 import { rabbitMqServer } from '@/infra/mq/utils';

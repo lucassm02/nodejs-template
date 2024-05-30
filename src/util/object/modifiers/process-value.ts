@@ -1,4 +1,4 @@
-export const processValue = <T>(
+export const processValue = <T extends Object>(
   object: T,
   manifest: { [P in keyof T]?: Function }
 ) => {
@@ -6,7 +6,7 @@ export const processValue = <T>(
 
   const manifestEntries = Object.entries(manifest);
 
-  const renamedEntries = Object.entries(object as any).map((keyValue) => {
+  const renamedEntries = Object.entries(object).map((keyValue) => {
     const matchValue = manifestEntries.find(([key]) => key === keyValue[0]);
     if (matchValue && typeof matchValue[1] === 'function')
       return [matchValue[0], matchValue[1](keyValue[1])];

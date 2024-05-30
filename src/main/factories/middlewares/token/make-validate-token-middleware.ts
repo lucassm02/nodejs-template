@@ -2,9 +2,9 @@ import { HttpValidateToken } from '@/data/usecases/http/token';
 import { SecretToken } from '@/infra/encryption';
 import { RequestAdapter } from '@/infra/http/service/adapters';
 import { ValidateTokenService } from '@/infra/http/service/authenticator';
-import { httpAuthenticator } from '@/infra/http/service/utils/http-authentication';
 import { ValidateTokenMiddleware } from '@/presentation/middlewares';
 import { logger } from '@/util';
+import { httpAuthenticator } from '@/infra/http/service/utils';
 
 import { makeErrorHandler } from '../../usecases';
 

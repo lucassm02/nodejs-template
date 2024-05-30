@@ -14,7 +14,18 @@ export const datoraHttpLogger = () => {
   ) {
     const originalMethod = descriptor.value;
 
-    descriptor.value = async function (...args: any[]) {
+    type Args = [
+      {
+        url: string;
+        body?: Record<string, unknown>;
+        headers?: Record<string, unknown>;
+        method: string;
+      },
+      unknown,
+      unknown
+    ];
+
+    descriptor.value = async function <T extends Args>(...args: T) {
       const requestOptions = args[0];
 
       const EVENT_INDEX = 'datora-event';
@@ -41,7 +52,7 @@ export const datoraHttpLogger = () => {
       if (transactionIds) {
         const elasticsearch = new Elasticsearch();
 
-        const document: any = await elasticsearch.getById({
+        const document = await elasticsearch.getById({
           id: transactionIds.transactionId,
           index: EVENT_INDEX
         });

@@ -30,7 +30,11 @@ export class GetCacheValueMiddleware
   ): Middleware.Result {
     try {
       const extractValue = this.extractValuesFromSources({
-        payload: httpRequest,
+        request: {
+          body: httpRequest.body,
+          params: httpRequest.params,
+          query: httpRequest.query
+        },
         state
       });
 

@@ -41,6 +41,28 @@ describe('DbGetReprocessingData UseCase', () => {
     });
   });
 
+  it('Should call getReprocessingDataRepository witch undefined dates', async () => {
+    const { sut, getReprocessingDataRepositoryStub } = makeSut();
+
+    const get = jest.spyOn(getReprocessingDataRepositoryStub, 'get');
+
+    await sut.get({
+      exchange: 'any_exchange',
+      routingKey: 'any_routing_key',
+      queue: 'any_queue'
+    });
+
+    const expected = {
+      exchange: 'any_exchange',
+      routingKey: 'any_routing_key',
+      queue: 'any_queue',
+      finalDateTime: undefined,
+      initialDateTime: undefined
+    };
+
+    expect(get).toHaveBeenCalledWith(expected);
+  });
+
   it('Should throw if getReprocessingDataRepository return array empty', async () => {
     const { sut, getReprocessingDataRepositoryStub } = makeSut();
 

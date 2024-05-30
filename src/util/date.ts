@@ -2,13 +2,12 @@ import {
   addBusinessDays,
   addDays,
   addMinutes,
-  format,
-  fromUnixTime,
-  getUnixTime,
-  isAfter as dateIsAfter,
   subBusinessDays as dateFnsSubBusinessDays,
   subDays as dateFnsSubDays,
-  isDate
+  isAfter as dateIsAfter,
+  format,
+  fromUnixTime,
+  getUnixTime
 } from 'date-fns';
 
 export const isDateValid = (date: Date): boolean => {

@@ -20,6 +20,10 @@ export class ValidateTokenMiddleware implements Middleware {
   ): Middleware.Result {
     try {
       const authorization = httpRequest.headers.authorization as string;
+
+      if (!authorization)
+        return unauthorized(DICTIONARY.RESPONSE.MESSAGE.UNAUTHORIZED);
+
       const token = await this.validateToken.validate(authorization);
       const data = { encryptedToken: authorization, token };
 

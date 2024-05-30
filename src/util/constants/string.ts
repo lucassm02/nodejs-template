@@ -1,6 +1,12 @@
 export const DICTIONARY = {
   RESPONSE: {
     MESSAGE: {
+      INTERNAl: {
+        INCORRECT_CALLBACK_RETURN:
+          'It is missing at some callback, middleware or controller the return with a valid object containg required properties (statusCode, body)'
+      },
+      BAD_GATEWAY:
+        'Desculpe, ocorreu um problema ao acessar o recurso solicitado, a resposta não foi enviada. Por favor, tente novamente mais tarde.',
       INVALID_DATA:
         'foram fornecidos valores inválidos na operação de {value}.',
       OK: '{value} com sucesso.',

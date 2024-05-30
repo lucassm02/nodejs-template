@@ -1,3 +1,5 @@
+// TODO: We should seek better alternatives in the future, but for now, it's not a problem.
+/* eslint-disable @typescript-eslint/no-explicit-any */
 type Options<T> = { from: T | T[]; attribute: keyof T; copyFrom: keyof T };
 
 export const overrideAttributeValue = <T>({

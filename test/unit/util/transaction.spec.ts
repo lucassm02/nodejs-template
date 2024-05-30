@@ -19,6 +19,19 @@ describe('mergeTransactions', () => {
       expect(transaction.commit).toHaveBeenCalledTimes(1);
     });
   });
+
+  it('Should not throw when transaction is null', async () => {
+    const transactions = [null];
+
+    const { rollback, commit } = mergeTransactions(transactions);
+
+    try {
+      await rollback();
+      await commit();
+    } catch (error) {
+      expect(error).toBeNull();
+    }
+  });
 });
 
 describe('rollbackAll', () => {
@@ -35,6 +48,16 @@ describe('rollbackAll', () => {
       expect(transaction.rollback).toHaveBeenCalledTimes(1);
     });
   });
+
+  it('Should not throw when transaction is null', async () => {
+    const transactions = [null];
+
+    try {
+      await rollbackAll(transactions);
+    } catch (error) {
+      expect(error).toBeNull();
+    }
+  });
 });
 
 describe('commitAll', () => {
@@ -50,5 +73,15 @@ describe('commitAll', () => {
     transactions.forEach((transaction) => {
       expect(transaction.commit).toHaveBeenCalledTimes(1);
     });
+  });
+
+  it('Should not throw when transaction is null', async () => {
+    const transactions = [null];
+
+    try {
+      await commitAll(transactions);
+    } catch (error) {
+      expect(error).toBeNull();
+    }
   });
 });

@@ -22,6 +22,7 @@ export function makeStateDependencies<SharedState>({
 
       const originalMethod = descriptor.value;
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       descriptor.value = function (...args: any[]) {
         for (const index in dependencies) {
           const DEPENDENCY_NAME = dependencies[index];

@@ -1,12 +1,11 @@
 import { Logger } from '@/data/protocols/utils';
-import { EsUpdateEvent } from '@/data/usecases/elasticsearch';
-import { ErrorHandler } from '@/domain/usecases';
+import { ErrorHandler, UpdateEvent } from '@/domain/usecases';
 import { Job } from '@/job/protocols';
 import { ELASTICSEARCH } from '@/util';
 
 export class UpdateEventJob implements Job {
   constructor(
-    private updateEvent: EsUpdateEvent,
+    private readonly updateEvent: UpdateEvent,
     private readonly logger: Logger,
     private readonly errorHandler: ErrorHandler
   ) {}
@@ -16,7 +15,7 @@ export class UpdateEventJob implements Job {
     next: Job.Next
   ): Job.Result {
     try {
-      if (!ELASTICSEARCH.ENABLED) next();
+      if (!ELASTICSEARCH.ENABLED) return next();
 
       const event = await this.updateEvent.update({
         status: 'SUCCESS'

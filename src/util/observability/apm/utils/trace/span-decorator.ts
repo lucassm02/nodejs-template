@@ -10,15 +10,15 @@ type TraceParams = {
 
 export function apmSpan({ options, params, result }: TraceParams) {
   return function (
-    target: Object,
-    key: string | symbol,
+    _target: Object,
+    _key: string | symbol,
     descriptor: PropertyDescriptor
   ) {
     const apm = elasticAPM().getAPM();
 
     const originalMethod = descriptor.value;
 
-    descriptor.value = async function (...args: any[]) {
+    descriptor.value = async function <T>(...args: T[]) {
       const spanName = getName(args, options);
 
       const span = apm?.currentTransaction?.startSpan(spanName);

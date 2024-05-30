@@ -1,4 +1,4 @@
-import { HttpRequest as Request, HttpResponse } from './http';
+import { HttpResponse, HttpRequest as Request } from './http';
 import { SharedState } from './shared-state';
 
 export interface Controller {

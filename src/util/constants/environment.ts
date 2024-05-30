@@ -23,6 +23,7 @@ export const WORKER = {
 };
 
 export const LOGGER = {
+  ENABLED: stringToBoolean(process.env.LOGGER_ENABLED) || false,
   DB: {
     ENABLED: stringToBoolean(process.env.LOGGER_DB_ENABLED) || false
   },
@@ -35,14 +36,11 @@ export const ENCRYPTION = {
 };
 
 export const API = {
-  AUTHENTICATOR: process.env.API_AUTHENTICATOR || '',
-  CARD_MANAGEMENT: process.env.API_CARD_MANAGEMENT || '',
-  TRANSACTION_MANAGEMENT: process.env.API_TRANSACTION_MANAGEMENT || '',
-  TELECALL_TOKEN_MANAGEMENT: process.env.API_TELECALL_TOKEN_MANAGEMENT || '',
-  TELECALL: process.env.API_TELECALL || ''
+  BASE_URL: process.env.API_BASE_URL || ''
 };
 
 export const DB = {
+  CONFIG: process.env.DB_CONFIG || 'default',
   DIALECT: process.env.DB_DIALECT || 'mssql',
   HOST: process.env.DB_HOST || '',
   USERNAME: process.env.DB_USERNAME || '',

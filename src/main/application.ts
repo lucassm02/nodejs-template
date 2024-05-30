@@ -1,22 +1,20 @@
 import path from 'path';
-import cors from 'cors';
-import express from 'express';
-import helmet from 'helmet';
 
 import { httpServer } from '@/infra/http/utils/http-server';
 import { elasticAPM } from '@/util';
 import { SERVER } from '@/util/constants';
+import cors from '@fastify/cors';
+import helmet from '@fastify/helmet';
 
 import { apmHttpLoggerMiddleware, dbHttpLoggerMiddleware } from './middlewares';
 
 elasticAPM();
-
 const application = httpServer();
 
-application.use(cors({ exposedHeaders: 'X-Total-Count' }));
-application.use(helmet());
-application.use(express.json());
-application.use(express.urlencoded({ extended: true }));
+application.use(cors, {
+  exposedHeaders: 'X-Total-Count'
+});
+application.use(helmet);
 application.use(apmHttpLoggerMiddleware);
 application.use(dbHttpLoggerMiddleware);
 
