@@ -1,23 +1,21 @@
-/* eslint-disable no-console */
 /* eslint-disable no-await-in-loop */
+/* eslint-disable no-console */
 import fs from 'fs/promises';
 import path from 'path';
 import axios from 'axios';
 
 async function createFilesFromSCodeFile(sCodeContent) {
-  const files = sCodeContent.split('--- File Path:').slice(1);
+  const files = sCodeContent.split(/---\s*path:\s*/i).slice(1);
 
   if (files.length === 0) {
     console.error('Não foi encontrado nenhum arquivo para extração');
-    return;
+    process.exit(0);
   }
 
-  for (let i = 0; i < files.length; i++) {
-    const filePathFromString = files[i].split('\n')[0].trim();
-    const filePath = path.join(process.cwd(), filePathFromString);
-    const rawContent = files[i].trim();
-    const startOfContent = rawContent.indexOf('\n') + 1;
-    const content = rawContent.substring(startOfContent);
+  for (const file of files) {
+    const [filePathFromString, ...contentLines] = file.trim().split('\n');
+    const filePath = path.join(process.cwd(), filePathFromString.trim());
+    const content = contentLines.join('\n').trim();
     const dir = path.dirname(filePath);
 
     await fs.mkdir(dir, { recursive: true });
@@ -36,26 +34,21 @@ async function main() {
   }
 
   try {
-    if (input.startsWith('http://') || input.startsWith('https://')) {
-      const response = await axios.get(input);
-      const content = response.data;
-      await createFilesFromSCodeFile(content);
+    const content =
+      input.startsWith('http://') || input.startsWith('https://')
+        ? (await axios.get(input)).data
+        : await fs.readFile(input, 'utf-8');
 
-      return;
-    }
-
-    const content = await fs.readFile(input, 'utf-8');
     await createFilesFromSCodeFile(content);
   } catch (error) {
     console.error(
       `Não foi possível carregar o conteúdo ${input}: ${error.message}`
     );
-
     process.exit(1);
   }
 
-  console.log('Conteúdo carregado!');
-  console.log('iniciando processamento...');
+  console.log('Conteúdo carregado e processamento iniciado!');
+  process.exit(0);
 }
 
 try {
