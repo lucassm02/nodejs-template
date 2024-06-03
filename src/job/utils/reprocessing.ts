@@ -61,15 +61,15 @@ export function reprocessing(options: Options = {}) {
       const maxTries = options.maxTries ?? REPROCESSING.MAX_TRIES;
 
       const queueOptions = options.queueOptions ?? {
-        exchange: payload.properties.exchange,
-        routingKey: payload.properties.routingKey
+        exchange: payload.fields.exchange,
+        routingKey: payload.fields.routingKey
       };
 
       const mqSendReprocessing = new MqSendReprocessing(
         mqServer,
         mqServer,
         reprocessingRepository,
-        { queue: payload.properties.queue, ...queueOptions },
+        { queue: payload.fields.queue, ...queueOptions },
         maxTries,
         delays
       );
