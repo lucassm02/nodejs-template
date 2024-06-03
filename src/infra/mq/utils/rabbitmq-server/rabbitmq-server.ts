@@ -227,12 +227,18 @@ export class RabbitMqServer {
       if (!message) return;
 
       try {
+        this.setCustomMessageProperties(message, { rejected: false });
+
         const payload = {
           body: convertSnakeCaseKeysToCamelCase(
             this.convertMessageToJson(message)
           ),
           headers: message.properties.headers,
-          properties: { queue, ...message.fields }
+          fields: { queue, ...message.fields },
+          properties: message.properties,
+          reject: (requeue?: boolean) => {
+            this.reject(message, requeue ?? true);
+          }
         };
 
         await this.transactionHandler(queue, payload, callback);
@@ -319,9 +325,67 @@ export class RabbitMqServer {
     }
   }
 
+  private setCustomMessageProperties(
+    message: Message,
+    properties: Record<string, unknown>
+  ) {
+    const typedMessage = <
+      Message & { customProperties: Record<string, unknown> }
+    >message;
+
+    if (!typedMessage.customProperties) {
+      typedMessage.customProperties = {};
+    }
+
+    for (const key in properties) {
+      if (typeof key === 'string' || typeof key === 'number')
+        typedMessage.customProperties[key] = properties[key];
+    }
+  }
+
+  private getCustomMessageProperties(
+    message: Message,
+    property: string | number
+  ) {
+    const typedMessage = <
+      Message & { customProperties: Record<string, unknown> }
+    >message;
+
+    const value = typedMessage.customProperties[property];
+    return value ?? null;
+  }
+
+  private reject(message: Message, requeue?: boolean) {
+    try {
+      if (
+        !this.theChannelIsActive ||
+        !this.channel ||
+        this.getCustomMessageProperties(message, 'rejected') ||
+        this.getCustomMessageProperties(message, 'acked')
+      )
+        return;
+      this.setCustomMessageProperties(message, { rejected: true });
+      this.channel.reject(message, requeue);
+    } catch (error) {
+      logger.log(error);
+      logger.log({
+        level: 'warn',
+        message: 'Unable to reject message',
+        payload: { message: message.content.toString() }
+      });
+    }
+  }
+
   private ack(message: Message) {
     try {
-      if (!this.theChannelIsActive || !this.channel) return;
+      if (
+        !this.theChannelIsActive ||
+        !this.channel ||
+        this.getCustomMessageProperties(message, 'rejected') ||
+        this.getCustomMessageProperties(message, 'acked')
+      )
+        return;
+      this.setCustomMessageProperties(message, { acked: true });
       this.channel.ack(message);
     } catch (error) {
       logger.log(error);
