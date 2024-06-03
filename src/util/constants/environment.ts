@@ -52,6 +52,7 @@ export const RABBIT = {
   USER: process.env.RABBIT_USER || '',
   PASSWORD: process.env.RABBIT_PASSWORD || '',
   HOST: process.env.RABBIT_HOST || '',
+  VIRTUAL_HOST: process.env.RABBIT_VIRTUAL_HOST || '',
   PORT: +(() => process.env.RABBIT_PORT || 5672)(),
   PREFETCH: +(() => process.env.RABBIT_PREFETCH || 10)()
 };

@@ -73,7 +73,11 @@ export class RabbitMqServer {
         throw new Error(this.Error.InvalidCredentialFieldValue(key));
     });
 
-    this.uri = `amqp://${credentials.user}:${credentials.password}@${credentials.host}:${credentials.port}`;
+    const virtualHost = credentials.virtualHost
+      ? `/${credentials.virtualHost}`
+      : '';
+
+    this.uri = `amqp://${credentials.user}:${credentials.password}@${credentials.host}:${credentials.port}${virtualHost}`;
     return this;
   }
 
