@@ -1,6 +1,7 @@
 import { Logger } from '@/data/protocols/utils';
 import { ErrorHandler, GetCacheValue } from '@/domain/usecases';
 import { Job } from '@/job/protocols';
+import { ExtractValues } from '@/plugin';
 
 type ArgsType = {
   key: string;
@@ -8,20 +9,30 @@ type ArgsType = {
   options?: { parseToJson: boolean; parseBufferToString?: boolean };
 };
 
-export class GetCacheValueJob implements Job {
+export class GetCacheValueJob extends ExtractValues implements Job {
   constructor(
     private readonly args: ArgsType,
     private readonly getCacheValue: GetCacheValue,
     private readonly logger: Logger,
-    private readonly errorHandler: ErrorHandler
-  ) {}
+    private readonly errorHandler: ErrorHandler,
+    valuesToExtract: (string | Record<string, string>)[]
+  ) {
+    super(valuesToExtract);
+  }
+
   async handle(
-    _payload: Job.Payload,
+    payload: Job.Payload,
     [state, setState]: Job.State,
     next: Job.Next
   ): Job.Result {
     try {
-      const { key } = this.args;
+      const extractValue = this.extractValuesFromSources({
+        payload,
+        state
+      });
+
+      const subKeyToBuffer = btoa(String(extractValue.subKey));
+      const key = `${this.args.key}.${subKeyToBuffer}`;
 
       const value = await this.getCacheValue.get({
         key,

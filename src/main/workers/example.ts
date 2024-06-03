@@ -11,6 +11,7 @@ export default (manager: WorkerManager) => {
     makeSaveInCacheJob({
       key: 'example',
       value: 'validateToken',
+      subKey: 'encryptedToken',
       extractField: 'token',
       ttl: tenMinutes
     })

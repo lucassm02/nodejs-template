@@ -1,31 +1,49 @@
 import { Logger } from '@/data/protocols/utils';
 import { ErrorHandler, GetCacheValue } from '@/domain/usecases';
-import { GetCacheValueJob } from '@/job';
+import { GetCacheValueMiddleware } from '@/presentation/middlewares';
+import { SharedState } from '@/job/protocols';
 import { GetCacheValueStub } from '@/test/unit/domain/usecases';
 import { ErrorHandlerStub, LoggerStub } from '@/test/util';
 
 type SutTypes = {
-  sut: GetCacheValueJob;
+  sut: GetCacheValueMiddleware;
   getCacheValueStub: GetCacheValue;
   logger: Logger;
   errorHandler: ErrorHandler;
 };
 
-type ArgsType = {
+type Value = keyof SharedState;
+
+type FactoryParams<K extends Value> = {
   key: string;
   throws?: boolean;
-  options?: { parseToJson: boolean; parseBufferToString?: boolean };
+  value: K;
+  subKey: keyof SharedState[K];
+  options?: { parseToJson?: boolean; parseBufferToString?: boolean };
 };
 
-const makeSut = (args: ArgsType): SutTypes => {
+const makeSut = <K extends Value>(params: FactoryParams<K>): SutTypes => {
   const getCacheValueStub = new GetCacheValueStub();
   const errorHandler = new ErrorHandlerStub();
   const logger = new LoggerStub();
-  const sut = new GetCacheValueJob(
-    args,
+
+  const extractValues: Record<string, string>[] = [
+    { subKey: `state.${params.value}.${String(params.subKey)}` }
+  ];
+
+  const sut = new GetCacheValueMiddleware(
+    {
+      key: params.key,
+      throws: params.throws ?? false,
+      options: {
+        parseToJson: params.options?.parseToJson ?? false,
+        parseBufferToString: params.options?.parseBufferToString ?? false
+      }
+    },
     getCacheValueStub,
     logger,
-    errorHandler
+    errorHandler,
+    extractValues
   );
 
   return {
@@ -36,21 +54,25 @@ const makeSut = (args: ArgsType): SutTypes => {
   };
 };
 
-describe('GetCacheValue Job', () => {
+describe('GetCacheValueMiddleware', () => {
   const payload: any = {};
   const state: any = {};
   const setState = jest.fn();
   const next = jest.fn();
 
   it('should call GetCacheValue with key and false options', async () => {
-    const { sut, getCacheValueStub } = makeSut({ key: 'any_key' });
+    const { sut, getCacheValueStub } = makeSut({
+      key: 'any_key',
+      value: 'createEvent',
+      subKey: 'id'
+    });
 
     const getSpy = jest.spyOn(getCacheValueStub, 'get');
 
     await sut.handle(payload, [state, setState], next);
 
     const expected = {
-      key: 'any_key',
+      key: 'any_key.dW5kZWZpbmVk',
       options: {
         parseBufferToString: false,
         parseToJson: false
@@ -66,6 +88,8 @@ describe('GetCacheValue Job', () => {
     const { sut, getCacheValueStub } = makeSut({
       key: 'any_key',
       throws: true,
+      value: 'createEvent',
+      subKey: 'id',
       options: { parseToJson: true, parseBufferToString: true }
     });
 
@@ -74,7 +98,7 @@ describe('GetCacheValue Job', () => {
     await sut.handle(payload, [state, setState], next);
 
     const expected = {
-      key: 'any_key',
+      key: 'any_key.dW5kZWZpbmVk',
       options: {
         parseBufferToString: true,
         parseToJson: true
@@ -87,13 +111,17 @@ describe('GetCacheValue Job', () => {
   });
 
   it('should set state with cacheValues on success', async () => {
-    const { sut } = makeSut({ key: 'any_key' });
+    const { sut } = makeSut({
+      key: 'any_key',
+      value: 'createEvent',
+      subKey: 'id'
+    });
 
     await sut.handle(payload, [state, setState], next);
 
     const expected = {
       cacheValues: {
-        any_key: 'my cache value'
+        'any_key.dW5kZWZpbmVk': 'my cache value'
       }
     };
 
@@ -102,7 +130,11 @@ describe('GetCacheValue Job', () => {
   });
 
   it('should aggregate state when already exists cacheValues on state', async () => {
-    const { sut } = makeSut({ key: 'any_key' });
+    const { sut } = makeSut({
+      key: 'any_key',
+      value: 'createEvent',
+      subKey: 'id'
+    });
 
     const stateWithCacheValues: any = {
       cacheValues: {
@@ -115,7 +147,7 @@ describe('GetCacheValue Job', () => {
 
     const expected = {
       cacheValues: {
-        any_key: 'my cache value',
+        'any_key.dW5kZWZpbmVk': 'my cache value',
         getItem: 'cached item',
         getPayload: 'cached payload'
       }
@@ -125,10 +157,12 @@ describe('GetCacheValue Job', () => {
     expect(setState).toHaveBeenCalledWith(expected);
   });
 
-  it('should call error handler and logger when GetCacheValue and throws is true', async () => {
+  it('should call error handler and logger when GetCacheValue throws and throws is true', async () => {
     const { sut, getCacheValueStub, logger, errorHandler } = makeSut({
       key: 'any_key',
-      throws: true
+      throws: true,
+      value: 'createEvent',
+      subKey: 'id'
     });
 
     jest
@@ -157,7 +191,9 @@ describe('GetCacheValue Job', () => {
   it('should call error handler when GetCacheValue throws and call next when throws is false', async () => {
     const { sut, getCacheValueStub, errorHandler } = makeSut({
       key: 'any_key',
-      throws: false
+      throws: false,
+      value: 'createEvent',
+      subKey: 'id'
     });
 
     jest

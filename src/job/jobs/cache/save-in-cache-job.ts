@@ -17,6 +17,7 @@ export class SaveInCacheJob extends ExtractValues implements Job {
   ) {
     super(valuesToExtract);
   }
+
   async handle(
     payload: Job.Payload,
     [state]: Job.State,
@@ -30,9 +31,11 @@ export class SaveInCacheJob extends ExtractValues implements Job {
 
       const { key } = this.args;
 
+      const { subKey, ...value } = extractValue;
+
       const params = this.args.ttl
-        ? { key, value: extractValue, ttl: this.args.ttl }
-        : { key, value: extractValue };
+        ? { key, subKey, value, ttl: this.args.ttl }
+        : { key, subKey, value };
 
       await this.saveInCache.save(params);
 
