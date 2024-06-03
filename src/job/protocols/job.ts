@@ -6,11 +6,12 @@ export interface Job {
 
 export namespace Job {
   type SetState = <T = SharedState>(state: T) => void;
-  type Properties = {
+  type Fields = {
     queue: string;
     exchange: string;
     routingKey: string;
   };
+  type Properties = Record<string, unknown>;
 
   export type Payload<
     B extends Object = Record<string, unknown>,
@@ -18,7 +19,9 @@ export namespace Job {
   > = {
     body: B;
     headers: H;
+    field: Fields;
     properties: Properties;
+    reject: (requeue?: boolean) => void;
   };
   export type State = [SharedState, SetState];
   export type Next = Function;

@@ -3,6 +3,7 @@ export type Credentials = {
   password: string;
   host: string;
   port: number;
+  virtualHost?: string;
 };
 
 export type Payload = Record<string, unknown>;
