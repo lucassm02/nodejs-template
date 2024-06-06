@@ -3,10 +3,17 @@ import fastify, {
   FastifyPluginCallback,
   RouteHandlerMethod
 } from 'fastify';
+import {
+  jsonSchemaTransform,
+  serializerCompiler,
+  validatorCompiler,
+  type ZodTypeProvider
+} from 'fastify-type-provider-zod';
 import { readdirSync } from 'fs';
 import { Server } from 'http';
 import { AddressInfo } from 'net';
 import { resolve } from 'path';
+import { ZodError } from 'zod';
 
 import makeFlow from '@/main/adapters/flow-adapter';
 import { Middleware } from '@/presentation/protocols';
@@ -14,11 +21,15 @@ import { SharedState } from '@/presentation/protocols/shared-state';
 import { internalImplementationError, serverError } from '@/presentation/utils';
 import {
   DICTIONARY,
+  SERVER,
   convertCamelCaseKeysToSnakeCase,
   convertSnakeCaseKeysToCamelCase,
   logger
 } from '@/util';
+import fastifySwagger from '@fastify/swagger';
+import fastifySwaggerUi from '@fastify/swagger-ui';
 
+import { name } from '../../../../../package.json';
 import { Route } from './route';
 import {
   Callback,
@@ -52,8 +63,47 @@ export class HttpServer {
   private static instance: HttpServer;
 
   constructor(private readonly _fastify: typeof fastify) {
-    this.fastify = this._fastify();
+    this.fastify = this._fastify().withTypeProvider<ZodTypeProvider>();
+    this.fastify.setSerializerCompiler(serializerCompiler);
+    this.fastify.setValidatorCompiler(validatorCompiler);
+    this.fastify.setErrorHandler(this.errorHandler());
+    this.fastify.register(fastifySwagger, {
+      openapi: {
+        info: {
+          title: `${name} API Swagger`,
+          version: '1..0',
+          description: `${name} Documentation`
+        }
+      },
+      transform: jsonSchemaTransform
+    });
+
+    this.fastify.register(fastifySwaggerUi, {
+      prefix: `${SERVER.BASE_URI}/documentation`
+    });
+
     this.initializeStateInRequest();
+  }
+
+  private errorHandler(): FastifyInstance['errorHandler'] {
+    return async (error, _req, reply) => {
+      if (error instanceof ZodError) {
+        return reply.status(400).send({
+          message: DICTIONARY.RESPONSE.MESSAGE.BAD_REQUEST,
+          payload: {},
+          errors: error.errors.map(({ path, message }) => ({
+            param: path.join('.'),
+            message
+          }))
+        });
+      }
+
+      return reply.status(500).send({
+        message: 'Ops, parece que ocorreu um erro dentro dos nossos servidores',
+        payload: {},
+        error: [{ message: 'Ocorreu um erro em nosso servidores' }]
+      });
+    };
   }
 
   private initializeStateInRequest() {
