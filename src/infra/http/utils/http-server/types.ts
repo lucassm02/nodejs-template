@@ -1,4 +1,9 @@
-import { DoneFuncWithErrOrRes, FastifyReply, FastifyRequest } from 'fastify';
+import {
+  DoneFuncWithErrOrRes,
+  FastifyReply,
+  FastifyRequest,
+  type FastifySchema
+} from 'fastify';
 
 import { Controller, HttpRequest, Middleware } from '@/presentation/protocols';
 
@@ -37,6 +42,20 @@ export type State = Record<string, unknown>;
 export type Payload = { [REQUEST_KEY]: HttpRequest } & {
   [key: string | symbol]: State;
 } & { [REPLY_KEY]: FastifyReply };
+
+export type ValidationSchema = FastifySchema;
+
+export type AllowedMethods =
+  | 'get'
+  | 'post'
+  | 'put'
+  | 'delete'
+  | 'options'
+  | 'patch';
+
+export type RouteMethodsArguments =
+  | [string, ValidationSchema, ...RouteMiddleware[]]
+  | [string, ...RouteMiddleware[]];
 
 export interface Router {
   post(path: string, handler: Function): void;
