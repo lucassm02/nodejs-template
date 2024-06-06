@@ -4,12 +4,16 @@ import { HttpServer } from '@/infra/http/utils/http-server/http-server';
 import { Route } from '@/infra/http/utils/http-server/route';
 
 const register = jest.fn();
+const decorateRequest = jest.fn();
 const ready = jest.fn().mockImplementation((callback) => {
   if (callback) callback();
 });
 const close = jest.fn().mockImplementation((callback) => {
   if (callback) callback();
 });
+const setSerializerCompiler = jest.fn();
+const setValidatorCompiler = jest.fn();
+const setErrorHandler = jest.fn();
 
 const server = {
   listen: jest.fn(),
@@ -17,10 +21,25 @@ const server = {
   close
 };
 
+const withTypeProvider = jest.fn().mockReturnValue({
+  register,
+  setSerializerCompiler,
+  setValidatorCompiler,
+  setErrorHandler,
+  ready,
+  server,
+  decorateRequest
+});
+
 const fastifyMock = () => {
   return {
     register,
+    setSerializerCompiler,
+    setValidatorCompiler,
+    setErrorHandler,
     ready,
+    decorateRequest,
+    withTypeProvider,
     server
   };
 };
@@ -41,7 +60,7 @@ describe('HttpServer', () => {
     it('should call fastify.register with the correct params', () => {
       const { sut } = makeSut();
       sut.use(function () {}, { any: 'foo' });
-      expect(register).toHaveBeenCalledTimes(1);
+      expect(register).toHaveBeenCalledTimes(3);
       expect(register).toHaveBeenCalledWith(expect.any(Function), {
         any: 'foo'
       });
