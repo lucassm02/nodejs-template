@@ -3,9 +3,10 @@ export interface SaveInCache {
 }
 
 export namespace SaveInCache {
-  type Value = Record<string, unknown> | Record<string, unknown>[] | string;
+  type Value = Record<string, unknown>;
   export type Params = {
     key: string;
+    subKey: unknown;
     value: Value;
     ttl?: number;
   };

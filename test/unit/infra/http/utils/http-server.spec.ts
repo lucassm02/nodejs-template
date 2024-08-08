@@ -10,6 +10,7 @@ const ready = jest.fn().mockImplementation((callback) => {
 const close = jest.fn().mockImplementation((callback) => {
   if (callback) callback();
 });
+const decorateRequest = jest.fn();
 
 const decorateRequest = jest.fn();
 
@@ -20,24 +21,21 @@ const server = {
   decorateRequest
 };
 
-const fastifyMock = () => {
-  return {
-    register,
-    decorateRequest,
-    ready,
-    server
-  };
-};
+const fastifyMock = () => ({
+  register,
+  ready,
+  close,
+  decorateRequest,
+  server
+});
 
 type SutType = {
   sut: HttpServer;
 };
 
 const makeSut = (): SutType => {
-  const sut = new HttpServer(<typeof fastify>(<unknown>fastifyMock));
-  return {
-    sut
-  };
+  const sut = new HttpServer(fastifyMock as unknown as typeof fastify);
+  return { sut };
 };
 
 describe('HttpServer', () => {
