@@ -3187,13 +3187,6 @@
   resolved "https://registry.yarnpkg.com/@types/string-template/-/string-template-1.0.6.tgz#0e6b157cc6b99376f446b2df2462d38eaabffe53"
   integrity sha512-DZVchMskuKMbenWAio71PiJHFQpvSxo++NFxCsr9cOdWgiJ3ZgiX2nNwREcOXW8M0H4qwUVNMiOrm7r/2s+PKQ==
 
-"@types/string-width@^4.0.1":
-  version "4.0.1"
-  resolved "https://registry.yarnpkg.com/@types/string-width/-/string-width-4.0.1.tgz#a02e22c305d0b550f8d8da12b5b13e05123dc7b8"
-  integrity sha512-zsZXP4RSmw3TOXf2eut1xxb7Gto7I+BrB0WxwdRaEdCBnUbAQa57yZf/OWcAfop9m7t6Zd0pw9tV2ghpJXJPZg==
-  dependencies:
-    string-width "*"
-
 "@types/strip-bom@^3.0.0":
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/@types/strip-bom/-/strip-bom-3.0.0.tgz#14a8ec3956c2e81edb7520790aecf21c290aebd2"
