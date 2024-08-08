@@ -9,7 +9,7 @@ export class ExampleJob implements Job {
   ) {}
   async handle(
     payload: Job.Payload,
-    state: Job.State,
+    _state: Job.State,
     next: Job.Next
   ): Job.Result {
     try {

@@ -8,8 +8,8 @@ import {
 
 export const datoraHttpLogger = () => {
   return function (
-    target: Object,
-    key: string | symbol,
+    _target: Object,
+    _key: string | symbol,
     descriptor: PropertyDescriptor
   ) {
     const originalMethod = descriptor.value;

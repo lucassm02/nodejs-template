@@ -10,7 +10,6 @@ const ready = jest.fn().mockImplementation((callback) => {
 const close = jest.fn().mockImplementation((callback) => {
   if (callback) callback();
 });
-const decorateRequest = jest.fn();
 
 const decorateRequest = jest.fn();
 

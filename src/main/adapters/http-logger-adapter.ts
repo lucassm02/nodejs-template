@@ -10,7 +10,7 @@ type LoggerParams = {
 type Logger = (params: LoggerParams) => Promise<void> | void;
 
 export const httpLoggerAdapter = (logger: Logger) =>
-  fp((fastify, opts, done) => {
+  fp((fastify, _opts, done) => {
     fastify.addHook(
       'onRequest',
       (

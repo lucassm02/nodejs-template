@@ -18,7 +18,7 @@ export const created = (message: string, payload: object) => ({
   }
 });
 
-export const serverError = (error: any, message?: string) => {
+export const serverError = (_error: unknown, message?: string) => {
   return {
     statusCode: 500,
     body: {
