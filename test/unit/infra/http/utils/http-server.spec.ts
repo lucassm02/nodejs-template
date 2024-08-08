@@ -12,10 +12,13 @@ const close = jest.fn().mockImplementation((callback) => {
 });
 const decorateRequest = jest.fn();
 
+const decorateRequest = jest.fn();
+
 const server = {
   listen: jest.fn(),
   address: jest.fn().mockReturnValue('http://127.0.0.1'),
-  close
+  close,
+  decorateRequest
 };
 
 const fastifyMock = () => ({

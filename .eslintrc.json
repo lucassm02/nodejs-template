@@ -23,7 +23,15 @@
   "rules": {
     "no-plusplus": "off",
     "@typescript-eslint/no-explicit-any": "warn", // TODO: Remover this in the near future 
-    "@typescript-eslint/no-unused-vars": "warn",
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      {
+        "args": "all",
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_",
+        "caughtErrorsIgnorePattern": "^_"
+      }
+    ],
     "no-unreachable-loop": "off",
     "no-labels": "off",
     "no-unused-labels": "off",
