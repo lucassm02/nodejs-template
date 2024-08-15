@@ -27,6 +27,8 @@ declare module 'knex' {
   };
   namespace Knex {
     interface QueryBuilder {
+      _turbo?: boolean;
+      turbo<TRecord, TResult>(): KnexOriginal.QueryBuilder<TRecord, TResult>;
       noLock<TRecord, TResult>(): KnexOriginal.QueryBuilder<TRecord, TResult>;
       noLockFrom<TRecord, TResult>(
         from: string
