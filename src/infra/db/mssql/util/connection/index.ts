@@ -5,6 +5,7 @@ import { knex } from '../knex';
 
 const configs = {
   default: {
+    cacheClient: 'node-cache',
     client: DB.DIALECT,
     connection: {
       host: DB.HOST,
@@ -18,9 +19,11 @@ const configs = {
       }
     }
   },
+
   test: {
     client: 'sqlite3+',
     connection: ':memory:',
+    cacheClient: 'node-cache',
     useNullAsDefault: true
   }
 };

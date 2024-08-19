@@ -26,6 +26,9 @@ declare module 'knex' {
     _statements?: Statement[];
   };
   namespace Knex {
+    interface KnexConfig {
+      cacheClient?: 'node-cache' | 'memjs';
+    }
     interface QueryBuilder {
       _turbo?: boolean;
       turbo<TRecord, TResult>(): KnexOriginal.QueryBuilder<TRecord, TResult>;

@@ -7,7 +7,7 @@ import {
   sqLitePlus
 } from './extensions';
 import { turboPlugin } from './extensions/turbo-plugin';
-import { pluginInterceptorPlugin } from './extensions/turbo-interceptor';
+import { turboInterceptorPlugin } from './extensions/turbo-interceptor';
 
 export class CustomKnex {
   private static instance: CustomKnex;
@@ -19,7 +19,7 @@ export class CustomKnex {
     this.knex = formattedSelectPlugin(this.knex);
     this.knex = sqLitePlus(this.knex);
     this.knex = turboPlugin(this.knex);
-    this.knex = pluginInterceptorPlugin(this.knex);
+    this.knex = turboInterceptorPlugin(this.knex);
   }
 
   public static getInstance(): CustomKnex {
