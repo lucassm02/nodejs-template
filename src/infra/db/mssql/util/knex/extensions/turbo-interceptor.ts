@@ -10,8 +10,8 @@ type GenericObject = Record<string, unknown>;
 const cache = new NodeCache({ stdTTL: 100, checkperiod: 120 });
 const memCache = makeCacheServer();
 
-const MAX_MEMORY_USAGE = 100 * 1024 * 1024; // 100 MB
-const MAX_RESULT_SIZE = 1024 * 1024; // 1 MB
+const MAX_MEMORY_USAGE = 100 * 1024 * 1024 * 3; // ~ 300 MB
+const MAX_RESULT_SIZE = 1024 * 1024 * 5; // ~ 5 MB
 
 function checkMemoryUsage() {
   const memoryUsage = process.memoryUsage();
@@ -47,7 +47,7 @@ async function getCachedQueryMemCache(sql: Knex.Sql) {
 
   try {
     return JSON.parse(buffer.toString());
-  } catch (error) {
+  } catch (_error) {
     return buffer.toString();
   }
 }
@@ -74,7 +74,14 @@ function saveToCache(sql: Knex.Sql, result: unknown, service: Services) {
       return;
     }
 
-    await cacheQuery(sql, result, service);
+    try {
+      await cacheQuery(sql, result, service);
+    } catch (error) {
+      logger.log({
+        level: 'warn',
+        message: `Error saving cache. Due to ${error.message}`
+      });
+    }
   });
 }
 
@@ -101,7 +108,7 @@ function resolveWrapperToSaveInCache(
       saveToCache(sql, data, service);
 
       resolve(data);
-    } catch (error) {
+    } catch (_error) {
       logger.log({
         level: 'error',
         message: 'Error parsing data to ne save. Cache not saved.'
@@ -116,7 +123,7 @@ export function turboInterceptorPlugin(knex: typeof k) {
     apply(target, _, [arg]) {
       const instanceOfKnex = target(arg);
 
-      const service: Services =
+      const DEFAULT_CACHE_SERVICE: Services =
         (<Knex>(<unknown>instanceOfKnex)).client.config.cacheClient ||
         'node-cache';
 
@@ -137,7 +144,10 @@ export function turboInterceptorPlugin(knex: typeof k) {
 
                     const sql = instanceOfQueryBuilder.toSQL();
 
-                    const cachedResult = await getCachedQuery(sql, service);
+                    const cachedResult = await getCachedQuery(
+                      sql,
+                      DEFAULT_CACHE_SERVICE
+                    );
 
                     if (cachedResult) {
                       return resolve(cachedResult);
@@ -145,7 +155,11 @@ export function turboInterceptorPlugin(knex: typeof k) {
 
                     const result = target.call(
                       thisArg,
-                      resolveWrapperToSaveInCache(resolve, sql, service),
+                      resolveWrapperToSaveInCache(
+                        resolve,
+                        sql,
+                        DEFAULT_CACHE_SERVICE
+                      ),
                       reject
                     );
 

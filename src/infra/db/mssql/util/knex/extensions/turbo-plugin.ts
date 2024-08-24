@@ -1,10 +1,8 @@
-import k, { Knex } from 'knex';
+import k from 'knex';
+
+import { getCurrentDrive } from '../utils';
 
 const ALLOWED_DRIVERS = ['MSSQL'];
-
-function getCurrentDrive(config: Knex.Config) {
-  return String(config.client).toUpperCase();
-}
 
 export function turboPlugin(knex: typeof k) {
   knex.QueryBuilder.extend('turbo', function () {
