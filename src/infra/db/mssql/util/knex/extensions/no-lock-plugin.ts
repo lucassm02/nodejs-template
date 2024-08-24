@@ -1,10 +1,8 @@
-import k, { Knex } from 'knex';
+import k from 'knex';
+
+import { getCurrentDrive } from '../utils';
 
 const ALlOWED_DRIVERS = ['MSSQL'];
-
-function getCurrentDrive(config: Knex.Config) {
-  return String(config.client).toUpperCase();
-}
 
 export function noLockPlugin(knex: typeof k) {
   type ContextType<Type> = { _single: { table: string } } & Type;
