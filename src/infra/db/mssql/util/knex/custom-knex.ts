@@ -6,6 +6,8 @@ import {
   noLockPlugin,
   sqLitePlus
 } from './extensions';
+import { turboPlugin } from './extensions/turbo-plugin';
+import { turboInterceptorPlugin } from './extensions/turbo-interceptor';
 
 export class CustomKnex {
   private static instance: CustomKnex;
@@ -16,6 +18,8 @@ export class CustomKnex {
     this.knex = dateToStringInterceptorPlugin(this.knex);
     this.knex = formattedSelectPlugin(this.knex);
     this.knex = sqLitePlus(this.knex);
+    this.knex = turboPlugin(this.knex);
+    this.knex = turboInterceptorPlugin(this.knex);
   }
 
   public static getInstance(): CustomKnex {
