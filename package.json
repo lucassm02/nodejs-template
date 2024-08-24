@@ -46,7 +46,7 @@
     "test:integration:verbose": "yarn test:verbose --verbose --watch -c jest-integration.config.ts",
     "test:e2e:verbose": "yarn test:verbose --watch -c jest-e2e.config.ts",
     "test:coverage": "yarn test --coverage",
-    "prepare": "husky install",
+    "prepare": "husky",
     "sonar": "docker run --rm --env-file .env -v $(pwd):/usr/src sonarsource/sonar-scanner-cli",
     "gen": "codegen",
     "s-code": "node script/s-code/index.mjs"
