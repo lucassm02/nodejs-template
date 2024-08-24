@@ -125,8 +125,7 @@ export function turboInterceptorPlugin(knex: typeof k) {
     apply(target, _, [arg]) {
       const instanceOfKnex = target(arg);
 
-      const service: Services =
-        arg[0].client.config.cacheClient || DEFAULT_CACHE_SERVICE;
+      const service: Services = arg.cacheClient || DEFAULT_CACHE_SERVICE;
 
       return new Proxy(instanceOfKnex, {
         apply(target, _, [arg]) {

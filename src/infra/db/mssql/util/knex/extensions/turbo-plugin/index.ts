@@ -4,7 +4,7 @@ import { turboInterceptorPlugin } from './turbo-interceptor';
 import { turboQueryBuilderExtension } from './turbo-query-builder-extension';
 import { getCurrentDrive } from '../../utils';
 
-const ALLOWED_DRIVERS = ['MSSQL'];
+const ALLOWED_DRIVERS = ['MSSQL', 'SQLITE3', 'SQLITE3+'];
 
 export function turboPlugin(knex: typeof k) {
   const proxy = new Proxy(knex, {
