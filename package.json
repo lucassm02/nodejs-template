@@ -132,7 +132,6 @@
     "mongodb": "^6.8.0",
     "mongoose": "^8.5.4",
     "node-cache": "^5.1.2",
-    "node-schedule": "^2.1.1",
     "reflect-metadata": "^0.2.2",
     "sqlite3": "^5.1.7",
     "string-template": "^1.0.0",
