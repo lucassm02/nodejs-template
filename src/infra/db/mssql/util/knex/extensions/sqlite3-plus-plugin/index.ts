@@ -7,7 +7,7 @@ import { dateConverterToDefaultDate } from './date-converter-to-default-date';
 const SQLITE_PLUS = 'sqlite3+';
 const SQLITE = 'sqlite3';
 
-export function sqLitePlus(knex: typeof k) {
+export function sqLitePlusPlugin(knex: typeof k) {
   const proxy = new Proxy(knex, {
     apply(
       targetWithoutModifications,

@@ -1,4 +1,4 @@
-import k, { type Knex } from 'knex';
+import k, { Knex } from 'knex';
 import NodeCache from 'node-cache';
 
 import { logger } from '@/util';
@@ -12,6 +12,8 @@ const memCache = makeCacheServer();
 
 const MAX_MEMORY_USAGE = 100 * 1024 * 1024 * 3; // ~ 300 MB
 const MAX_RESULT_SIZE = 1024 * 1024 * 5; // ~ 5 MB
+
+const DEFAULT_CACHE_SERVICE = 'node-cache';
 
 function checkMemoryUsage() {
   const memoryUsage = process.memoryUsage();
@@ -123,9 +125,8 @@ export function turboInterceptorPlugin(knex: typeof k) {
     apply(target, _, [arg]) {
       const instanceOfKnex = target(arg);
 
-      const DEFAULT_CACHE_SERVICE: Services =
-        (<Knex>(<unknown>instanceOfKnex)).client.config.cacheClient ||
-        'node-cache';
+      const service: Services =
+        arg[0].client.config.cacheClient || DEFAULT_CACHE_SERVICE;
 
       return new Proxy(instanceOfKnex, {
         apply(target, _, [arg]) {
@@ -144,10 +145,7 @@ export function turboInterceptorPlugin(knex: typeof k) {
 
                     const sql = instanceOfQueryBuilder.toSQL();
 
-                    const cachedResult = await getCachedQuery(
-                      sql,
-                      DEFAULT_CACHE_SERVICE
-                    );
+                    const cachedResult = await getCachedQuery(sql, service);
 
                     if (cachedResult) {
                       return resolve(cachedResult);
@@ -155,11 +153,7 @@ export function turboInterceptorPlugin(knex: typeof k) {
 
                     const result = target.call(
                       thisArg,
-                      resolveWrapperToSaveInCache(
-                        resolve,
-                        sql,
-                        DEFAULT_CACHE_SERVICE
-                      ),
+                      resolveWrapperToSaveInCache(resolve, sql, service),
                       reject
                     );
 
