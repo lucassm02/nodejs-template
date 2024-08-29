@@ -9,7 +9,7 @@ type Services = 'memjs' | 'node-cache';
 type GenericObject = Record<string, unknown>;
 
 function generateHashKeyToMemJs(value: string): string {
-  return createHash('md5').update(value).digest('hex');
+  return createHash('sha256').update(value).digest('hex');
 }
 
 const cache = new NodeCache({ stdTTL: 100, checkperiod: 120 });
