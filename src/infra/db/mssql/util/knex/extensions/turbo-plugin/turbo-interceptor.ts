@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import k, { Knex } from 'knex';
 import NodeCache from 'node-cache';
 
@@ -6,6 +7,10 @@ import { makeCacheServer } from '@/infra/cache';
 
 type Services = 'memjs' | 'node-cache';
 type GenericObject = Record<string, unknown>;
+
+function generateHashKeyToMemJs(value: string): string {
+  return createHash('sha256').update(value).digest('hex');
+}
 
 const cache = new NodeCache({ stdTTL: 100, checkperiod: 120 });
 const memCache = makeCacheServer();
@@ -30,7 +35,10 @@ function nodeCacheQuery(sql: Knex.Sql, result: unknown) {
 }
 
 async function memCacheQuery(sql: Knex.Sql, result: GenericObject) {
-  await memCache.set({ key: cacheKey(sql), value: result });
+  await memCache.set({
+    key: generateHashKeyToMemJs(cacheKey(sql)),
+    value: result
+  });
 }
 
 async function cacheQuery(sql: Knex.Sql, result: unknown, service: Services) {
@@ -42,7 +50,7 @@ async function cacheQuery(sql: Knex.Sql, result: unknown, service: Services) {
 }
 
 async function getCachedQueryMemCache(sql: Knex.Sql) {
-  const key = cacheKey(sql);
+  const key = generateHashKeyToMemJs(cacheKey(sql));
   const buffer = await memCache.get(key);
 
   if (!buffer) return;
