@@ -1,0 +1,16 @@
+name: code-quality
+
+on: [workflow_dispatch, pull_request]
+
+jobs:
+  sonar:
+    name: sonar
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: sonarsource/sonarqube-scan-action@v2.3.0
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
