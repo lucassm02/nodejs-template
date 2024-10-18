@@ -1,7 +1,13 @@
 // TODO: We should seek better alternatives in the future, but for now, it's not a problem.
 /* eslint-disable @typescript-eslint/no-explicit-any */
-export const ok = (message: string, payload: object) => ({
+
+type Optional = {
+  close: boolean;
+};
+
+export const ok = (message: string, payload: object, options?: Optional) => ({
   statusCode: 200,
+  options,
   body: {
     message,
     payload,
@@ -9,8 +15,13 @@ export const ok = (message: string, payload: object) => ({
   }
 });
 
-export const created = (message: string, payload: object) => ({
+export const created = (
+  message: string,
+  payload: object,
+  options?: Optional
+) => ({
   statusCode: 201,
+  options,
   body: {
     message,
     payload,
@@ -18,9 +29,14 @@ export const created = (message: string, payload: object) => ({
   }
 });
 
-export const serverError = (_error: unknown, message?: string) => {
+export const serverError = (
+  _error: unknown,
+  message?: string,
+  options?: Optional
+) => {
   return {
     statusCode: 500,
+    options,
     body: {
       message:
         message ||
@@ -31,8 +47,9 @@ export const serverError = (_error: unknown, message?: string) => {
   };
 };
 
-export const conflict = (message: string, error?: any) => ({
+export const conflict = (message: string, error?: any, options?: Optional) => ({
   statusCode: 409,
+  options,
   body: {
     message,
     payload: {},
@@ -40,8 +57,9 @@ export const conflict = (message: string, error?: any) => ({
   }
 });
 
-export const badRequest = (error?: any) => ({
+export const badRequest = (error?: any, options?: Optional) => ({
   statusCode: 400,
+  options,
   body: {
     message: 'Ops! Ocorreram alguns erros de validação',
     payload: {},
@@ -49,8 +67,13 @@ export const badRequest = (error?: any) => ({
   }
 });
 
-export const unprocessableEntity = (message: string, error?: any) => ({
+export const unprocessableEntity = (
+  message: string,
+  error?: any,
+  options?: Optional
+) => ({
   statusCode: 422,
+  options,
   body: {
     message,
     payload: {},
@@ -58,8 +81,9 @@ export const unprocessableEntity = (message: string, error?: any) => ({
   }
 });
 
-export const notFound = (message: string, error?: any) => ({
+export const notFound = (message: string, error?: any, options?: Optional) => ({
   statusCode: 404,
+  options,
   body: {
     message,
     payload: {},
@@ -67,8 +91,13 @@ export const notFound = (message: string, error?: any) => ({
   }
 });
 
-export const unauthorized = (message: string, error?: any) => ({
+export const unauthorized = (
+  message: string,
+  error?: any,
+  options?: Optional
+) => ({
   statusCode: 401,
+  options,
   body: {
     message,
     payload: {},
@@ -76,6 +105,10 @@ export const unauthorized = (message: string, error?: any) => ({
   }
 });
 
-export const internalImplementationError = (message: string) => ({
-  error: message
+export const internalImplementationError = (
+  message: string,
+  options?: Optional
+) => ({
+  error: message,
+  options
 });

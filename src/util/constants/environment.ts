@@ -6,7 +6,8 @@ export const ENVIRONMENT = process.env.NODE_ENV || 'development';
 export const SERVER = {
   ENABLED: process.env.SERVER_ENABLED === 'true',
   PORT: process.env.SERVER_PORT || 3000,
-  BASE_URI: process.env.SERVER_BASE_URI || ''
+  BASE_URI: process.env.SERVER_BASE_URI || '',
+  SOCKET_BASE_URI: process.env.SERVER_SOCKET_BASE_URI || ''
 };
 
 export const CONSUMER = {
