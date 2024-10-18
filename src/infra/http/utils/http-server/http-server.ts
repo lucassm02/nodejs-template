@@ -30,6 +30,7 @@ import {
   Router,
   STATE_KEY
 } from './types';
+import { makeWebsocketServer } from '../websocket-server/factory';
 
 export enum Exceptions {
   INVALID_PORT_VALUE = 'Port must be a number or a valid numerical string',
@@ -62,6 +63,8 @@ export class HttpServer {
     this.fastify.decorateRequest(STATE_KEY);
   }
 
+  public getWebsocketServer = () => this.socketIO;
+
   public use(
     plugin: FastifyPluginCallback,
     configs?: Record<string, unknown>
@@ -82,7 +85,7 @@ export class HttpServer {
   }
 
   public socket(options: WebSocketServerOptions) {
-    this.socketIO = new WebSocketServer(this.fastify.server, options);
+    this.socketIO = makeWebsocketServer(this.fastify.server, options);
   }
 
   public router(params?: { path?: string; baseUrl?: string }) {
