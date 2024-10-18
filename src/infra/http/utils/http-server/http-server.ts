@@ -19,6 +19,7 @@ import {
   logger
 } from '@/util';
 
+import { WebSocketServer, WebSocketServerOptions } from '../websocket-server';
 import { Route } from './route';
 import {
   Callback,
@@ -50,6 +51,7 @@ export class HttpServer {
   private startupCallbacks: Function[] = [];
   private isStarted = false;
   private static instance: HttpServer;
+  private socketIO!: WebSocketServer;
 
   constructor(private readonly _fastify: typeof fastify) {
     this.fastify = this._fastify();
@@ -79,6 +81,10 @@ export class HttpServer {
     return this?.addressInfo;
   }
 
+  public socket(options: WebSocketServerOptions) {
+    this.socketIO = new WebSocketServer(this.fastify.server, options);
+  }
+
   public router(params?: { path?: string; baseUrl?: string }) {
     if (this.isStarted)
       throw new Error(Exceptions.REGISTER_ROUTE_AFTER_BOOTSTRAP_SERVER);
@@ -103,10 +109,14 @@ export class HttpServer {
 
     this.listenerOptions = { callback, port: +port };
 
-    this.fastify.ready(() => {
-      callback();
-      this.fastify.server.listen({
-        port
+    setImmediate(() => {
+      this.socketIO.bootstrap();
+
+      this.fastify.ready(() => {
+        callback();
+        this.fastify.server.listen({
+          port
+        });
       });
     });
 
@@ -140,6 +150,7 @@ export class HttpServer {
       throw new Error(Exceptions.INVALID_PORT_VALUE);
 
     if (this.isStarted) return;
+
     this.isStarted = true;
 
     const promises = this.startupCallbacks.map(async (callback) =>
@@ -150,10 +161,14 @@ export class HttpServer {
 
     this.listenerOptions = { callback, port: +port };
 
-    this.fastify.ready(() => {
-      callback();
-      this.fastify.server.listen({
-        port
+    setImmediate(() => {
+      this.socketIO.bootstrap();
+
+      this.fastify.ready(() => {
+        callback();
+        this.fastify.server.listen({
+          port
+        });
       });
     });
 
