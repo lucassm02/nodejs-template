@@ -4,5 +4,6 @@ import type { SharedState } from '@/presentation/protocols/shared-state';
 declare module 'fastify' {
   interface FastifyRequest {
     [STATE_KEY]: Partial<SharedState>;
+    [EVENT_KEY]: string;
   }
 }
