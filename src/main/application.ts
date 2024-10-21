@@ -22,7 +22,8 @@ application.socket({
     methods: ['GET', 'POST'],
     origin: '*'
   },
-  path: SERVER.SOCKET_BASE_URI
+  transports: ['polling', 'websocket'],
+  path: SERVER.SOCKET.HANDSHAKE_PATH
 });
 
 application.use(helmet);

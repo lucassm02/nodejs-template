@@ -12,7 +12,7 @@
     "lint": "yarn eslint src/** --fix",
     "check:types": "tsc --noEmit",
     "start:prod": "node dist/main",
-    "start:dev": "node --trace-deprecation tsx watch --clear-screen=false src/main",
+    "start:dev": "tsx watch --clear-screen=false src/main",
     "start:dev:auto-clear": "tsx watch --clear-screen=true src/main",
     "start:debug": "tsx watch --clear-screen=false --inspect src/main",
     "worker:start": "node dist/main/scheduler.js",

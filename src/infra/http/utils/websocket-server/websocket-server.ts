@@ -16,6 +16,8 @@ import {
   type WebSocketCallbackMetadata
 } from '../http-server/types';
 
+type Transport = 'polling' | 'websocket' | 'webtransport';
+
 export type WebSocketServerOptions = {
   path: string;
   enabled: boolean;
@@ -23,6 +25,7 @@ export type WebSocketServerOptions = {
     origin: string | string[];
     methods: string[];
   };
+  transports: Transport[];
 };
 
 export class WebSocketServer {
@@ -36,7 +39,7 @@ export class WebSocketServer {
     this.ws = new SocketServer(this.httpServer, {
       cors: this.options.cors,
       path: this.options.path,
-      transports: ['websocket', 'polling']
+      transports: this.options.transports
     });
   }
 
@@ -97,41 +100,7 @@ export class WebSocketServer {
     middlewares: RouteMiddlewareSocket[],
     method: string
   ) {
-    return middlewares.map((middleware) => {
-      return async (
-        {
-          [STATE_KEY]: state,
-          [SOCKET_KEY]: socket,
-          [REQUEST_KEY]: request
-        }: Payload,
-        next: Middleware.Next
-      ) => {
-        const stateHook = <[SharedState, <T>(state: T) => void]>[
-          state,
-          this.makeSetStateInRequest(state)
-        ];
-
-        const response = await (typeof middleware !== 'function'
-          ? middleware.handle(request, stateHook, next)
-          : middleware(socket, request, next, stateHook));
-
-        if (!response) return;
-
-        const { statusCode: httpStatusCode, ...data } = response;
-
-        const { options = null } = data;
-
-        socket.emit(
-          method,
-          convertCamelCaseKeysToSnakeCase({
-            httpStatusCode,
-            ...data
-          })
-        );
-
-        if (options?.close) socket.disconnect();
-      };
-    });
+    return middlewares.map((middleware) => this.adapter(middleware, method));
   }
 
   private adapterWebsocketWithFlow(

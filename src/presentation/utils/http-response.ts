@@ -1,11 +1,11 @@
 // TODO: We should seek better alternatives in the future, but for now, it's not a problem.
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-type Optional = {
+type Option = {
   close: boolean;
 };
 
-export const ok = (message: string, payload: object, options?: Optional) => ({
+export const ok = (message: string, payload: object, options?: Option) => ({
   statusCode: 200,
   options,
   body: {
@@ -18,7 +18,7 @@ export const ok = (message: string, payload: object, options?: Optional) => ({
 export const created = (
   message: string,
   payload: object,
-  options?: Optional
+  options?: Option
 ) => ({
   statusCode: 201,
   options,
@@ -32,7 +32,7 @@ export const created = (
 export const serverError = (
   _error: unknown,
   message?: string,
-  options?: Optional
+  options?: Option
 ) => {
   return {
     statusCode: 500,
@@ -47,7 +47,7 @@ export const serverError = (
   };
 };
 
-export const conflict = (message: string, error?: any, options?: Optional) => ({
+export const conflict = (message: string, error?: any, options?: Option) => ({
   statusCode: 409,
   options,
   body: {
@@ -57,7 +57,7 @@ export const conflict = (message: string, error?: any, options?: Optional) => ({
   }
 });
 
-export const badRequest = (error?: any, options?: Optional) => ({
+export const badRequest = (error?: any, options?: Option) => ({
   statusCode: 400,
   options,
   body: {
@@ -70,7 +70,7 @@ export const badRequest = (error?: any, options?: Optional) => ({
 export const unprocessableEntity = (
   message: string,
   error?: any,
-  options?: Optional
+  options?: Option
 ) => ({
   statusCode: 422,
   options,
@@ -81,7 +81,7 @@ export const unprocessableEntity = (
   }
 });
 
-export const notFound = (message: string, error?: any, options?: Optional) => ({
+export const notFound = (message: string, error?: any, options?: Option) => ({
   statusCode: 404,
   options,
   body: {
@@ -94,7 +94,7 @@ export const notFound = (message: string, error?: any, options?: Optional) => ({
 export const unauthorized = (
   message: string,
   error?: any,
-  options?: Optional
+  options?: Option
 ) => ({
   statusCode: 401,
   options,
@@ -107,7 +107,7 @@ export const unauthorized = (
 
 export const internalImplementationError = (
   message: string,
-  options?: Optional
+  options?: Option
 ) => ({
   error: message,
   options
