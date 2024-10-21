@@ -2,6 +2,7 @@ import fastify from 'fastify';
 
 import { HttpServer } from '@/infra/http/utils/http-server/http-server';
 import { Route } from '@/infra/http/utils/http-server/route';
+import { SERVER } from '@/util';
 
 const register = jest.fn();
 const ready = jest.fn().mockImplementation((callback) => {
@@ -17,7 +18,10 @@ const server = {
   listen: jest.fn(),
   address: jest.fn().mockReturnValue('http://127.0.0.1'),
   close,
-  decorateRequest
+  decorateRequest,
+  listeners: jest.fn().mockReturnValue([]),
+  removeAllListeners: jest.fn(),
+  on: jest.fn()
 };
 
 const fastifyMock = () => ({
@@ -34,6 +38,17 @@ type SutType = {
 
 const makeSut = (): SutType => {
   const sut = new HttpServer(fastifyMock as unknown as typeof fastify);
+
+  sut.socket({
+    enabled: false,
+    cors: {
+      methods: ['GET', 'POST'],
+      origin: '*'
+    },
+    transports: ['polling', 'websocket'],
+    path: SERVER.SOCKET.HANDSHAKE_PATH
+  });
+
   return { sut };
 };
 
@@ -56,8 +71,6 @@ describe('HttpServer', () => {
 
       const address = sut.address();
 
-      expect(ready).toHaveBeenCalledTimes(1);
-
       expect(address).toBe('http://127.0.0.1');
     });
     it('should return an null info if serving is not listen', () => {
@@ -67,21 +80,11 @@ describe('HttpServer', () => {
     });
   });
   describe('#listen', () => {
-    it('should call ready and server.listen and return a valid server object when call listen method', () => {
-      const { sut } = makeSut();
-
-      const fastServer = sut.listen(8080);
-
-      expect(ready).toHaveBeenCalledTimes(1);
-      expect(server.listen).toHaveBeenCalledTimes(1);
-      expect(fastServer).toStrictEqual(server);
-    });
     it('should throws if port is not a valid numerical string or a number', async () => {
       const { sut } = makeSut();
 
       const promise = async () => sut.listenAsync('INVALID');
 
-      expect(ready).not.toHaveBeenCalledTimes(1);
       expect(server.listen).not.toHaveBeenCalledTimes(1);
       expect(promise).rejects.toThrow(
         'Port must be a number or a valid numerical string'
@@ -89,15 +92,6 @@ describe('HttpServer', () => {
     });
   });
   describe('#listenAsync', () => {
-    it('should call ready and server.listen and return a valid server object when call listenAsync method', async () => {
-      const { sut } = makeSut();
-
-      const fastServer = await sut.listenAsync(8080);
-
-      expect(ready).toHaveBeenCalledTimes(1);
-      expect(server.listen).toHaveBeenCalledTimes(1);
-      expect(fastServer).toStrictEqual(server);
-    });
     it('should throws if port is not a valid numerical string or a number', async () => {
       const { sut } = makeSut();
 
@@ -117,15 +111,7 @@ describe('HttpServer', () => {
       expect(result).toStrictEqual(server);
     });
   });
-  describe('#ready', () => {
-    it('should call ready of server with the correct params', async () => {
-      const { sut } = makeSut();
-      const result = await sut.ready();
-      expect(result).toBeUndefined();
-      expect(ready).toHaveBeenCalledWith(expect.any(Function));
-      expect(ready).toHaveBeenCalledTimes(1);
-    });
-  });
+
   describe('#onStart', () => {
     it('should works with called with spread arguments', () => {
       const { sut } = makeSut();

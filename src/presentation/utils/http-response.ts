@@ -7,7 +7,7 @@ type Option = {
 
 export const ok = (message: string, payload: object, options?: Option) => ({
   statusCode: 200,
-  options,
+  ...(options && { options }),
   body: {
     message,
     payload,
@@ -21,7 +21,7 @@ export const created = (
   options?: Option
 ) => ({
   statusCode: 201,
-  options,
+  ...(options && { options }),
   body: {
     message,
     payload,
@@ -36,7 +36,7 @@ export const serverError = (
 ) => {
   return {
     statusCode: 500,
-    options,
+    ...(options && { options }),
     body: {
       message:
         message ||
@@ -49,7 +49,7 @@ export const serverError = (
 
 export const conflict = (message: string, error?: any, options?: Option) => ({
   statusCode: 409,
-  options,
+  ...(options && { options }),
   body: {
     message,
     payload: {},
@@ -59,7 +59,7 @@ export const conflict = (message: string, error?: any, options?: Option) => ({
 
 export const badRequest = (error?: any, options?: Option) => ({
   statusCode: 400,
-  options,
+  ...(options && { options }),
   body: {
     message: 'Ops! Ocorreram alguns erros de validação',
     payload: {},
@@ -73,7 +73,7 @@ export const unprocessableEntity = (
   options?: Option
 ) => ({
   statusCode: 422,
-  options,
+  ...(options && { options }),
   body: {
     message,
     payload: {},
@@ -83,7 +83,7 @@ export const unprocessableEntity = (
 
 export const notFound = (message: string, error?: any, options?: Option) => ({
   statusCode: 404,
-  options,
+  ...(options && { options }),
   body: {
     message,
     payload: {},
@@ -97,7 +97,7 @@ export const unauthorized = (
   options?: Option
 ) => ({
   statusCode: 401,
-  options,
+  ...(options && { options }),
   body: {
     message,
     payload: {},
