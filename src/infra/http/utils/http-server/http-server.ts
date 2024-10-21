@@ -19,6 +19,7 @@ import {
   logger
 } from '@/util';
 
+import { WebSocketServer, WebSocketServerOptions } from '../websocket-server';
 import { Route } from './route';
 import {
   Callback,
@@ -29,6 +30,7 @@ import {
   Router,
   STATE_KEY
 } from './types';
+import { makeWebsocketServer } from '../websocket-server/factory';
 
 export enum Exceptions {
   INVALID_PORT_VALUE = 'Port must be a number or a valid numerical string',
@@ -50,6 +52,7 @@ export class HttpServer {
   private startupCallbacks: Function[] = [];
   private isStarted = false;
   private static instance: HttpServer;
+  private socketIO!: WebSocketServer;
 
   constructor(private readonly _fastify: typeof fastify) {
     this.fastify = this._fastify();
@@ -59,6 +62,8 @@ export class HttpServer {
   private initializeStateInRequest() {
     this.fastify.decorateRequest(STATE_KEY);
   }
+
+  public getWebsocketServer = () => this.socketIO;
 
   public use(
     plugin: FastifyPluginCallback,
@@ -77,6 +82,10 @@ export class HttpServer {
 
   public address() {
     return this?.addressInfo;
+  }
+
+  public socket(options: WebSocketServerOptions) {
+    this.socketIO = makeWebsocketServer(this.fastify.server, options);
   }
 
   public router(params?: { path?: string; baseUrl?: string }) {
@@ -103,10 +112,14 @@ export class HttpServer {
 
     this.listenerOptions = { callback, port: +port };
 
-    this.fastify.ready(() => {
-      callback();
-      this.fastify.server.listen({
-        port
+    setImmediate(() => {
+      this.socketIO.bootstrap();
+
+      this.fastify.ready(() => {
+        callback();
+        this.fastify.server.listen({
+          port
+        });
       });
     });
 
@@ -140,6 +153,7 @@ export class HttpServer {
       throw new Error(Exceptions.INVALID_PORT_VALUE);
 
     if (this.isStarted) return;
+
     this.isStarted = true;
 
     const promises = this.startupCallbacks.map(async (callback) =>
@@ -150,10 +164,14 @@ export class HttpServer {
 
     this.listenerOptions = { callback, port: +port };
 
-    this.fastify.ready(() => {
-      callback();
-      this.fastify.server.listen({
-        port
+    setImmediate(() => {
+      this.socketIO.bootstrap();
+
+      this.fastify.ready(() => {
+        callback();
+        this.fastify.server.listen({
+          port
+        });
       });
     });
 
