@@ -4,6 +4,7 @@ import type { Socket } from 'socket.io';
 import { Controller, HttpRequest, Middleware } from '@/presentation/protocols';
 
 import { Route as RouteClass } from './route';
+import type { WebSocketMethods } from './websocket-route';
 
 export type Callback = () => unknown | Promise<unknown>;
 
@@ -61,6 +62,7 @@ export interface Router {
   get(path: string, handler: Function): void;
   delete(path: string, handler: Function): void;
   options(path: string, handler: Function): void;
+  ws(): WebSocketMethods;
 }
 
 export type WebSocketCallbackMetadata = {
