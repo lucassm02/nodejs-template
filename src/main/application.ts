@@ -9,11 +9,23 @@ import helmet from '@fastify/helmet';
 import { apmHttpLoggerMiddleware, dbHttpLoggerMiddleware } from './middlewares';
 
 elasticAPM();
+
 const application = httpServer();
 
 application.use(cors, {
   exposedHeaders: 'X-Total-Count'
 });
+
+application.socket({
+  enabled: true,
+  cors: {
+    methods: ['GET', 'POST'],
+    origin: '*'
+  },
+  transports: ['polling', 'websocket'],
+  path: SERVER.SOCKET.HANDSHAKE_PATH
+});
+
 application.use(helmet);
 application.use(apmHttpLoggerMiddleware);
 application.use(dbHttpLoggerMiddleware);

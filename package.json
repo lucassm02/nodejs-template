@@ -133,6 +133,7 @@
     "mongoose": "^8.5.4",
     "node-cache": "^5.1.2",
     "reflect-metadata": "^0.2.2",
+    "socket.io": "^4.8.0",
     "sqlite3": "^5.1.7",
     "string-template": "^1.0.0",
     "tedious": "19.0.0",

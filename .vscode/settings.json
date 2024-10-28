@@ -16,6 +16,7 @@
     "scode",
     "sonarsource",
     "sqlite",
-    "uuidv"
+    "uuidv",
+    "webtransport"
   ]
 }

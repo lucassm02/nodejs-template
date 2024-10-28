@@ -1,7 +1,8 @@
 import { Route } from '@/infra/http/utils/http-server';
 import {
   makeCreateExampleController,
-  makeGetExampleController
+  makeGetExampleController,
+  makeGreetingWebsocketController
 } from '@/main/factories/controllers';
 import {
   makeCreateExampleMiddleware,
@@ -46,4 +47,6 @@ export default function (route: Route) {
     }),
     makeCreateExampleController()
   );
+
+  route.ws().on('message', makeGreetingWebsocketController());
 }

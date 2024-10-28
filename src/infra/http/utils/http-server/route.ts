@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify';
 
 import { RouteMiddleware } from './types';
+import { WebsocketRoute } from './websocket-route';
 
 export class Route {
   private callbacks: Function[] = [];
@@ -27,6 +28,10 @@ export class Route {
 
   private getFullPathRoute(endpoint: string): string {
     return this.path + endpoint;
+  }
+
+  ws() {
+    return WebsocketRoute.ws();
   }
 
   public post(route: string, ...middlewares: RouteMiddleware[]) {
