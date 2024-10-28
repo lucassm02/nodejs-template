@@ -1,46 +1,66 @@
-import mongoose from 'mongoose';
-
-import { sqlConnection } from '@/infra/db/mssql/util/connection';
 import { logger } from '@/util';
-import { MONGO, RABBIT, SERVER } from '@/util/constants';
-import { rabbitMqServer } from '@/infra/mq/utils';
+import { SERVER } from '@/util/constants';
 
 import { application } from './application';
+import {
+  checkDatabaseConnection,
+  eventHandler,
+  getMongooseConnection,
+  getRabbitmqConnection
+} from './util';
 
-application.onStart(async () => {
+async function startServer() {
   try {
-    const rabbitServer = rabbitMqServer();
+    const event = eventHandler();
 
-    const rabbitPromise = rabbitServer
-      .setCredentials({
-        user: RABBIT.USER,
-        password: RABBIT.PASSWORD,
-        host: RABBIT.HOST,
-        port: RABBIT.PORT
-      })
-      .setPrefetch(RABBIT.PREFETCH)
-      .start();
+    const [mongoose, rabbitServer] = await Promise.all([
+      getMongooseConnection(),
+      getRabbitmqConnection(),
+      checkDatabaseConnection()
+    ]);
 
-    const mongoPromise = mongoose
-      .set('strictQuery', false)
-      .connect(MONGO.URL(), {
-        dbName: MONGO.NAME,
-        authSource: MONGO.AUTH_SOURCE,
-        authMechanism: 'SCRAM-SHA-1'
+    application.listen(SERVER.PORT, () => {
+      logger.log({
+        level: 'info',
+        message: `Server is running on port: ${SERVER.PORT}`
       });
+    });
 
-    const sqlPromise = sqlConnection.raw('SELECT 1');
+    async function gracefulShutdown() {
+      try {
+        if (rabbitServer) {
+          await rabbitServer.close();
+          logger.log({
+            level: 'info',
+            message: 'RabbitMq connection closed.'
+          });
+        }
+        if (mongoose) {
+          await mongoose.disconnect();
+          logger.log({
+            level: 'info',
+            message: 'Mongoose connection closed.'
+          });
+        }
 
-    await Promise.all([mongoPromise, sqlPromise, rabbitPromise]);
+        application.close();
+        logger.log({
+          level: 'info',
+          message: 'Server interrupted.'
+        });
+      } catch (error) {
+        logger.log(error, 'offline');
+      } finally {
+        event.emit('exit');
+      }
+    }
+
+    process.on('SIGINT', gracefulShutdown);
+    process.on('SIGTERM', gracefulShutdown);
   } catch (error) {
     logger.log(error);
     throw error;
   }
-});
+}
 
-application.listenAsync(SERVER.PORT, () => {
-  logger.log({
-    level: 'info',
-    message: `Server is running on port: ${SERVER.PORT}`
-  });
-});
+startServer();

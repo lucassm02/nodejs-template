@@ -31,6 +31,7 @@ export class RabbitMqServer {
 
   private thereIsAPendingRestart = false;
   private preventChannelRecover = false;
+  private closing = false;
   private theChannelIsActive = false;
 
   public Error = {
@@ -108,6 +109,12 @@ export class RabbitMqServer {
   public async close() {
     logger.log({ level: 'info', message: 'Closing connection' });
 
+    if (this.closing) {
+      return;
+    }
+
+    this.closing = true;
+
     this.channel?.removeAllListeners();
     this.connection?.removeAllListeners();
     this.event.removeAllListeners();
@@ -130,6 +137,8 @@ export class RabbitMqServer {
       } catch (error) {
         logger.log(error);
       }
+
+      this.closing = false;
     }
 
     this.channel = null;

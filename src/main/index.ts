@@ -1,6 +1,8 @@
 import knexSetup from '@/infra/db/mssql/util/knex';
 import { CONSUMER, WORKER, SERVER, logger } from '@/util';
 
+import { eventHandler } from './util';
+
 knexSetup();
 
 async function main() {
@@ -23,6 +25,12 @@ async function main() {
   }
 
   await Promise.all(promises);
+
+  eventHandler().on('exit', () => {
+    setImmediate(() => {
+      process.exit(0);
+    });
+  });
 }
 
 main();

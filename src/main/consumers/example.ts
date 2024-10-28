@@ -7,9 +7,9 @@ export default (server: RabbitMqServer) => {
     makeExampleJob()
   );
 
-  server.makeConsumer(
-    'example-reprocessing-queue',
-    makeTroubleExampleJob(),
-    makeExampleJob()
-  );
+  // server.makeConsumer(
+  //   'example-reprocessing-queue',
+  //   makeTroubleExampleJob(),
+  //   makeExampleJob()
+  // );
 };

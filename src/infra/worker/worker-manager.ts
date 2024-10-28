@@ -43,7 +43,6 @@ export class WorkerManager {
       });
 
     this.agenda.database(mongoUrl, this.collectionName);
-    this.agenda.start();
   }
 
   public static getInstance(): WorkerManager {
@@ -52,6 +51,14 @@ export class WorkerManager {
     }
 
     return WorkerManager.instance;
+  }
+
+  public async start() {
+    return this.agenda.start();
+  }
+
+  public async stop() {
+    return this.agenda.stop();
   }
 
   public makeWorker(

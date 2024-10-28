@@ -1,31 +1,59 @@
 import path from 'path';
-import mongoose from 'mongoose';
 
-import { sqlConnection } from '@/infra/db/mssql/util';
-import { WorkerManager } from '@/infra/worker';
-import { logger, MONGO } from '@/util';
+import { workerManager } from '@/infra/worker';
+import { logger } from '@/util';
 
-// TODO: USe factory
-const manager = WorkerManager.getInstance();
+import {
+  checkDatabaseConnection,
+  eventHandler,
+  getMongooseConnection
+} from './util';
 
-(async () => {
+const event = eventHandler();
+
+async function startWorker() {
   try {
-    const mongoPromise = mongoose
-      .set('strictQuery', false)
-      .connect(MONGO.URL(), {
-        dbName: MONGO.NAME,
-        authSource: MONGO.AUTH_SOURCE,
-        authMechanism: 'SCRAM-SHA-1'
-      });
+    const manager = workerManager();
 
-    const sqlPromise = sqlConnection.raw('SELECT 1');
-
-    await Promise.all([mongoPromise, sqlPromise]);
+    const [mongoose] = await Promise.all([
+      getMongooseConnection(),
+      checkDatabaseConnection(),
+      manager.start()
+    ]);
 
     const workersFolder = path.resolve(__dirname, 'workers');
 
     manager.tasksDirectory(workersFolder);
+
+    async function gracefulShutdown() {
+      try {
+        if (mongoose) {
+          await mongoose.disconnect();
+          logger.log({
+            level: 'info',
+            message: 'Mongoose connection disconnected.'
+          });
+        }
+
+        await manager.stop();
+
+        logger.log({
+          level: 'info',
+          message: 'Worker interrupted.'
+        });
+      } catch (error) {
+        logger.log(error, 'offline');
+      } finally {
+        event.emit('exit');
+      }
+    }
+
+    process.on('SIGINT', gracefulShutdown);
+    process.on('SIGTERM', gracefulShutdown);
   } catch (error) {
     logger.log(error);
+    throw error;
   }
-})();
+}
+
+startWorker();
