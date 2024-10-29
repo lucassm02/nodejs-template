@@ -315,6 +315,8 @@ export class HttpServer {
 
   private refreshEndpoints(): void {
     for (const endpoint of this.endpoints) {
+      if (endpoint.method === 'ws') continue;
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       this.fastify[endpoint.method](endpoint.uri, <any>endpoint.handler);
     }

@@ -3,7 +3,11 @@ import { Server as SocketServer, type Socket } from 'socket.io';
 
 import makeFlow from '@/main/adapters/flow-adapter';
 import type { Middleware, SharedState } from '@/presentation/protocols';
-import { convertCamelCaseKeysToSnakeCase, logger } from '@/util';
+import {
+  convertCamelCaseKeysToSnakeCase,
+  convertSnakeCaseKeysToCamelCase,
+  logger
+} from '@/util';
 
 import { SocketHandler } from '../http-server/socket-handler';
 import {
@@ -82,13 +86,13 @@ export class WebSocketServer {
 
       const { statusCode: httpStatusCode, ...data } = response;
 
-      const { options = null } = data;
+      const { options = null, ...payload } = data;
 
       socket.emit(
         method,
         convertCamelCaseKeysToSnakeCase({
           httpStatusCode,
-          ...data
+          ...payload
         })
       );
 
@@ -115,16 +119,14 @@ export class WebSocketServer {
 
           socket.on(method, async (request) => {
             try {
-              if (!request[STATE_KEY]) {
-                request[STATE_KEY] = {};
-              }
-              if (!request[EVENT_KEY]) {
-                request[EVENT_KEY] = method;
-              }
-
+              const _request = {
+                ...convertSnakeCaseKeysToCamelCase(request),
+                [STATE_KEY]: {},
+                [EVENT_KEY]: method
+              };
               await makeFlow({
-                [REQUEST_KEY]: request,
-                [STATE_KEY]: request[STATE_KEY],
+                [REQUEST_KEY]: _request,
+                [STATE_KEY]: _request[STATE_KEY],
                 [SOCKET_KEY]: socket
               })(...this.adaptMiddlewaresWebSocket(middlewares, method))();
             } catch (error) {
