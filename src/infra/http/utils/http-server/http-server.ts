@@ -206,11 +206,14 @@ export class HttpServer {
     this.listen(this.listenerOptions.port, this.listenerOptions.callback);
   }
 
-  public close() {
+  public async close() {
     if (!this.isStarted) return;
 
-    this.fastify.server.close(() => {
-      logger.log({ level: 'info', message: 'Shutting down server' });
+    return new Promise((resolve) => {
+      this.fastify.server.close(() => {
+        logger.log({ level: 'info', message: 'Shutting down server' });
+        resolve(null);
+      });
     });
   }
 

@@ -4,14 +4,14 @@ import { SERVER } from '@/util/constants';
 import { application } from './application';
 import {
   checkDatabaseConnection,
-  eventHandler,
+  makeEvent,
   getMongooseConnection,
   getRabbitmqConnection
 } from './util';
 
 async function startServer() {
   try {
-    const event = eventHandler();
+    const event = makeEvent();
 
     const [mongoose, rabbitServer] = await Promise.all([
       getMongooseConnection(),
@@ -28,30 +28,36 @@ async function startServer() {
 
     async function gracefulShutdown() {
       try {
-        if (rabbitServer) {
-          await rabbitServer.close();
-          logger.log({
-            level: 'info',
-            message: 'RabbitMq connection closed.'
-          });
-        }
-        if (mongoose) {
-          await mongoose.disconnect();
-          logger.log({
-            level: 'info',
-            message: 'Mongoose connection closed.'
-          });
-        }
-
-        application.close();
+        await application.close();
         logger.log({
           level: 'info',
-          message: 'Server interrupted.'
+          message: 'Server interrupted'
+        });
+
+        setImmediate(async () => {
+          try {
+            await rabbitServer.stop();
+            logger.log({
+              level: 'info',
+              message: 'RabbitMq connection closed'
+            });
+
+            await mongoose.disconnect();
+            logger.log(
+              {
+                level: 'info',
+                message: 'Mongoose connection closed'
+              },
+              'offline'
+            );
+          } catch (error) {
+            logger.log(error, 'offline');
+          } finally {
+            event.emit('exit');
+          }
         });
       } catch (error) {
-        logger.log(error, 'offline');
-      } finally {
-        event.emit('exit');
+        logger.log(error);
       }
     }
 

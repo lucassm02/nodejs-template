@@ -1,11 +1,13 @@
 import knexSetup from '@/infra/db/mssql/util/knex';
 import { CONSUMER, WORKER, SERVER, logger } from '@/util';
 
-import { eventHandler } from './util';
+import { makeEvent } from './util';
 
 knexSetup();
 
 async function main() {
+  const event = makeEvent();
+
   const promises = [];
 
   if (CONSUMER.ENABLED) promises.push(import('./consumer'));
@@ -26,7 +28,7 @@ async function main() {
 
   await Promise.all(promises);
 
-  eventHandler().on('exit', () => {
+  event.on('exit', () => {
     setImmediate(() => {
       process.exit(0);
     });

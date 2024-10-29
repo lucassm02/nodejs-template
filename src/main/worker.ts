@@ -5,18 +5,20 @@ import { logger } from '@/util';
 
 import {
   checkDatabaseConnection,
-  eventHandler,
-  getMongooseConnection
+  makeEvent,
+  getMongooseConnection,
+  getRabbitmqConnection
 } from './util';
 
-const event = eventHandler();
+const event = makeEvent();
 
 async function startWorker() {
   try {
     const manager = workerManager();
 
-    const [mongoose] = await Promise.all([
+    const [mongoose, rabbitServer] = await Promise.all([
       getMongooseConnection(),
+      getRabbitmqConnection(),
       checkDatabaseConnection(),
       manager.start()
     ]);
@@ -27,24 +29,37 @@ async function startWorker() {
 
     async function gracefulShutdown() {
       try {
-        if (mongoose) {
-          await mongoose.disconnect();
-          logger.log({
-            level: 'info',
-            message: 'Mongoose connection disconnected.'
-          });
-        }
-
-        await manager.stop();
-
         logger.log({
           level: 'info',
-          message: 'Worker interrupted.'
+          message: 'Consumer interrupted'
+        });
+
+        setImmediate(async () => {
+          try {
+            await manager.stop();
+
+            await rabbitServer.stop();
+            logger.log({
+              level: 'info',
+              message: 'RabbitMq connection closed'
+            });
+
+            await mongoose.disconnect();
+            logger.log(
+              {
+                level: 'info',
+                message: 'Mongoose connection closed'
+              },
+              'offline'
+            );
+          } catch (error) {
+            logger.log(error, 'offline');
+          } finally {
+            event.emit('exit');
+          }
         });
       } catch (error) {
-        logger.log(error, 'offline');
-      } finally {
-        event.emit('exit');
+        logger.log(error);
       }
     }
 

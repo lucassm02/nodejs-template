@@ -106,7 +106,7 @@ export class RabbitMqServer {
     return this;
   }
 
-  public async close() {
+  public async stop() {
     logger.log({ level: 'info', message: 'Closing connection' });
 
     if (this.closing) {
@@ -151,6 +151,31 @@ export class RabbitMqServer {
     return this;
   }
 
+  public async cancelConsumers() {
+    logger.log({ level: 'info', message: 'Closing consumers' });
+    if (!this.channel) {
+      return;
+    }
+
+    const consumers = Array.from(this.consumers);
+
+    const promises = consumers.map(async ([key]) => {
+      try {
+        await this.channel?.cancel(key);
+      } catch (error) {
+        logger.log(error);
+      } finally {
+        this.consumers.delete(key);
+      }
+    });
+
+    await Promise.allSettled(promises);
+    logger.log({
+      level: 'info',
+      message: 'All consumer are closed'
+    });
+  }
+
   public async restart() {
     logger.log({ level: 'info', message: 'Restart event' });
     if (this.thereIsAPendingRestart) return;
@@ -158,7 +183,7 @@ export class RabbitMqServer {
     this.thereIsAPendingRestart = true;
 
     try {
-      await this.close();
+      await this.stop();
       await this.start();
     } catch (error) {
       logger.log({ level: 'info', message: 'Error when restarting' });

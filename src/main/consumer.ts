@@ -4,14 +4,14 @@ import { logger } from '@/util';
 
 import {
   checkDatabaseConnection,
-  eventHandler,
+  makeEvent,
   getMongooseConnection,
   getRabbitmqConnection
 } from './util';
 
 async function startConsumer() {
   try {
-    const event = eventHandler();
+    const event = makeEvent();
 
     const [rabbitServer, mongoose] = await Promise.all([
       getRabbitmqConnection(),
@@ -23,33 +23,41 @@ async function startConsumer() {
 
     rabbitServer.consumersDirectory(consumersFolder);
 
-    logger.log({ level: 'info', message: 'Consumer started!' });
+    logger.log({ level: 'info', message: 'Consumer started' });
 
     async function gracefulShutdown() {
       try {
-        if (rabbitServer) {
-          await rabbitServer.close();
-          logger.log({
-            level: 'info',
-            message: 'RabbitMq connection closed.'
-          });
-        }
-        if (mongoose) {
-          await mongoose.disconnect();
-          logger.log({
-            level: 'info',
-            message: 'Mongoose connection closed.'
-          });
-        }
+        rabbitServer.cancelConsumers();
 
         logger.log({
           level: 'info',
-          message: 'Consumer interrupted.'
+          message: 'Consumer interrupted'
+        });
+
+        setImmediate(async () => {
+          try {
+            await rabbitServer.stop();
+            logger.log({
+              level: 'info',
+              message: 'RabbitMq connection closed'
+            });
+
+            await mongoose.disconnect();
+            logger.log(
+              {
+                level: 'info',
+                message: 'Mongoose connection closed'
+              },
+              'offline'
+            );
+          } catch (error) {
+            logger.log(error, 'offline');
+          } finally {
+            event.emit('exit');
+          }
         });
       } catch (error) {
-        logger.log(error, 'offline');
-      } finally {
-        event.emit('exit');
+        logger.log(error);
       }
     }
 
