@@ -5,11 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2024-11-04
+
+### Added
+
+- Add websocket support.
+- Add graceful shutdown as default.
+- Change internal http/https engine.
+
+## Changed
+
+- Remove support for server, worker and consumer commands and their derivatives.
+- Remove the application file in /src/main, now import the server from web-server.ts.
+
 ## [1.1.0] - 2024-06-03
 
 ### Added
 
-- Add virtual host connection on RabbitMq
+- Add virtual host connection on RabbitMq.
 - Add reject message on RabbitMq server.
 
 ## [1.0.0] - 2024-04-17
