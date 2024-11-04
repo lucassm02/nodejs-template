@@ -1,17 +1,17 @@
 import request from 'supertest';
 
-import { application } from '@/main/application';
+import { webServer } from '@/main/web-server';
 
 import { migrate } from '../migrations/example-db';
 import { seedExampleDatabase } from '../seed/example-db-seed';
 
-application.setBaseUrl('/api/v1');
+webServer.setBaseUrl('/api/v1');
 
-const getServer = () => application.getServer();
+const getServer = () => webServer.getServer();
 
 describe('Health Route', () => {
   beforeAll(async () => {
-    await application.ready();
+    await webServer.ready();
     await migrate.up.HealthIntegrationTest();
     await seedExampleDatabase();
   });

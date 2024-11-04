@@ -1,6 +1,6 @@
 import request from 'supertest';
 
-import { httpServer } from '@/infra/http/utils';
+import { webServer } from '@/infra/http/util';
 import { Middleware } from '@/presentation/protocols';
 import { parallelize } from '@/main/adapters';
 
@@ -17,7 +17,7 @@ class MockMiddleware implements Middleware {
   }
 }
 
-const getServer = () => httpServer().getServer();
+const getServer = () => webServer().getServer();
 
 const mockMiddleware = new MockMiddleware();
 const mockMiddlewareSpy = jest.spyOn(mockMiddleware, 'handle');
@@ -36,7 +36,7 @@ let sutState = {};
 
 describe('Endpoint with parallelize ', () => {
   beforeAll(async () => {
-    const server = httpServer();
+    const server = webServer();
 
     const router = server.router({
       baseUrl: '/api/v1'

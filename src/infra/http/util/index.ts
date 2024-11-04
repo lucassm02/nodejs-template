@@ -1,2 +1,2 @@
-export * from './http-server';
+export * from './web-server';
 export * from './http-logger-wrapper';

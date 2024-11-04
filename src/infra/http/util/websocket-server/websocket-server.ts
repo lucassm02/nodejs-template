@@ -9,7 +9,7 @@ import {
   logger
 } from '@/util';
 
-import { SocketHandler } from '../http-server/socket-handler';
+import { SocketHandler } from '../web-server/socket-handler';
 import {
   EVENT_KEY,
   REQUEST_KEY,
@@ -18,7 +18,7 @@ import {
   type Payload,
   type RouteMiddlewareSocket,
   type WebSocketCallbackMetadata
-} from '../http-server/types';
+} from '../web-server/types';
 
 type Transport = 'polling' | 'websocket' | 'webtransport';
 

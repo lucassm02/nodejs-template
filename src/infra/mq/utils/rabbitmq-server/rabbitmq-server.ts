@@ -26,6 +26,7 @@ export class RabbitMqServer {
   private connection: Connection | null = null;
   private channel: Channel | null = null;
   private consumers: Map<string, Consumer> = new Map();
+  private messages: Set<Message> = new Set();
   private uri!: string;
   private prefetch!: number;
 
@@ -106,6 +107,21 @@ export class RabbitMqServer {
     return this;
   }
 
+  private async waitForPendingProcessing() {
+    const CHECK_INTERVAL = 100;
+    let interval;
+
+    await new Promise((resolve) => {
+      interval = setInterval(() => {
+        if (this.messages.size === 0) {
+          resolve(null);
+        }
+      }, CHECK_INTERVAL);
+    });
+
+    clearInterval(interval);
+  }
+
   public async stop() {
     logger.log({ level: 'info', message: 'Closing connection' });
 
@@ -114,12 +130,13 @@ export class RabbitMqServer {
     }
 
     this.closing = true;
+    this.preventChannelRecover = true;
+
+    await this.waitForPendingProcessing();
 
     this.channel?.removeAllListeners();
     this.connection?.removeAllListeners();
     this.event.removeAllListeners();
-
-    this.preventChannelRecover = true;
 
     if (this.channel) {
       try {
@@ -151,12 +168,15 @@ export class RabbitMqServer {
     return this;
   }
 
+  public getPendingMessageCount(): number {
+    return this.messages.size;
+  }
+
   public async cancelConsumers() {
     logger.log({ level: 'info', message: 'Closing consumers' });
     if (!this.channel) {
       return;
     }
-
     const consumers = Array.from(this.consumers);
 
     const promises = consumers.map(async ([key]) => {
@@ -177,6 +197,7 @@ export class RabbitMqServer {
   }
 
   public async restart() {
+    const RESTAR_TIMEOUT = 1500;
     logger.log({ level: 'info', message: 'Restart event' });
     if (this.thereIsAPendingRestart) return;
     logger.log({ level: 'info', message: 'Restart event accepted' });
@@ -196,7 +217,7 @@ export class RabbitMqServer {
 
     setTimeout(() => {
       this.thereIsAPendingRestart = false;
-    }, 1500);
+    }, RESTAR_TIMEOUT);
 
     return this;
   }
@@ -261,6 +282,8 @@ export class RabbitMqServer {
       if (!message) return;
 
       try {
+        this.messages.add(message);
+
         this.setCustomMessageProperties(message, { rejected: false });
 
         const payload = {
@@ -301,6 +324,7 @@ export class RabbitMqServer {
         });
 
         this.ack(message);
+        this.messages.delete(message);
       }
     });
 

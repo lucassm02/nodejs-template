@@ -1,7 +1,7 @@
 import { HttpClient } from '@/data/protocols/http/adapters';
 import { ValidateTokenService as ValidateTokenProtocol } from '@/data/protocols/http/authenticator';
 
-import { httpLoggerWrapper } from '../../utils';
+import { httpLoggerWrapper } from '../../util';
 
 export class ValidateTokenService implements ValidateTokenProtocol {
   constructor(private readonly httpClient: HttpClient) {}

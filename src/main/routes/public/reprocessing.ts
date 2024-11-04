@@ -1,4 +1,4 @@
-import { Route } from '@/infra/http/utils/http-server/types';
+import { Route } from '@/infra/http/util/web-server/types';
 import { requestValidationAdapter } from '@/main/adapters';
 import {
   makeGetReprocessingDataController,

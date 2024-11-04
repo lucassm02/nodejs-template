@@ -1,9 +1,9 @@
-import { httpServer } from '@/infra/http/utils/http-server/factory';
+import { webServer } from '@/infra/http/util/web-server/factory';
 import {
   REPLY_KEY,
   REQUEST_KEY,
   STATE_KEY
-} from '@/infra/http/utils/http-server/types';
+} from '@/infra/http/util/web-server/types';
 import { httpAdapter } from '@/main/adapters';
 import makeFlow from '@/main/adapters/flow-adapter';
 import { DICTIONARY } from '@/util';
@@ -19,7 +19,7 @@ describe('httpAdapter', () => {
     });
 
     await flow(
-      httpServer().adapter(
+      webServer().adapter(
         httpAdapter(
           (_req, _res, next) => {
             arr.push(1);
@@ -53,7 +53,7 @@ describe('httpAdapter', () => {
     });
 
     await flow(
-      httpServer().adapter(
+      webServer().adapter(
         httpAdapter(
           (_req, _res, next) => {
             arr.push(1);
@@ -97,7 +97,7 @@ describe('httpAdapter', () => {
     });
 
     await flow(
-      httpServer().adapter(
+      webServer().adapter(
         httpAdapter(
           (_req, _res, next) => {
             arr.push(1);

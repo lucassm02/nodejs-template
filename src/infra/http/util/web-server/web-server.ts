@@ -1,11 +1,12 @@
 import fastify, {
   FastifyInstance,
   FastifyPluginCallback,
+  RawServerDefault,
   RouteHandlerMethod
 } from 'fastify';
 import { readdirSync } from 'fs';
 import { Server } from 'http';
-import { AddressInfo } from 'net';
+import { AddressInfo, Socket } from 'net';
 import { resolve } from 'path';
 
 import makeFlow from '@/main/adapters/flow-adapter';
@@ -43,24 +44,34 @@ type Endpoint = {
   handler: Function;
 };
 
-export class HttpServer {
+export class WebServer {
   private endpoints: Endpoint[] = [];
   private fastify!: FastifyInstance;
-  private listenerOptions!: { port: number; callback: Callback };
+  private listenerOptions!: { port: number; callback?: Callback };
   private baseUrl = '';
   private addressInfo!: AddressInfo | null | string;
   private startupCallbacks: Function[] = [];
   private isStarted = false;
-  private static instance: HttpServer;
+  private static instance: WebServer;
   private socketIO!: WebSocketServer;
+
+  private connections: Set<Socket> = new Set();
 
   constructor(private readonly _fastify: typeof fastify) {
     this.fastify = this._fastify();
+    this.serverSetup(this.fastify);
     this.initializeStateInRequest();
   }
 
   private initializeStateInRequest() {
     this.fastify.decorateRequest(STATE_KEY);
+  }
+
+  private serverSetup(fastify: FastifyInstance) {
+    fastify.server.on('connection', (socket) => {
+      this.connections.add(socket);
+      socket.on('close', () => this.connections.delete(socket));
+    });
   }
 
   public getWebsocketServer = () => this.socketIO;
@@ -72,12 +83,12 @@ export class HttpServer {
     this.fastify.register(plugin, configs);
   }
 
-  public static getInstance(): HttpServer {
-    if (!HttpServer.instance) {
-      HttpServer.instance = new HttpServer(fastify);
+  public static getInstance(): WebServer {
+    if (!WebServer.instance) {
+      WebServer.instance = new WebServer(fastify);
     }
 
-    return HttpServer.instance;
+    return WebServer.instance;
   }
 
   public address() {
@@ -102,26 +113,22 @@ export class HttpServer {
     );
   }
 
-  public listen(port: number | string, callback: () => void = () => {}) {
+  public async listen(port: number | string): Promise<RawServerDefault>;
+  public listen(port: number | string, callback?: () => void): RawServerDefault;
+  public listen(
+    port: number | string,
+    callback?: () => void
+  ): RawServerDefault | Promise<RawServerDefault> {
     if (Number.isNaN(Number(port)))
       throw new Error(Exceptions.INVALID_PORT_VALUE);
 
-    if (this.isStarted) return;
+    if (this.isStarted) return this.fastify.server;
 
     this.isStarted = true;
 
     this.listenerOptions = { callback, port: +port };
 
-    setImmediate(() => {
-      this.socketIO.bootstrap();
-
-      this.fastify.ready(() => {
-        callback();
-        this.fastify.server.listen({
-          port
-        });
-      });
-    });
+    setImmediate(() => this.serverBootstrap(+port, callback));
 
     this.addressInfo = this.fastify.server.address();
 
@@ -164,20 +171,22 @@ export class HttpServer {
 
     this.listenerOptions = { callback, port: +port };
 
-    setImmediate(() => {
-      this.socketIO.bootstrap();
-
-      this.fastify.ready(() => {
-        callback();
-        this.fastify.server.listen({
-          port
-        });
-      });
-    });
+    setImmediate(() => this.serverBootstrap(+port, callback));
 
     this.addressInfo = this.fastify.server.address();
 
     return this.fastify.server;
+  }
+
+  private async serverBootstrap(port: number, callback?: Function) {
+    this.socketIO?.bootstrap();
+
+    this.fastify.ready(() => {
+      callback?.();
+      this.fastify.server.listen({
+        port
+      });
+    });
   }
 
   public onStart(callback: Callback, ...callbacks: Callback[]): void;
@@ -207,10 +216,26 @@ export class HttpServer {
   }
 
   public async close() {
+    const END_TIMEOUT = 5_000;
+
     if (!this.isStarted) return;
 
-    return new Promise((resolve) => {
-      this.fastify.server.close(() => {
+    for (const socket of this.connections) {
+      if (socket.readyState === 'open' || socket.readyState === 'readOnly') {
+        socket.end();
+        setTimeout(() => {
+          if (!socket.destroyed) socket.destroy();
+        }, END_TIMEOUT);
+      }
+    }
+
+    return new Promise((resolve, reject) => {
+      this.fastify.server.close((error) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+
         logger.log({ level: 'info', message: 'Shutting down server' });
         resolve(null);
       });
@@ -292,6 +317,7 @@ export class HttpServer {
 
           setup(route);
         } catch (error) {
+          logger.log(error);
           logger.log({
             level: 'error',
             message: `Attempted to load route file ${fileName}, but encountered an error. Verify that the file exists and is correctly formatted.`

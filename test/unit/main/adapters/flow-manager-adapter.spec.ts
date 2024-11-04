@@ -1,11 +1,11 @@
 import makeFlow from '@/main/adapters/flow-adapter';
-import { httpServer } from '@/infra/http/utils';
+import { webServer } from '@/infra/http/util';
 import flowManager, { httpAdapter } from '@/main/adapters/flow-manager';
 import {
   REPLY_KEY,
   REQUEST_KEY,
   STATE_KEY
-} from '@/infra/http/utils/http-server/types';
+} from '@/infra/http/util/web-server/types';
 import { HttpRequest } from '@/presentation/protocols';
 
 describe('flowManager', () => {
@@ -36,7 +36,7 @@ describe('flowManager', () => {
       }
     });
 
-    await flow(httpServer().adapter(flowManager(...condition)))();
+    await flow(webServer().adapter(flowManager(...condition)))();
 
     expect(statusMock).toHaveBeenCalledTimes(1);
     expect(statusMock).toHaveBeenCalledWith(200);
@@ -60,7 +60,7 @@ describe('flowManager', () => {
       }
     });
 
-    await flow(httpServer().adapter(flowManager(...condition)))();
+    await flow(webServer().adapter(flowManager(...condition)))();
 
     expect(statusMock).toHaveBeenCalledTimes(1);
     expect(statusMock).toHaveBeenCalledWith(200);

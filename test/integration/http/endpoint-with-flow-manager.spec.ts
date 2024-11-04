@@ -1,11 +1,11 @@
 import request from 'supertest';
 
-import { httpServer } from '@/infra/http/utils';
+import { webServer } from '@/infra/http/util';
 import { httpAdapter } from '@/main/adapters';
 import flowManager from '@/main/adapters/flow-manager';
 import { HttpRequest } from '@/presentation/protocols';
 
-const getServer = () => httpServer().getServer();
+const getServer = () => webServer().getServer();
 
 describe('Endpoint With Flow Manager', () => {
   const condition = [
@@ -25,7 +25,7 @@ describe('Endpoint With Flow Manager', () => {
   const notBeCalledMock = jest.fn();
 
   beforeAll(async () => {
-    const server = httpServer();
+    const server = webServer();
     server.router().get('/test/:id', flowManager(...condition), () => {
       notBeCalledMock();
     });

@@ -3,13 +3,13 @@ import { makeExampleJob, makeTroubleExampleJob } from '@/main/factories/jobs';
 
 export default (server: RabbitMqServer) => {
   server.makeConsumer(
-    { queue: 'example-queue', enabled: false },
+    { queue: 'example-queue', enabled: true },
     makeExampleJob()
   );
 
-  // server.makeConsumer(
-  //   'example-reprocessing-queue',
-  //   makeTroubleExampleJob(),
-  //   makeExampleJob()
-  // );
+  server.makeConsumer(
+    'example-reprocessing-queue',
+    makeTroubleExampleJob(),
+    makeExampleJob()
+  );
 };

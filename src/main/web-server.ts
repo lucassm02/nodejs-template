@@ -1,6 +1,6 @@
 import path from 'path';
 
-import { httpServer } from '@/infra/http/utils/http-server';
+import { webServer as webServerFactory } from '@/infra/http/util/web-server';
 import { elasticAPM } from '@/util';
 import { SERVER } from '@/util/constants';
 import cors from '@fastify/cors';
@@ -10,13 +10,13 @@ import { apmHttpLoggerMiddleware, dbHttpLoggerMiddleware } from './middlewares';
 
 elasticAPM();
 
-const application = httpServer();
+const webServer = webServerFactory();
 
-application.use(cors, {
+webServer.use(cors, {
   exposedHeaders: 'X-Total-Count'
 });
 
-application.socket({
+webServer.socket({
   enabled: true,
   cors: {
     methods: ['GET', 'POST'],
@@ -26,17 +26,17 @@ application.socket({
   path: SERVER.SOCKET.HANDSHAKE_PATH
 });
 
-application.use(helmet);
-application.use(apmHttpLoggerMiddleware);
-application.use(dbHttpLoggerMiddleware);
+webServer.use(helmet);
+webServer.use(apmHttpLoggerMiddleware);
+webServer.use(dbHttpLoggerMiddleware);
 
-application.setBaseUrl(SERVER.BASE_URI);
+webServer.setBaseUrl(SERVER.BASE_URI);
 
 const routesFolder = path.resolve(__dirname, 'routes');
 const publicRoutesFolder = path.resolve(routesFolder, 'public');
 const privateRoutesFolder = path.resolve(routesFolder, 'private');
 
-application.routesDirectory(publicRoutesFolder);
-application.routesDirectory(privateRoutesFolder);
+webServer.routesDirectory(publicRoutesFolder);
+webServer.routesDirectory(privateRoutesFolder);
 
-export { application };
+export { webServer };

@@ -1,4 +1,4 @@
-import { type CallbackSocketWithStateHook } from '@/infra/http/utils/http-server/types';
+import { type CallbackSocketWithStateHook } from '@/infra/http/util/web-server/types';
 import { YupSchema } from '@/presentation/protocols';
 import { badRequest } from '@/presentation/utils/http-response';
 import { convertCamelCaseKeysToSnakeCase } from '@/util';

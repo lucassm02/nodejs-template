@@ -1,8 +1,8 @@
 import request from 'supertest';
 
-import { httpServer } from '@/infra/http/utils';
+import { webServer } from '@/infra/http/util';
 
-const getServer = () => httpServer().getServer();
+const getServer = () => webServer().getServer();
 
 const beCalledHookMock = jest.fn().mockImplementation((req, res, next) => {
   next();
@@ -10,7 +10,7 @@ const beCalledHookMock = jest.fn().mockImplementation((req, res, next) => {
 
 describe('Endpoint With HTTP Adapter with hook', () => {
   beforeAll(async () => {
-    const server = httpServer();
+    const server = webServer();
 
     const router = server.router({
       baseUrl: '/v8'

@@ -1,14 +1,14 @@
 import type { FastifyRequest } from 'fastify';
 import { Socket } from 'socket.io';
 
-import { httpServer } from '@/infra/http/utils';
+import { webServer } from '@/infra/http/util';
 import {
   EVENT_KEY,
   REQUEST_KEY,
   SOCKET_KEY,
   STATE_KEY,
   type RouteMiddlewareSocket
-} from '@/infra/http/utils/http-server/types';
+} from '@/infra/http/util/web-server/types';
 import makeFlow from '@/main/adapters/flow-adapter';
 
 type Options = {
@@ -32,7 +32,7 @@ export const useTimedRepeater = (
     };
 
     const repeater = setInterval(async () => {
-      const server = httpServer().getWebsocketServer();
+      const server = webServer().getWebsocketServer();
 
       const event = request[EVENT_KEY];
 

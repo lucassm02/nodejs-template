@@ -1,4 +1,4 @@
-import { Route } from '@/infra/http/utils/http-server';
+import { Route } from '@/infra/http/util/web-server';
 import {
   makeCreateExampleController,
   makeGetExampleController,

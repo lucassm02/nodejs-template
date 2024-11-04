@@ -1,7 +1,7 @@
 import fastify from 'fastify';
 
-import { HttpServer } from '@/infra/http/utils/http-server/http-server';
-import { Route } from '@/infra/http/utils/http-server/route';
+import { WebServer } from '@/infra/http/util/web-server/web-server';
+import { Route } from '@/infra/http/util/web-server/route';
 import { SERVER } from '@/util';
 
 const register = jest.fn();
@@ -33,11 +33,11 @@ const fastifyMock = () => ({
 });
 
 type SutType = {
-  sut: HttpServer;
+  sut: WebServer;
 };
 
 const makeSut = (): SutType => {
-  const sut = new HttpServer(fastifyMock as unknown as typeof fastify);
+  const sut = new WebServer(fastifyMock as unknown as typeof fastify);
 
   sut.socket({
     enabled: false,

@@ -2,11 +2,11 @@ import fastify from 'fastify';
 import path from 'path';
 import request from 'supertest';
 
-import { HttpServer } from '@/infra/http/utils/http-server/http-server';
+import { WebServer } from '@/infra/http/util/web-server/web-server';
 
 describe('Route Directory Implementations', () => {
   describe('Just file', () => {
-    const application = new HttpServer(fastify);
+    const application = new WebServer(fastify);
     application.setBaseUrl('/api/v1');
 
     const getServer = () => application.getServer();
@@ -28,7 +28,7 @@ describe('Route Directory Implementations', () => {
   });
 
   describe('With uncoupled router', () => {
-    const application = new HttpServer(fastify);
+    const application = new WebServer(fastify);
     application.setBaseUrl('/api/v1');
 
     const getServer = () => application.getServer();
@@ -57,7 +57,7 @@ describe('Route Directory Implementations', () => {
     });
   });
   describe('With uncoupled router and hooks', () => {
-    const application = new HttpServer(fastify);
+    const application = new WebServer(fastify);
     application.setBaseUrl('/api/v1');
 
     const hookMock = jest.fn().mockImplementation((req, res, next, state) => {
@@ -93,7 +93,7 @@ describe('Route Directory Implementations', () => {
   });
 
   describe('With other base url and hooks', () => {
-    const application = new HttpServer(fastify);
+    const application = new WebServer(fastify);
     application.setBaseUrl('/api/v1');
 
     const hookMock = jest.fn().mockImplementation((req, res, next) => {
@@ -124,7 +124,7 @@ describe('Route Directory Implementations', () => {
   });
 
   describe('With file and hooks', () => {
-    const application = new HttpServer(fastify);
+    const application = new WebServer(fastify);
     application.setBaseUrl('/api/v1');
 
     const hookMock = jest

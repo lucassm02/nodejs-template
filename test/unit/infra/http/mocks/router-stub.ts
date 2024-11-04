@@ -1,4 +1,4 @@
-import { Router } from '@/infra/http/utils/http-server/types';
+import { Router } from '@/infra/http/util/web-server/types';
 
 export class RouterStub implements Router {
   register(...args: any): void {}
@@ -8,4 +8,5 @@ export class RouterStub implements Router {
   get(...args: any): void {}
   delete(...args: any): void {}
   options(...args: any): void {}
+  ws(): any {}
 }

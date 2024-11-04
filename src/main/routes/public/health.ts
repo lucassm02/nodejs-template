@@ -1,4 +1,4 @@
-import { Route } from '@/infra/http/utils/http-server/types';
+import { Route } from '@/infra/http/util/web-server/types';
 
 export default function (route: Route) {
   route.get('/health', (_req, res) => {
