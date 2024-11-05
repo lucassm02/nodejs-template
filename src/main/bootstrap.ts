@@ -4,6 +4,7 @@ import knexSetup from '@/infra/db/mssql/util/knex';
 import { workerManager } from '@/infra/worker';
 import { CONSUMER, SERVER, WORKER, logger } from '@/util';
 
+import { getArgs } from './cli';
 import {
   checkDatabaseConnection,
   getMongooseConnection,
@@ -13,17 +14,19 @@ import { webServer } from './web-server';
 
 knexSetup();
 
-const servicesEnabledValue = [
-  CONSUMER.ENABLED,
-  SERVER.ENABLED,
-  WORKER.ENABLED,
-  WORKER.DASHBOARD.ENABLED
-];
+const { server, consumer, dashboard, worker } = getArgs();
+
+const ENABLED_SERVICES = {
+  SERVER: server ?? SERVER.ENABLED,
+  CONSUMER: consumer ?? CONSUMER.ENABLED,
+  WORKER: worker ?? WORKER.ENABLED,
+  DASHBOARD: dashboard ?? WORKER.DASHBOARD.ENABLED
+};
 
 const SHUTDOWN_TIMEOUT = 30_000;
 
 export async function bootstrap() {
-  if (servicesEnabledValue.every((item) => item === false)) {
+  if (Object.values(ENABLED_SERVICES).every((item) => item === false)) {
     logger.log(
       {
         level: 'warn',
@@ -43,13 +46,13 @@ export async function bootstrap() {
 
   const worker = workerManager();
 
-  if (CONSUMER.ENABLED) {
+  if (ENABLED_SERVICES.CONSUMER) {
     const consumersFolder = path.resolve(__dirname, 'consumers');
     rabbitServer.consumersDirectory(consumersFolder);
     logger.log({ level: 'info', message: 'Consumer started' });
   }
 
-  if (SERVER.ENABLED) {
+  if (ENABLED_SERVICES.SERVER) {
     await webServer.listen(SERVER.PORT);
 
     logger.log({
@@ -58,13 +61,13 @@ export async function bootstrap() {
     });
   }
 
-  if (WORKER.ENABLED) {
+  if (ENABLED_SERVICES.WORKER) {
     worker.start();
     const workersFolder = path.resolve(__dirname, 'workers');
     worker.tasksDirectory(workersFolder);
   }
 
-  if (WORKER.DASHBOARD.ENABLED) {
+  if (ENABLED_SERVICES.DASHBOARD) {
     await import('./agendash');
   }
 
@@ -78,12 +81,16 @@ export async function bootstrap() {
         process.exit(0);
       }
 
-      if (SERVER.ENABLED) {
+      if (ENABLED_SERVICES.SERVER) {
         await webServer.close();
         logger.log({
           level: 'info',
           message: 'Server interrupted'
         });
+      }
+
+      if (ENABLED_SERVICES.WORKER) {
+        await worker.stop();
       }
 
       await rabbitServer.stop();

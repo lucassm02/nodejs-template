@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-/* eslint-disable import/no-extraneous-dependencies */
 import yargs from 'yargs';
 
 import { handler } from './handler.mjs';
@@ -15,17 +13,17 @@ cli.option('environment', {
   describe: 'Set environment',
   type: 'string',
   demandOption: true,
-  requiresArg: true,
+  requiresArg: true
 });
 
 cli.option('scan-routes', {
   describe: 'Enable route scanning',
-  type: 'boolean',
+  type: 'boolean'
 });
 
 cli.option('secrets', {
   describe: 'Defines environment variables that should be treated as secrets',
-  type: 'array',
+  type: 'array'
 });
 
 const { environment, 'scan-routes': scanRoutes, secrets } = cli.argv;

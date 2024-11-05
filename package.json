@@ -12,8 +12,8 @@
     "lint": "yarn eslint src/** --fix",
     "check:types": "tsc --noEmit",
     "start:prod": "node dist/main",
-    "start:dev": "node --import tsx --watch  ./src/main",
-    "start:debug": "tsx watch --clear-screen=false --inspect src/main",
+    "start:dev": "node --import tsx --watch  src/main",
+    "start:debug": "node --import tsx --watch --inspect src/main",
     "start:dev:legacy": "tsnd -r tsconfig-paths/register --respawn --transpile-only --ignore-watch node_modules --no-notify  src/main",
     "start:debug:legacy": "tsnd -r tsconfig-paths/register --respawn --transpile-only --ignore-watch node_modules --no-notify --inspect --poll --watch --clear src/main",
     "test": "dotenv -e .env.test -- jest  --detectOpenHandles --passWithNoTests --silent --noStackTrace --runInBand",
@@ -82,8 +82,7 @@
     "tsconfig-paths": "^4.2.0",
     "tsx": "^4.19.2",
     "typescript": "^5.5.4",
-    "yaml": "^2.5.0",
-    "yargs": "13.2"
+    "yaml": "^2.5.0"
   },
   "dependencies": {
     "@badass-team-code/formatted-cases-words": "^1.0.0",
@@ -122,7 +121,8 @@
     "winston-daily-rotate-file": "^5.0.0",
     "winston-elasticsearch": "^0.19.0",
     "winston-transport": "^4.7.1",
-    "yup": "^1.4.0"
+    "yup": "^1.4.0",
+    "yargs": "13.2"
   },
   "resolutions": {
     "wrap-ansi": "7.0.0",
