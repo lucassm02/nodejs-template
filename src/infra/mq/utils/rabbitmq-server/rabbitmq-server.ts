@@ -282,6 +282,8 @@ export class RabbitMqServer {
       if (!message) return;
 
       try {
+        if (this.closing) this.reject(message);
+
         this.messages.add(message);
 
         this.setCustomMessageProperties(message, { rejected: false });
