@@ -1,1 +1,3 @@
+git config --local merge.keepMine.driver true
 yarn lint:staged
+
