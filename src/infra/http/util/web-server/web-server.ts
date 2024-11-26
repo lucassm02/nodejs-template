@@ -47,6 +47,9 @@ type Endpoint = {
 export class WebServer {
   private endpoints: Endpoint[] = [];
   private fastify!: FastifyInstance;
+
+  private isLoadingRoutes = false;
+
   private listenerOptions!: { port: number; callback?: Callback };
   private baseUrl = '';
   private addressInfo!: AddressInfo | null | string;
@@ -179,6 +182,19 @@ export class WebServer {
   }
 
   private async serverBootstrap(port: number, callback?: Function) {
+    const CHECK_INTERVAL = 100;
+    let interval;
+
+    await new Promise((resolve) => {
+      interval = setInterval(() => {
+        if (!this.isLoadingRoutes) {
+          resolve(null);
+        }
+      }, CHECK_INTERVAL);
+    });
+
+    clearInterval(interval);
+
     this.socketIO?.bootstrap();
 
     this.fastify.ready(() => {
@@ -296,6 +312,8 @@ export class WebServer {
       route.use(...middlewares);
     }
 
+    this.isLoadingRoutes = true;
+
     for await (const fileName of files) {
       const fileNameToUpperCase = fileName.toLocaleUpperCase();
 
@@ -325,6 +343,8 @@ export class WebServer {
         }
       }
     }
+
+    this.isLoadingRoutes = false;
   }
 
   private createRoute(params?: { path?: string; baseUrl?: string }): Route {
