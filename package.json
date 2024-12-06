@@ -48,7 +48,6 @@
     "@italog/codegen": "^1.6.0",
     "@types/amqplib": "^0.10.5",
     "@types/cors": "^2.8.17",
-    "@types/form-data": "^2.5.0",
     "@types/jest": "^29.5.12",
     "@types/knex": "^0.16.1",
     "@types/memjs": "^1.3.3",

@@ -73,6 +73,7 @@ export const MONGO = {
 };
 
 export const MEMCACHED = {
+  ENABLED: stringToBoolean(process.env.MEMCACHED_ENABLED) || false,
   USER: process.env.MEMCACHED_USER || '',
   PASSWORD: process.env.MEMCACHED_PASSWORD || '',
   HOST: process.env.MEMCACHED_HOST || '',
