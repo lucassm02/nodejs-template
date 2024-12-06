@@ -2,6 +2,9 @@ export {};
 
 declare global {
   type Nullable<T> = T | null;
+  type AtLeastOne<T> = {
+    [K in keyof T]: Required<Pick<T, K>> & Partial<Omit<T, K>>;
+  }[keyof T];
   type RemoveUnderscoreFirstLetter<S extends string> =
     S extends `${infer FirstLetter}${infer U}`
       ? `${FirstLetter extends '_' ? U : `${FirstLetter}${U}`}`
