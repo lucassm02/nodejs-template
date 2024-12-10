@@ -2,13 +2,15 @@ import path from 'path';
 
 import knexSetup from '@/infra/db/mssql/util/knex';
 import { workerManager } from '@/infra/worker';
-import { CONSUMER, SERVER, WORKER, logger } from '@/util';
+import { CONSUMER, MEMCACHED, SERVER, WORKER, logger } from '@/util';
+import { makeCacheServer } from '@/infra/cache';
 
 import { getArgs } from './cli';
 import {
   checkDatabaseConnection,
   getMongooseConnection,
-  getRabbitmqConnection
+  getRabbitmqConnection,
+  setMemcachedConnection
 } from './util';
 import { webServer } from './web-server';
 
@@ -20,7 +22,8 @@ const ENABLED_SERVICES = {
   SERVER: server ?? SERVER.ENABLED,
   CONSUMER: consumer ?? CONSUMER.ENABLED,
   WORKER: worker ?? WORKER.ENABLED,
-  DASHBOARD: dashboard ?? WORKER.DASHBOARD.ENABLED
+  DASHBOARD: dashboard ?? WORKER.DASHBOARD.ENABLED,
+  MEMCACHED: MEMCACHED.ENABLED
 };
 
 const SHUTDOWN_TIMEOUT = 30_000;
@@ -71,6 +74,12 @@ export async function bootstrap() {
     await import('./agendash');
   }
 
+  if (MEMCACHED.ENABLED) {
+    setMemcachedConnection();
+    makeCacheServer().connect();
+    logger.log({ level: 'info', message: 'Memcached started!' });
+  }
+
   async function gracefulShutdown() {
     try {
       setTimeout(() => {
@@ -107,6 +116,13 @@ export async function bootstrap() {
         },
         'offline'
       );
+
+      makeCacheServer().disconnect();
+      logger.log({
+        level: 'info',
+        message: 'Memcached connection closed'
+      });
+
       process.exit(0);
     } catch (error) {
       logger.log(error);
