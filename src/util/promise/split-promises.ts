@@ -9,6 +9,8 @@ export async function splitPromises<T>(
   callbacks: Callback<T>[],
   maxRunning: number
 ) {
+  if (!callbacks.length) return [];
+
   let resolveFunction: Function;
 
   const event = new EventEmitter();
