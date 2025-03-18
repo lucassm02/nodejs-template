@@ -6,7 +6,11 @@ import { SERVER } from '@/util/constants';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 
-import { apmHttpLoggerMiddleware, dbHttpLoggerMiddleware } from './middlewares';
+import {
+  apmHttpLoggerMiddleware,
+  dbHttpLoggerMiddleware,
+  injectApmTransactionIdOnHeadersMiddleware
+} from './middlewares';
 
 elasticAPM();
 
@@ -29,6 +33,7 @@ webServer.socket({
 webServer.use(helmet);
 webServer.use(apmHttpLoggerMiddleware);
 webServer.use(dbHttpLoggerMiddleware);
+webServer.use(injectApmTransactionIdOnHeadersMiddleware);
 
 webServer.setBaseUrl(SERVER.BASE_URI);
 
