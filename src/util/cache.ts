@@ -10,6 +10,11 @@ export function getCacheKeyByContext(context: CacheContexts, meta?: string) {
     throw new Error('Dot (.) character are not allowed in context or meta');
 
   const applicationName = name.toUpperCase().replaceAll('-', '_');
-  const metaValue = meta ? `.${meta}` : meta;
+
+  if (!meta) {
+    return `${applicationName}.${context}`;
+  }
+
+  const metaValue = meta ? `.${meta}` : '';
   return `${applicationName}.${context}${metaValue}`;
 }

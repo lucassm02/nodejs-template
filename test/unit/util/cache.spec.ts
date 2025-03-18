@@ -6,7 +6,6 @@ import { name } from '../../../package.json';
 describe('getCacheKeyByContext Function', () => {
   const APP_NAME = name;
 
-  // TODO: Javascript interprets undefined like a string if undefined is passed with ``
   it('Should return a valid cache key without meta', () => {
     const context = ALLOWED_CONTEXT[0];
     const result = getCacheKeyByContext(context);
@@ -14,7 +13,7 @@ describe('getCacheKeyByContext Function', () => {
     const expected = `${APP_NAME.toUpperCase().replaceAll(
       '-',
       '_'
-    )}.${context}undefined`;
+    )}.${context}`;
     expect(result).toBe(expected);
   });
 
