@@ -1,6 +1,14 @@
 import 'dotenv/config';
 import { stringToBoolean } from '../text';
 
+const getConsumerArrayFromEnv = (env?: string) => {
+  if (!env) return [];
+
+  return String(env)
+    .split(',')
+    .map((item) => item.trim());
+};
+
 export const ENVIRONMENT = process.env.NODE_ENV || 'development';
 
 export const SERVER = {
@@ -13,11 +21,13 @@ export const SERVER = {
 };
 
 export const CONSUMER = {
-  ENABLED: process.env.CONSUMER_ENABLED === 'true'
+  ENABLED: process.env.CONSUMER_ENABLED === 'true',
+  LIST: getConsumerArrayFromEnv(process.env.CONSUMER_LIST)
 };
 
 export const WORKER = {
   ENABLED: process.env.WORKER_ENABLED === 'true',
+  LIST: getConsumerArrayFromEnv(process.env.WORKER_LIST),
   DASHBOARD: {
     ENABLED: process.env.WORKER_DASHBOARD_ENABLED === 'true',
     PORT: process.env.WORKER_DASHBOARD_PORT || 8080,

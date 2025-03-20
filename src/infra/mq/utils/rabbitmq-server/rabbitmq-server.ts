@@ -7,6 +7,7 @@ import { Job } from '@/job/protocols';
 import { jobAdapter } from '@/main/adapters';
 import {
   amqpLogger,
+  CONSUMER,
   convertCamelCaseKeysToSnakeCase,
   convertSnakeCaseKeysToCamelCase
 } from '@/util';
@@ -29,6 +30,17 @@ export class RabbitMqServer {
   private messages: Set<Message> = new Set();
   private uri!: string;
   private prefetch!: number;
+  private queueLoaderOptions: {
+    allowAll: boolean;
+    denyAll: boolean;
+    deny: string[];
+    allow: string[];
+  } = {
+    allowAll: false,
+    denyAll: false,
+    deny: [],
+    allow: []
+  };
 
   private thereIsAPendingRestart = false;
   private preventChannelRecover = false;
@@ -51,6 +63,25 @@ export class RabbitMqServer {
 
   constructor(private credentials: Credentials | null = null) {
     if (this.credentials) this.setCredentials(this.credentials);
+
+    for (const item of CONSUMER.LIST) {
+      if (item === '*') {
+        this.queueLoaderOptions.allowAll = true;
+        this.queueLoaderOptions.denyAll = false;
+        continue;
+      }
+      if (item === '!*') {
+        this.queueLoaderOptions.allowAll = false;
+        this.queueLoaderOptions.denyAll = true;
+        continue;
+      }
+
+      if (item[0] === '!') {
+        this.queueLoaderOptions.deny.push(item.substring(1));
+      } else {
+        this.queueLoaderOptions.allow.push(item);
+      }
+    }
   }
 
   public static getInstance(): RabbitMqServer {
@@ -352,7 +383,13 @@ export class RabbitMqServer {
     const queue = typeof arg1 === 'object' ? arg1.queue : arg1;
     const enabled = typeof arg1 === 'object' ? !!arg1?.enabled : true;
 
-    if (!enabled) return;
+    const { allow, allowAll, deny, denyAll } = this.queueLoaderOptions;
+
+    if (deny.includes(queue)) return;
+
+    if (denyAll && !allow.includes(queue)) return;
+
+    if (!enabled && !allowAll && !allow.includes(queue)) return;
 
     this.consume(queue, jobAdapter(...callbacks));
   }

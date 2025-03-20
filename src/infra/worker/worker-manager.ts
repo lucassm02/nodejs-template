@@ -6,6 +6,7 @@ import { Job } from '@/job/protocols';
 import { jobAdapter } from '@/main/adapters';
 import {
   MONGO,
+  WORKER,
   apmTransaction,
   elasticAPM,
   logger,
@@ -18,6 +19,17 @@ export class WorkerManager {
   private static instance: WorkerManager;
   private agenda!: Agenda;
   private collectionName = 'agenda';
+  private workerLoaderOptions: {
+    allowAll: boolean;
+    denyAll: boolean;
+    deny: string[];
+    allow: string[];
+  } = {
+    allowAll: false,
+    denyAll: false,
+    deny: [],
+    allow: []
+  };
 
   constructor() {
     elasticAPM();
@@ -43,6 +55,25 @@ export class WorkerManager {
       });
 
     this.agenda.database(mongoUrl, this.collectionName);
+
+    for (const item of WORKER.LIST) {
+      if (item === '*') {
+        this.workerLoaderOptions.allowAll = true;
+        this.workerLoaderOptions.denyAll = false;
+        continue;
+      }
+      if (item === '!*') {
+        this.workerLoaderOptions.allowAll = false;
+        this.workerLoaderOptions.denyAll = true;
+        continue;
+      }
+
+      if (item[0] === '!') {
+        this.workerLoaderOptions.deny.push(item.substring(1));
+      } else {
+        this.workerLoaderOptions.allow.push(item);
+      }
+    }
   }
 
   public static getInstance(): WorkerManager {
@@ -73,7 +104,13 @@ export class WorkerManager {
 
     const enabled = arg1?.enabled ?? true;
 
-    if (!enabled) return;
+    const { allow, allowAll, deny, denyAll } = this.workerLoaderOptions;
+
+    if (deny.includes(name)) return;
+
+    if (denyAll && !allow.includes(name)) return;
+
+    if (!enabled && !allowAll && !allow.includes(name)) return;
 
     const cronText = repeatInterval
       ? `, repeat interval: ${repeatInterval}`
