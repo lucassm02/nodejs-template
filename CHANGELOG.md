@@ -5,16 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.0] - 2025-03-19
+
+### Added
+
+- Adds the `apm-transaction-id` header to the response when APM is active.
+- Adds the `CONSUMER_LIST` and `WORKER_LIST` environment variables to override the hard coded worker and consumer settings
+- Introduces the `AtLeastOne` global type to enhance type utility.
+
+### Fixed
+
+- Prevents the context from being concatenated as undefined.
+- Returns an empty array if no callbacks are provided in promises.
+- Establishes a connection to memcached.
+
+### Changed
+
+- Improves the build process by simplifying the Dockerfile.
+
 ## [2.1.3] - 2024-12-06
 
 ## Added
-- Add AtLeastOne global type 
+
+- Add AtLeastOne global type.
 
 ## [2.1.2] - 2024-11-26
 
 ### Fixed
 
-- Fixing the route loading management, add a mechanism to track loading state of WebServer class
+- Fixing the route loading management, add a mechanism to track loading state of WebServer class.
 
 ## [2.1.1] - 2024-11-19
 
