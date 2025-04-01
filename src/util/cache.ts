@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto';
+
 import { ALLOWED_CONTEXT, CacheContexts } from '@/data/protocols/cache';
 
 import { name } from '../../package.json';
@@ -17,4 +19,8 @@ export function getCacheKeyByContext(context: CacheContexts, meta?: string) {
 
   const metaValue = meta ? `.${meta}` : '';
   return `${applicationName}.${context}${metaValue}`;
+}
+
+export function generateHashKeyToMemJs(value: string): string {
+  return createHash('sha256').update(value).digest('hex');
 }
