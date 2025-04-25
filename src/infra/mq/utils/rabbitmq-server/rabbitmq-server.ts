@@ -50,6 +50,8 @@ export class RabbitMqServer {
     allow: []
   };
 
+  private optionsFromEnv: Record<string, any> | null = null;
+
   private thereIsAPendingRestart = false;
   private closing = false;
 
@@ -84,6 +86,7 @@ export class RabbitMqServer {
     }
 
     this.extractQueueOptions();
+    this.loadOptionsFromEnv();
   }
 
   public static getInstance(): RabbitMqServer {
@@ -108,6 +111,14 @@ export class RabbitMqServer {
     }
   ) {
     logger.log(args);
+  }
+
+  private loadOptionsFromEnv() {
+    if (typeof process.env.RABBIT_OPTIONS !== 'string') return;
+
+    this.optionsFromEnv = this.parseOptionsFromString(
+      process.env.RABBIT_OPTIONS
+    );
   }
 
   public setCredentials(credentials: Credentials) {
@@ -339,12 +350,8 @@ export class RabbitMqServer {
 
       const channel = await this.connection.createChannel();
 
-      const prefetch = options?.prefetch
-        ? options?.prefetch
-        : this.defaultPrefetch;
-
-      if (prefetch) {
-        await channel.prefetch(prefetch);
+      if (options?.prefetch) {
+        await channel.prefetch(options.prefetch);
       }
 
       const consumer = await channel.consume(queue, async (message) => {
@@ -435,11 +442,21 @@ export class RabbitMqServer {
     arg1: string | ConsumerOptions,
     ...callbacks: (Job | Function)[]
   ): void {
-    const arg1IsObject = typeof arg1 === 'object';
-    const queue = arg1IsObject ? arg1.queue : arg1;
-    const enabled = arg1IsObject ? !!arg1?.enabled : true;
-    const prefetch =
-      arg1IsObject && arg1?.prefetch ? arg1.prefetch : this.defaultPrefetch;
+    let queue;
+    let enabled = true;
+    let prefetch;
+
+    if (typeof arg1 === 'object') {
+      queue = arg1.queue;
+      enabled = this.optionsFromEnv?.[queue]?.enabled ?? !!arg1.enabled;
+
+      prefetch =
+        this.optionsFromEnv?.[queue]?.prefetch ??
+        arg1?.prefetch ??
+        this.defaultPrefetch;
+    } else {
+      queue = arg1;
+    }
 
     const { allow, allowAll, deny, denyAll } = this.queueLoaderOptions;
 
@@ -748,5 +765,49 @@ export class RabbitMqServer {
         this.queueLoaderOptions.allow.push(item);
       }
     }
+  }
+
+  private parseOptionsFromString(
+    stringOptions: string
+  ): Record<string, unknown> {
+    const options: Record<string, unknown> = {};
+
+    function parseValue(value: string) {
+      if (value.toLowerCase() === 'true') {
+        return true;
+      }
+      if (value.toLowerCase() === 'false') {
+        return false;
+      }
+
+      const numberValue = Number(value);
+
+      if (!Number.isNaN(numberValue)) {
+        return numberValue;
+      }
+
+      return value;
+    }
+
+    const keyValuePairs = stringOptions.split(',').map((item) => item.trim());
+
+    for (const pair of keyValuePairs) {
+      const [path, value] = pair.split('=').map((item) => item.trim());
+      const pathParts = path.split('.');
+
+      pathParts.reduce((acc: any, part: string, index: number) => {
+        if (index === pathParts.length - 1) {
+          acc[part] = parseValue(value);
+
+          return acc[part];
+        }
+
+        acc[part] = acc[part] || {};
+
+        return acc[part];
+      }, options);
+    }
+
+    return options;
   }
 }
