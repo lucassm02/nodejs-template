@@ -1,9 +1,10 @@
 import path from 'path';
 
 import knexSetup from '@/infra/db/mssql/util/knex';
-import { workerManager } from '@/infra/worker';
-import { CONSUMER, MEMCACHED, SERVER, WORKER, logger } from '@/util';
+import { WorkerManager, workerManager } from '@/infra/worker';
+import { CONSUMER, MEMCACHED, RABBIT, SERVER, WORKER, logger } from '@/util';
 import { makeCacheServer } from '@/infra/cache';
+import { RabbitMqServer } from '@/infra/mq/utils';
 
 import { getArgs } from './cli';
 import {
@@ -41,15 +42,19 @@ export async function bootstrap() {
     process.exit(0);
   }
 
-  const [rabbitServer, mongoose] = await Promise.all([
-    getRabbitmqConnection(),
+  const [mongoose] = await Promise.all([
     getMongooseConnection(),
     checkDatabaseConnection()
   ]);
 
-  const worker = workerManager();
+  let rabbitServer: RabbitMqServer | null = null;
+  let worker: WorkerManager | null = null;
 
-  if (ENABLED_SERVICES.CONSUMER) {
+  if (RABBIT.ENABLED) {
+    rabbitServer = await getRabbitmqConnection();
+  }
+
+  if (rabbitServer && ENABLED_SERVICES.CONSUMER) {
     const consumersFolder = path.resolve(__dirname, 'consumers');
     rabbitServer.consumersDirectory(consumersFolder);
     logger.log({ level: 'info', message: 'Consumer started' });
@@ -65,6 +70,7 @@ export async function bootstrap() {
   }
 
   if (ENABLED_SERVICES.WORKER) {
+    worker = workerManager();
     worker.start();
     const workersFolder = path.resolve(__dirname, 'workers');
     worker.tasksDirectory(workersFolder);
@@ -98,11 +104,14 @@ export async function bootstrap() {
         });
       }
 
-      if (ENABLED_SERVICES.WORKER) {
+      if (worker) {
         await worker.stop();
       }
 
-      await rabbitServer.stop();
+      if (rabbitServer) {
+        await rabbitServer.stop();
+      }
+
       logger.log({
         level: 'info',
         message: 'RabbitMq connection closed'

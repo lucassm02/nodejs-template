@@ -13,6 +13,11 @@ export type ConsumerCallback = (payload: Payload) => Promise<void>;
 export type Consumer = {
   queue: string;
   callback: ConsumerCallback;
+  options?: { prefetch?: number };
 };
 
-export type ConsumerOptions = { queue: string; enabled?: boolean };
+export type ConsumerOptions = {
+  queue: string;
+  enabled?: boolean;
+  prefetch?: number;
+};
