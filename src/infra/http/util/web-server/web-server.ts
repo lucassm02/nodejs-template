@@ -15,6 +15,7 @@ import { SharedState } from '@/presentation/protocols/shared-state';
 import { internalImplementationError, serverError } from '@/presentation/utils';
 import {
   DICTIONARY,
+  apmSpan,
   convertCamelCaseKeysToSnakeCase,
   convertSnakeCaseKeysToCamelCase,
   logger
@@ -395,9 +396,51 @@ export class WebServer {
           this.makeSetStateInRequest(state)
         ];
 
-        const response = await (typeof middleware !== 'function'
-          ? middleware.handle(request, stateHook, next)
-          : middleware(request, reply, next, stateHook));
+        function handler() {
+          const decoratorOptions = {
+            options: {
+              name: '',
+              subType: 'handler'
+            },
+            params: {}
+          };
+
+          if (typeof middleware === 'function') {
+            decoratorOptions.options.name = middleware.name;
+            decoratorOptions.params = { stateHook: 3 };
+            const decorator = apmSpan(decoratorOptions);
+            const proto = {};
+
+            const methodName = middleware.name;
+
+            const desc: PropertyDescriptor = {
+              value: middleware.bind(null),
+              writable: true,
+              configurable: true,
+              enumerable: false
+            };
+
+            const newDesc = decorator(proto, methodName, desc);
+
+            return newDesc.value(request, reply, next, stateHook);
+          }
+
+          decoratorOptions.options.name = middleware.constructor.name;
+          decoratorOptions.params = { stateHook: 1 };
+          const decorator = apmSpan(decoratorOptions);
+
+          const proto = middleware.constructor.prototype;
+          const methodName = 'handle';
+          const desc = Object.getOwnPropertyDescriptor(proto, methodName)!;
+
+          const newDesc = decorator(proto, methodName, desc);
+
+          Object.defineProperty(proto, methodName, newDesc);
+
+          return middleware.handle(request, stateHook, next);
+        }
+
+        const response = await handler();
 
         if (!response) return;
 
