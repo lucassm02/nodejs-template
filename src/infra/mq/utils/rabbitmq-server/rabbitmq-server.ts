@@ -50,6 +50,7 @@ export class RabbitMqServer {
     allow: []
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private optionsFromEnv: Record<string, any> | null = null;
 
   private thereIsAPendingRestart = false;
@@ -795,6 +796,7 @@ export class RabbitMqServer {
       const [path, value] = pair.split('=').map((item) => item.trim());
       const pathParts = path.split('.');
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       pathParts.reduce((acc: any, part: string, index: number) => {
         if (index === pathParts.length - 1) {
           acc[part] = parseValue(value);
