@@ -2,7 +2,15 @@ import path from 'path';
 
 import knexSetup from '@/infra/db/mssql/util/knex';
 import { WorkerManager, workerManager } from '@/infra/worker';
-import { CONSUMER, MEMCACHED, RABBIT, SERVER, WORKER, logger } from '@/util';
+import {
+  CONSUMER,
+  MEMCACHED,
+  RABBIT,
+  SERVER,
+  WORKER,
+  elasticAPM,
+  logger
+} from '@/util';
 import { makeCacheServer } from '@/infra/cache';
 import { RabbitMqServer } from '@/infra/mq/utils';
 
@@ -30,6 +38,8 @@ const ENABLED_SERVICES = {
 const SHUTDOWN_TIMEOUT = 30_000;
 
 export async function bootstrap() {
+  elasticAPM();
+
   if (Object.values(ENABLED_SERVICES).every((item) => item === false)) {
     logger.log(
       {
