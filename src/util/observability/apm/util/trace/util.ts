@@ -1,9 +1,9 @@
 // TODO: We should seek better alternatives in the future, but for now, it's not a problem.
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { traceLabels, TransactionOptions } from './trace-protocols';
+import { TraceLabels, TransactionOptions } from './types';
 
 export const searchLabels = (
-  labels: traceLabels | undefined,
+  labels: TraceLabels | undefined,
   args: any | undefined
 ): Object =>
   Object.entries(args ?? {}).reduce((acc, [key, value]) => {
@@ -55,7 +55,8 @@ export const getType = (subType: string): string | void => {
         'graphql',
         'mailer',
         'resource',
-        'handler'
+        'handler',
+        'function'
       ]
     },
     {
