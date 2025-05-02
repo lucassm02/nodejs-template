@@ -1,7 +1,7 @@
 import { Logger } from '@/data/protocols/utils';
 import { TroubleExample } from '@/domain/usecases';
 import { Job } from '@/job/protocols';
-import { reprocessing } from '@/job/utils';
+import { reprocessing } from '@/job/util';
 
 export class TroubleExampleJob implements Job {
   constructor(
