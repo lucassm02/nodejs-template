@@ -1,4 +1,4 @@
-import { Logger } from '@/data/protocols/utils';
+import { Logger } from '@/data/protocols/util';
 import { ErrorHandler } from '@/domain/usecases';
 import { ValidateAuthenticationKey } from '@/domain/usecases/authentication-key/validate-authentication-key';
 import { Middleware } from '@/presentation/protocols/middleware';

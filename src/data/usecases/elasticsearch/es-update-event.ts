@@ -3,7 +3,7 @@ import {
   GetDocumentByIdService,
   UpdateDocumentService
 } from '@/data/protocols/elasticsearch';
-import { FormatDate, Merge } from '@/data/protocols/utils';
+import { FormatDate, Merge } from '@/data/protocols/util';
 import { UpdateEvent } from '@/domain/usecases/event';
 
 export class EsUpdateEvent implements UpdateEvent {

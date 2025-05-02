@@ -1,4 +1,4 @@
-import { CommitAll } from '@/data/protocols/utils/transaction';
+import { CommitAll } from '@/data/protocols/util/transaction';
 import { Controller } from '@/presentation/protocols';
 import { created } from '@/presentation/utils';
 import { DICTIONARY, template } from '@/util';

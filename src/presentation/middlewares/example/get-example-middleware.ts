@@ -1,4 +1,4 @@
-import { Logger } from '@/data/protocols/utils';
+import { Logger } from '@/data/protocols/util';
 import { ErrorHandler, GetExample } from '@/domain/usecases';
 import { ExtractValues } from '@/plugin';
 import { Middleware } from '@/presentation/protocols';
