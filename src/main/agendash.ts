@@ -28,7 +28,7 @@ fastify.listen({ port: +PORT }, (error) => {
   logger.log(
     {
       level: 'info',
-      message: `Agendash started http://localhost:${PORT}${BASE_URI}/`
+      message: `Agendash started at: http://127.0.0.1:${PORT}${BASE_URI}/`
     },
     'offline'
   );

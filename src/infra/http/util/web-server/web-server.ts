@@ -246,17 +246,8 @@ export class WebServer {
       }
     }
 
-    return new Promise((resolve, reject) => {
-      this.fastify.server.close((error) => {
-        if (error) {
-          reject(error);
-          return;
-        }
-
-        logger.log({ level: 'info', message: 'Shutting down server' });
-        resolve(null);
-      });
-    });
+    await this.fastify.close();
+    logger.log({ level: 'info', message: 'Shutting down server' });
   }
 
   public setBaseUrl(url: string) {

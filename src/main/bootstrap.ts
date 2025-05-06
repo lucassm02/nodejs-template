@@ -1,18 +1,21 @@
 import path from 'path';
+import { Mongoose } from 'mongoose';
 
+import { CacheServer } from '@/infra/cache/cache-server';
 import knexSetup from '@/infra/db/mssql/util/knex';
+import { RabbitMqServer } from '@/infra/mq/utils';
 import { WorkerManager, workerManager } from '@/infra/worker';
 import {
   CONSUMER,
   MEMCACHED,
+  MONGO,
   RABBIT,
   SERVER,
   WORKER,
   elasticAPM,
-  logger
+  logger,
+  splitPromises
 } from '@/util';
-import { makeCacheServer } from '@/infra/cache';
-import { RabbitMqServer } from '@/infra/mq/utils';
 
 import { getArgs } from './cli';
 import {
@@ -40,6 +43,13 @@ const SHUTDOWN_TIMEOUT = 30_000;
 export async function bootstrap() {
   elasticAPM();
 
+  const promises: Array<() => Promise<unknown>> = [];
+
+  let rabbitServer: RabbitMqServer | null = null;
+  let worker: WorkerManager | null = null;
+  let cacheServer: CacheServer | null = null;
+  let mongoose: Mongoose | null = null;
+
   if (Object.values(ENABLED_SERVICES).every((item) => item === false)) {
     logger.log(
       {
@@ -52,49 +62,66 @@ export async function bootstrap() {
     process.exit(0);
   }
 
-  const [mongoose] = await Promise.all([
-    getMongooseConnection(),
-    checkDatabaseConnection()
-  ]);
+  async function connectToMongoose() {
+    mongoose = await getMongooseConnection();
 
-  let rabbitServer: RabbitMqServer | null = null;
-  let worker: WorkerManager | null = null;
-
-  if (RABBIT.ENABLED) {
-    rabbitServer = await getRabbitmqConnection();
+    logger.log({
+      level: 'info',
+      message: `Mongoose connection opened!`
+    });
   }
 
-  if (rabbitServer && ENABLED_SERVICES.CONSUMER) {
+  async function connectToRabbit() {
+    rabbitServer = await getRabbitmqConnection();
+
+    if (!ENABLED_SERVICES.CONSUMER) return;
+
     const consumersFolder = path.resolve(__dirname, 'consumers');
     rabbitServer.consumersDirectory(consumersFolder);
     logger.log({ level: 'info', message: 'Consumer started' });
   }
 
-  if (ENABLED_SERVICES.SERVER) {
+  function connectToMemcached() {
+    cacheServer = setMemcachedConnection();
+    cacheServer.connect();
+    logger.log({ level: 'info', message: 'Memcached started!' });
+  }
+
+  async function startServer() {
     await webServer.listen(SERVER.PORT);
 
     logger.log({
       level: 'info',
-      message: `Server is running on port: ${SERVER.PORT}`
+      message: `Server is running at: ${SERVER.PORT}`
+    });
+
+    logger.log({
+      level: 'info',
+      message: `Base URL: http://127.0.0.1:${SERVER.PORT}${SERVER.BASE_URI}`
     });
   }
 
-  if (ENABLED_SERVICES.WORKER) {
+  async function startAgendaDashboard() {
+    await import('./agendash');
+  }
+
+  async function startWorker() {
     worker = workerManager();
-    worker.start();
+    await worker.start();
     const workersFolder = path.resolve(__dirname, 'workers');
     worker.tasksDirectory(workersFolder);
   }
 
-  if (ENABLED_SERVICES.DASHBOARD) {
-    await import('./agendash');
-  }
+  promises.push(() => checkDatabaseConnection());
 
-  if (MEMCACHED.ENABLED) {
-    setMemcachedConnection();
-    makeCacheServer().connect();
-    logger.log({ level: 'info', message: 'Memcached started!' });
-  }
+  if (MONGO.ENABLED) promises.push(connectToMongoose);
+  if (RABBIT.ENABLED) promises.push(connectToRabbit);
+  if (ENABLED_SERVICES.SERVER) promises.push(startServer);
+  if (ENABLED_SERVICES.WORKER) promises.push(startWorker);
+  if (ENABLED_SERVICES.DASHBOARD) promises.push(startAgendaDashboard);
+  if (MEMCACHED.ENABLED) connectToMemcached();
+
+  await splitPromises(promises, 2);
 
   async function gracefulShutdown() {
     try {
@@ -127,20 +154,25 @@ export async function bootstrap() {
         message: 'RabbitMq connection closed'
       });
 
-      await mongoose.disconnect();
-      logger.log(
-        {
-          level: 'info',
-          message: 'Mongoose connection closed'
-        },
-        'offline'
-      );
+      if (mongoose) {
+        await mongoose.disconnect();
 
-      makeCacheServer().disconnect();
-      logger.log({
-        level: 'info',
-        message: 'Memcached connection closed'
-      });
+        logger.log(
+          {
+            level: 'info',
+            message: 'Mongoose connection closed'
+          },
+          'offline'
+        );
+      }
+
+      if (cacheServer) {
+        cacheServer.disconnect();
+        logger.log({
+          level: 'info',
+          message: 'Memcached connection closed'
+        });
+      }
 
       process.exit(0);
     } catch (error) {

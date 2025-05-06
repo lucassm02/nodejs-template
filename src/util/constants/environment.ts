@@ -62,7 +62,7 @@ export const DB = {
 };
 
 export const RABBIT = {
-  ENABLED: stringToBoolean(process.env.RABBIT_ENABLED) || false,
+  ENABLED: stringToBoolean(process.env.RABBIT_ENABLED) ?? false,
   USER: process.env.RABBIT_USER || '',
   PASSWORD: process.env.RABBIT_PASSWORD || '',
   HOST: process.env.RABBIT_HOST || '',
@@ -78,6 +78,7 @@ export const RABBIT = {
 };
 
 export const MONGO = {
+  ENABLED: stringToBoolean(process.env.MONGO_ENABLED) ?? false,
   USER: process.env.MONGO_USER || '',
   PASSWORD: process.env.MONGO_PASSWORD || '',
   HOST: process.env.MONGO_HOST || '',
@@ -90,7 +91,7 @@ export const MONGO = {
 };
 
 export const MEMCACHED = {
-  ENABLED: stringToBoolean(process.env.MEMCACHED_ENABLED) || false,
+  ENABLED: stringToBoolean(process.env.MEMCACHED_ENABLED) ?? false,
   USER: process.env.MEMCACHED_USER || '',
   PASSWORD: process.env.MEMCACHED_PASSWORD || '',
   HOST: process.env.MEMCACHED_HOST || '',
@@ -99,21 +100,21 @@ export const MEMCACHED = {
 };
 
 export const APM = {
-  ENABLED: stringToBoolean(process.env.APM_ENABLED) || false,
+  ENABLED: stringToBoolean(process.env.APM_ENABLED) ?? false,
   SECRET_TOKEN: process.env.APM_SECRET_TOKEN || '',
   SERVER_URL: process.env.APM_SERVER_URL || '',
   ENVIRONMENT: process.env.APM_ENVIRONMENT || ''
 };
 
 export const ELASTICSEARCH = {
-  ENABLED: stringToBoolean(process.env.ELASTICSEARCH_ENABLED) || false,
+  ENABLED: stringToBoolean(process.env.ELASTICSEARCH_ENABLED) ?? false,
   USERNAME: process.env.ELASTICSEARCH_USERNAME || '',
   PASSWORD: process.env.ELASTICSEARCH_PASSWORD || '',
   SERVER_URL: process.env.ELASTICSEARCH_SERVER_URL || ''
 };
 
 export const REPROCESSING = {
-  ENABLED: stringToBoolean(process.env.REPROCESSING_ENABLED) || false,
+  ENABLED: stringToBoolean(process.env.REPROCESSING_ENABLED) ?? false,
   MAX_TRIES: +(() => process.env.REPROCESSING_MAX_TRIES || 1)(),
   DELAYS: process.env.REPROCESSING_DELAYS?.split(',').map(Number) || [],
   MODE: process.env.REPROCESSING_MODE || 'STOPPED_MIDDLEWARE'
