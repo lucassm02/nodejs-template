@@ -36,7 +36,7 @@ describe('flowManager', () => {
       }
     });
 
-    await flow(webServer().adapter(flowManager(...condition)))();
+    await flow(webServer().adapter(flowManager(condition)))();
 
     expect(statusMock).toHaveBeenCalledTimes(1);
     expect(statusMock).toHaveBeenCalledWith(200);
@@ -60,7 +60,7 @@ describe('flowManager', () => {
       }
     });
 
-    await flow(webServer().adapter(flowManager(...condition)))();
+    await flow(webServer().adapter(flowManager(condition)))();
 
     expect(statusMock).toHaveBeenCalledTimes(1);
     expect(statusMock).toHaveBeenCalledWith(200);

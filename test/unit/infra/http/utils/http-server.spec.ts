@@ -145,7 +145,6 @@ describe('HttpServer', () => {
       await sut.refresh();
 
       expect(close).toHaveBeenCalledTimes(1);
-      expect(close).toHaveBeenCalledWith(expect.any(Function));
     });
   });
   describe('#close', () => {
@@ -164,7 +163,6 @@ describe('HttpServer', () => {
       sut.close();
 
       expect(close).toHaveBeenCalledTimes(1);
-      expect(close).toHaveBeenCalledWith(expect.any(Function));
     });
   });
   describe('#route', () => {

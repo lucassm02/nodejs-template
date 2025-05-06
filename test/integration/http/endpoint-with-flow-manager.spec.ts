@@ -26,7 +26,7 @@ describe('Endpoint With Flow Manager', () => {
 
   beforeAll(async () => {
     const server = webServer();
-    server.router().get('/test/:id', flowManager(...condition), () => {
+    server.router().get('/test/:id', flowManager(condition), () => {
       notBeCalledMock();
     });
     await server.ready();
