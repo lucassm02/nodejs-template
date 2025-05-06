@@ -1,3 +1,7 @@
 export interface PublishInQueueService {
-  publishInQueue(queue: string, message: object, headers?: object): void;
+  publishInQueue(
+    queue: string,
+    message: object,
+    headers?: object
+  ): Promise<boolean>;
 }

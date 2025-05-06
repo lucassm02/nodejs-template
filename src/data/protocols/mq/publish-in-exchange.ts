@@ -4,5 +4,5 @@ export interface PublishInExchangeService {
     message: object,
     routingKey: string,
     headers?: object
-  ): Promise<void>;
+  ): Promise<boolean>;
 }

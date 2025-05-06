@@ -1,7 +1,6 @@
 import path from 'path';
 
 import { webServer as webServerFactory } from '@/infra/http/util/web-server';
-import { elasticAPM } from '@/util';
 import { SERVER } from '@/util/constants';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
@@ -11,8 +10,6 @@ import {
   dbHttpLoggerMiddleware,
   injectApmTransactionIdOnHeadersMiddleware
 } from './middlewares';
-
-elasticAPM();
 
 const webServer = webServerFactory();
 

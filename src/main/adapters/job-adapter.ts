@@ -1,4 +1,5 @@
 import { Job } from '@/job/protocols';
+import { apmSpan } from '@/util';
 
 import makeFlow from './flow-adapter';
 
@@ -20,7 +21,43 @@ export const jobAdapter = (...jobs: (Job | Function)[]) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const stateHook = <[any, any]>[state, setState];
 
-      if (typeof job === 'function') return job(payload, stateHook, next);
+      const decoratorOptions = {
+        options: {
+          name: '',
+          subType: 'handler'
+        },
+        params: { payload: 0, stateHook: 1 }
+      };
+
+      if (typeof job === 'function') {
+        decoratorOptions.options.name = job.name;
+        const decorator = apmSpan(decoratorOptions);
+        const proto = {};
+
+        const methodName = job.name;
+
+        const desc: PropertyDescriptor = {
+          value: job.bind(null),
+          writable: true,
+          configurable: true,
+          enumerable: false
+        };
+
+        const newDesc = decorator(proto, methodName, desc);
+
+        return newDesc.value(payload, stateHook, next);
+      }
+
+      decoratorOptions.options.name = job.constructor.name;
+      const decorator = apmSpan(decoratorOptions);
+
+      const proto = job.constructor.prototype;
+      const methodName = 'handle';
+      const desc = Object.getOwnPropertyDescriptor(proto, methodName)!;
+
+      const newDesc = decorator(proto, methodName, desc);
+
+      Object.defineProperty(proto, methodName, newDesc);
 
       return job.handle(payload, stateHook, next);
     };

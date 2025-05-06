@@ -21,6 +21,10 @@ export class CacheServer {
   private connectionString!: string;
   private connected: boolean = false;
 
+  private CONNECTION_TIMEOUT = 10000;
+  private CONNECTION_RETIES = 5;
+  private RETIES_TIMEOUT = 2;
+
   public Error = {
     CONNECTION_ERROR: 'Server not connected!',
     CREDENTIALS_NOT_DEFINED: 'Server credentials not defined!',
@@ -77,12 +81,15 @@ export class CacheServer {
     if (!this.connectionString)
       throw new Error(this.Error.CREDENTIALS_NOT_DEFINED);
     if (this.connected) return;
-    this.server = memjs.Client.create(this.connectionString);
+    this.server = memjs.Client.create(this.connectionString, {
+      timeout: this.CONNECTION_TIMEOUT,
+      retries: this.CONNECTION_RETIES,
+      retry_delay: this.RETIES_TIMEOUT
+    });
     this.connected = true;
   }
 
   public disconnect() {
-    if (!this.connected) return;
     this.server.close();
     this.connected = false;
   }

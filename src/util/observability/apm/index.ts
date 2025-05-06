@@ -1,4 +1,4 @@
 export * from './factory';
-export * from './utils/get-apm-transaction-id';
-export * from './utils/trace/span-decorator';
-export * from './utils/trace/transaction-decorator';
+export * from './util/get-apm-transaction-id';
+export * from './util/trace/span-decorator';
+export * from './util/trace/transaction-decorator';

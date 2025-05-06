@@ -1,4 +1,4 @@
-import { Logger } from '@/data/protocols/utils';
+import { Logger } from '@/data/protocols/util';
 import { ErrorHandler, GetCacheValue } from '@/domain/usecases';
 import { Job } from '@/job/protocols';
 import { ExtractValues } from '@/plugin';

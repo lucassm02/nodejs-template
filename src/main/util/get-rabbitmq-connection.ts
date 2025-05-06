@@ -11,6 +11,5 @@ export function getRabbitmqConnection() {
       host: RABBIT.HOST,
       port: RABBIT.PORT
     })
-    .setPrefetch(RABBIT.PREFETCH)
     .start();
 }

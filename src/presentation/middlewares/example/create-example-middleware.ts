@@ -1,6 +1,6 @@
 import { InferType } from 'yup';
 
-import { Logger } from '@/data/protocols/utils';
+import { Logger } from '@/data/protocols/util';
 import { CreateExample, DataValidation, ErrorHandler } from '@/domain/usecases';
 import { ExtractValues } from '@/plugin';
 import { Middleware } from '@/presentation/protocols';

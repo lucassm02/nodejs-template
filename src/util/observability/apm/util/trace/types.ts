@@ -2,17 +2,18 @@ interface TraceObject {
   [label: string]: string | number;
 }
 
-export type traceLabels = number[] | string[] | TraceObject;
+export type TraceLabels = number[] | string[] | TraceObject;
 
-type appSubtype =
+type AppSubtype =
   | 'inferred'
   | 'controller'
   | 'graphql'
   | 'mailer'
   | 'resource'
+  | 'worker'
   | 'handler'
-  | 'worker';
-type dbSubtype =
+  | 'function';
+type DbSubtype =
   | 'cassandra'
   | 'cosmos-bd'
   | 'db2'
@@ -35,7 +36,7 @@ type dbSubtype =
   | 'sqlite3'
   | 'sql-server'
   | 'unknown';
-type externalSubtype = 'dubbo' | 'grpc' | 'http';
+type ExternalSubtype = 'dubbo' | 'grpc' | 'http';
 type jsonSubtype = 'parse' | 'generate';
 type messagingSubtype =
   | 'azure-queue'
@@ -45,8 +46,8 @@ type messagingSubtype =
   | 'rabbitmq'
   | 'sns'
   | 'sqs';
-type storageSubtype = 'azure-blob' | 'azure-file' | 'azure-table' | 's3';
-type websocketSubtype = 'send';
+type StorageSubtype = 'azure-blob' | 'azure-file' | 'azure-table' | 's3';
+type WebsocketSubtype = 'send';
 
 type LiteralUnion<T extends U, U = string> = T | (U & Object);
 
@@ -54,13 +55,13 @@ export interface SpanOptions {
   name?: string;
   nameByParameter?: string | number;
   subType?: LiteralUnion<
-    | appSubtype
-    | dbSubtype
-    | externalSubtype
+    | AppSubtype
+    | DbSubtype
+    | ExternalSubtype
     | jsonSubtype
     | messagingSubtype
-    | storageSubtype
-    | websocketSubtype
+    | StorageSubtype
+    | WebsocketSubtype
   >;
 }
 
@@ -68,12 +69,12 @@ export interface TransactionOptions {
   name?: string;
   nameByParameter?: string | number;
   type?: LiteralUnion<
-    | appSubtype
-    | dbSubtype
-    | externalSubtype
+    | AppSubtype
+    | DbSubtype
+    | ExternalSubtype
     | jsonSubtype
     | messagingSubtype
-    | storageSubtype
-    | websocketSubtype
+    | StorageSubtype
+    | WebsocketSubtype
   >;
 }

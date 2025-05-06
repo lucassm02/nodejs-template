@@ -1,6 +1,6 @@
 import { GetAPMTransactionIds } from '@/data/protocols/apm';
 import { CreateDocumentService } from '@/data/protocols/elasticsearch';
-import { FormatDate } from '@/data/protocols/utils';
+import { FormatDate } from '@/data/protocols/util';
 import { CreateEvent } from '@/domain/usecases/event';
 
 export class EsCreateEvent implements CreateEvent {

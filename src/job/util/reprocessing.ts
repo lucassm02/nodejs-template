@@ -3,7 +3,7 @@
 import { MqSendReprocessing } from '@/data/usecases/mq';
 import { ReprocessingRepository } from '@/infra/db/mongodb/reprocessing';
 import { rabbitMqServer } from '@/infra/mq/utils';
-import { overrideState } from '@/job/utils';
+import { overrideState } from '@/job/util';
 import { REPROCESSING } from '@/util';
 
 const mqServer = rabbitMqServer();
@@ -20,11 +20,11 @@ const skipMiddleware = (
   );
 };
 
-const normalizePayload = (
+export const normalizeReprocessingPayload = (
   payload: Record<string, any>,
   [state, setState]: [Record<string, any>, Function]
 ) => {
-  if (!payload.body.reprocessing) return;
+  if (!payload.body?.reprocessing) return;
 
   if (payload.body.reprocessing && !state.reprocessing)
     setState({ reprocessing: payload.body.reprocessing });
@@ -75,7 +75,7 @@ export function reprocessing(options: Options = {}) {
       );
 
       try {
-        normalizePayload(payload, [state, setState]);
+        normalizeReprocessingPayload(payload, [state, setState]);
 
         if (
           skipMiddleware(state.reprocessing, target.constructor.name) &&

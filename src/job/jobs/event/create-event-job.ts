@@ -1,4 +1,4 @@
-import { Logger } from '@/data/protocols/utils';
+import { Logger } from '@/data/protocols/util';
 import { CreateEvent, ErrorHandler } from '@/domain/usecases';
 import { Job } from '@/job/protocols';
 import { ELASTICSEARCH } from '@/util';

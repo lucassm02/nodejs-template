@@ -1,4 +1,4 @@
-import { Logger } from '@/data/protocols/utils';
+import { Logger } from '@/data/protocols/util';
 import { ErrorHandler } from '@/domain/usecases';
 import { MqPublishInExchangeMiddleware } from '@/presentation/middlewares';
 import { ModelMock } from '@/test/unit/domain/models';
