@@ -15,7 +15,7 @@ export function makeDecorator<Logger extends Function>(
 ) {
   return function ({ options, input, output }: LoggerParams) {
     return function (
-      _target: Object,
+      _target: object,
       _key: string | symbol,
       descriptor: PropertyDescriptor
     ) {

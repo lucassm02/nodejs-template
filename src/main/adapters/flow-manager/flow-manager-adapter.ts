@@ -57,7 +57,7 @@ export default function flowManager(
 
       if (typeof option.when === 'string') {
         const valueFound =
-          getIn(args, option.when) ?? getIn(<Object>args[0], option.when);
+          getIn(args, option.when) ?? getIn(<object>args[0], option.when);
         if (typeof valueFound !== 'boolean' && !valueFound) continue;
         return option.handler(...args);
       }
@@ -68,7 +68,7 @@ export default function flowManager(
         );
 
         const valuesFound = keyPaths.map((value) => {
-          return getIn(args, value) ?? getIn(<Object>args[0], value);
+          return getIn(args, value) ?? getIn(<object>args[0], value);
         });
 
         const result = valuesFound.map(
@@ -88,7 +88,7 @@ export default function flowManager(
         const [targetKey, expectedValue] = entries;
 
         const valueFound =
-          getIn(args, targetKey) ?? getIn(<Object>args[0], targetKey);
+          getIn(args, targetKey) ?? getIn(<object>args[0], targetKey);
 
         if (typeof valueFound !== 'boolean' && !valueFound) return false;
 

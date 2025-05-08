@@ -13,7 +13,7 @@ export function makeStateDependencies<SharedState>({
   type Dependencies = (keyof SharedState)[];
   return function (dependencies: Dependencies) {
     return function (
-      target: Object,
+      target: object,
       key: string,
       descriptor: PropertyDescriptor
     ) {

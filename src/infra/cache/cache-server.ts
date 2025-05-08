@@ -134,7 +134,7 @@ export class CacheServer {
       try {
         const string = response.value.toString();
         return JSON.parse(string);
-      } catch (error) {
+      } catch (_error) {
         throw new Error(this.Error.UNABLE_TO_CONVERT_VALUE_TO_JSON);
       }
     }

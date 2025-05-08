@@ -23,7 +23,7 @@ type LogParams = {
     | 'verbose'
     | 'debug'
     | 'silly'
-    | String;
+    | string;
   message: string;
   payload?: object;
   meta?: object;
@@ -41,7 +41,7 @@ const defaultTimestampFormat = timestamp({ format: 'YYYY-MM-DD HH:mm:ss' });
 export class CustomLogger {
   private static instance: CustomLogger;
 
-  private defaultLogger!: Logger;
+  private logger!: Logger;
   private offlineLogger!: Logger;
 
   constructor() {
@@ -61,7 +61,7 @@ export class CustomLogger {
       format: combine(defaultTimestampFormat, cli, colorize({ all: true }))
     });
 
-    this.defaultLogger = createLogger({
+    this.logger = createLogger({
       transports: [fileTransport, consoleTransport]
     });
 
@@ -97,11 +97,11 @@ export class CustomLogger {
         }
       });
 
-      this.defaultLogger.add(elasticsearchTransport);
+      this.logger.add(elasticsearchTransport);
     }
 
     if (LOGGER.DB.ENABLED) {
-      this.defaultLogger.add(mongoDbTransport);
+      this.logger.add(mongoDbTransport);
     }
   }
 
@@ -118,10 +118,10 @@ export class CustomLogger {
   public log(data: LogParams | Error, type: LoggerType = 'default'): void {
     if (!LOGGER.ENABLED) return;
 
-    let logger = this.defaultLogger;
+    let logger = this.offlineLogger;
 
-    if (MONGO.ENABLED && type === 'offline') {
-      logger = this.offlineLogger;
+    if (MONGO.ENABLED && type !== 'offline') {
+      logger = this.logger;
     }
 
     this.handler(data, logger);

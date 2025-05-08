@@ -49,7 +49,7 @@ type messagingSubtype =
 type StorageSubtype = 'azure-blob' | 'azure-file' | 'azure-table' | 's3';
 type WebsocketSubtype = 'send';
 
-type LiteralUnion<T extends U, U = string> = T | (U & Object);
+type LiteralUnion<T extends U, U = string> = T | (U & object);
 
 export interface SpanOptions {
   name?: string;
@@ -62,6 +62,7 @@ export interface SpanOptions {
     | messagingSubtype
     | StorageSubtype
     | WebsocketSubtype
+    | string
   >;
 }
 

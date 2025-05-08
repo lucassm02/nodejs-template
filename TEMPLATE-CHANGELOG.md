@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.0] - 2025-05-08
+
+### Added
+
+- Add the `CacheRequestAdapter` wrapper of cache functionalities inside request adapter structure and interfaces.
+
+### Changed
+
+- Update dependencies.
+- Update Node.js version in Dockerfile.
+- Add type corrections to the RabbitMQ server.
+
+### Fixed
+
+- Correct logic to enable offline logger.
+
 ## [2.3.0] - 2025-05-06
 
 ### Added

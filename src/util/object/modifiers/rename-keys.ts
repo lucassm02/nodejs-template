@@ -1,4 +1,4 @@
-export const renameKeys = <T extends Object>(
+export const renameKeys = <T extends object>(
   object: T,
   manifest: { [P in keyof T]?: string }
 ) => {

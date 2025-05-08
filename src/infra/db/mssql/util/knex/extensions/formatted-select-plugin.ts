@@ -2,10 +2,10 @@ import k from 'knex';
 
 const DELIMITER = '.#@KNEX@#.';
 
-function getValuesPath(object: Object) {
+function getValuesPath(object: object) {
   const paths: { path: string; value: unknown }[] = [];
 
-  function getPath(object: Object, previousPath?: string) {
+  function getPath(object: object, previousPath?: string) {
     return Object.entries(object).forEach(([key, value]) => {
       const path = previousPath ? [previousPath, key].join(DELIMITER) : key;
 
@@ -23,8 +23,8 @@ function getValuesPath(object: Object) {
   return paths;
 }
 
-function transformResponse(response: Object[] | Object) {
-  function parseValue(item: Object) {
+function transformResponse(response: object[] | object) {
+  function parseValue(item: object) {
     if (typeof item !== 'object') return item;
     const object: Record<string, unknown> = {};
     const entries = Object.entries(item);
@@ -60,8 +60,8 @@ function transformResponse(response: Object[] | Object) {
   return parseValue(response);
 }
 
-function resolveWrapper(resolve: (data: Object | Object[]) => void) {
-  return (data: Object | Object[]) => {
+function resolveWrapper(resolve: (data: object | object[]) => void) {
+  return (data: object | object[]) => {
     if (typeof data !== 'object') {
       resolve(data);
       return;
@@ -88,7 +88,7 @@ function resolveWrapper(resolve: (data: Object | Object[]) => void) {
 }
 
 export function formattedSelectPlugin(knex: typeof k) {
-  knex.QueryBuilder.extend('formattedSelect', function (schema: Object) {
+  knex.QueryBuilder.extend('formattedSelect', function (schema: object) {
     const paths = getValuesPath(schema);
     const entries = paths.map(({ path, value }) => [path, value]);
     const selectObject = Object.fromEntries(entries);

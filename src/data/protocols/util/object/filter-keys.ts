@@ -3,7 +3,7 @@ type Options<T> = {
   deniedKeys?: (keyof T)[];
 };
 
-export type FilterKeys = <T extends Object>(
+export type FilterKeys = <T extends object>(
   object: T,
   options: Options<T>
 ) => T;

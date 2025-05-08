@@ -91,11 +91,11 @@ function saveToCache(sql: Knex.Sql, result: unknown, service: Services) {
 }
 
 function resolveWrapperToSaveInCache(
-  resolve: (data: Object | Object[]) => void,
+  resolve: (data: object | object[]) => void,
   sql: Knex.Sql,
   service: Services
 ) {
-  return (data: Object | Object[]) => {
+  return (data: object | object[]) => {
     try {
       if (typeof data !== 'object') {
         resolve(data);

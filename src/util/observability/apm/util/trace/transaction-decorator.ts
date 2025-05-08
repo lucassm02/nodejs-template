@@ -12,7 +12,7 @@ type TransactionParams = {
 
 export function apmTransaction({ options, params, result }: TransactionParams) {
   return function (
-    _target: Object,
+    _target: object,
     _key: string | symbol,
     descriptor: PropertyDescriptor
   ) {

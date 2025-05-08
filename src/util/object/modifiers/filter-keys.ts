@@ -5,14 +5,14 @@ type Options<T> = {
   deniedKeys?: (keyof T)[];
 };
 
-export const filterKeys = <T extends Object>(
+export const filterKeys = <T extends object>(
   object: T,
   options: Options<T>
 ) => {
   if (typeof object !== 'object') return object;
 
   function filter(
-    object: Object,
+    object: object,
     action: 'ALLOW' | 'DENY',
     values: string[] = []
   ) {
