@@ -1,7 +1,7 @@
 import { readdirSync } from 'fs';
 import { resolve } from 'path';
 import { EventEmitter } from 'stream';
-import { Channel, Connection, Message, connect } from 'amqplib';
+import { Channel, ChannelModel, Message, connect } from 'amqplib';
 import { randomInt, randomUUID } from 'crypto';
 
 import { Job } from '@/job/protocols';
@@ -26,7 +26,7 @@ import {
 } from './types';
 
 export class RabbitMqServer {
-  private connection: Connection | null = null;
+  private connection: ChannelModel | null = null;
   private channelPoolLength = 3;
   private channelPool: Map<string, Channel> = new Map();
 
@@ -115,7 +115,11 @@ export class RabbitMqServer {
   }
 
   private loadOptionsFromEnv() {
-    if (typeof process.env.RABBIT_OPTIONS !== 'string') return;
+    if (
+      typeof process.env.RABBIT_OPTIONS !== 'string' ||
+      process.env.RABBIT_OPTIONS === ''
+    )
+      return;
 
     this.optionsFromEnv = this.parseOptionsFromString(
       process.env.RABBIT_OPTIONS
