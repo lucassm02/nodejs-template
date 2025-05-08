@@ -1,6 +1,6 @@
 import { recursiveDataConvertFilterLayer } from '../formatters/recursive-data-converter';
 
-const formatter = <T extends Object>(object: T): T => {
+const formatter = <T extends object>(object: T): T => {
   const entries = Object.entries(object).filter(
     ([, value]) => value !== undefined
   );

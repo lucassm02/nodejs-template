@@ -5,7 +5,7 @@ import { TraceLabels, TransactionOptions } from './types';
 export const searchLabels = (
   labels: TraceLabels | undefined,
   args: any | undefined
-): Object => {
+): object => {
   const entries = Object.entries(labels || {});
 
   const areTheyAllIndices = entries.every(

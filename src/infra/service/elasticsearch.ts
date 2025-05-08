@@ -61,7 +61,7 @@ export class Elasticsearch
       });
 
       return convertSnakeCaseKeysToCamelCase(response._source);
-    } catch (error) {
+    } catch (_error) {
       return undefined;
     }
   }

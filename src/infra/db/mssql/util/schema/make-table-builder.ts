@@ -94,7 +94,7 @@ export const makeTableBuilder =
     function getColumnsObject(keyCase: 'SNAKE'): {
       [P in SnakeCase<Columns[number]>]: string;
     };
-    function getColumnsObject(keyCase: KeyCase): Object {
+    function getColumnsObject(keyCase: KeyCase): object {
       return makeColumns(
         <string[]>(<unknown>options.columns),
         table,

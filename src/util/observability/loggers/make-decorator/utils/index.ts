@@ -5,7 +5,7 @@ import { traceLabels, TransactionOptions } from '../protocols';
 export const searchLabels = (
   labels: traceLabels | undefined,
   args: any | undefined
-): Object =>
+): object =>
   Object.entries(args ?? {}).reduce((acc, [key, value]) => {
     const label = Object.entries(labels ?? {}).find(
       // eslint-disable-next-line eqeqeq

@@ -16,8 +16,8 @@ export type Data = {
 };
 
 export interface HttpClient<
-  B extends Object = GenericObject,
-  H extends Object = GenericObject
+  B extends object = GenericObject,
+  H extends object = GenericObject
 > {
   request: (data: Data) => Promise<HttpResponse<B, H>>;
 }
@@ -34,8 +34,8 @@ export enum HttpStatusCode {
 }
 
 export type HttpResponse<
-  B extends Object = GenericObject,
-  H extends Object = GenericObject
+  B extends object = GenericObject,
+  H extends object = GenericObject
 > = {
   statusCode: HttpStatusCode;
   body: B;

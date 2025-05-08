@@ -23,7 +23,7 @@ type LogParams = {
     | 'verbose'
     | 'debug'
     | 'silly'
-    | String;
+    | string;
   message: string;
   payload?: object;
   meta?: object;

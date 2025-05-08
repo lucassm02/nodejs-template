@@ -14,8 +14,8 @@ export namespace Job {
   type Properties = Record<string, unknown>;
 
   export type Payload<
-    B extends Object = Record<string, unknown>,
-    H extends Object = Record<string, unknown>
+    B extends object = Record<string, unknown>,
+    H extends object = Record<string, unknown>
   > = {
     body: B;
     headers: H;

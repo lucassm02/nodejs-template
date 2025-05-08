@@ -48,7 +48,7 @@ declare module 'knex' {
         columnTwo: string
       ): KnexOriginal.QueryBuilder<TRecord, TResult>;
       formattedSelect<TRecord, TResult>(
-        object: Object
+        object: object
       ): KnexOriginal.QueryBuilder<TRecord, TResult>;
     }
   }

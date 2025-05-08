@@ -17,8 +17,8 @@ function convertToDateValue([key, value]: [string, unknown]): [
   return [key, date];
 }
 
-function resolveWrapper(resolve: (data: Object | Object[]) => void) {
-  return (data: Object | Object[]) => {
+function resolveWrapper(resolve: (data: object | object[]) => void) {
+  return (data: object | object[]) => {
     if (typeof data !== 'object') return resolve(data);
 
     if (!Array.isArray(data)) {

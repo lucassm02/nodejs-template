@@ -1,6 +1,10 @@
 import fastify, {
+  FastifyBaseLogger,
   FastifyInstance,
+  FastifyPluginAsync,
   FastifyPluginCallback,
+  FastifyRegisterOptions,
+  FastifyTypeProviderDefault,
   RawServerDefault,
   RouteHandlerMethod
 } from 'fastify';
@@ -80,11 +84,25 @@ export class WebServer {
 
   public getWebsocketServer = () => this.socketIO;
 
-  public use(
-    plugin: FastifyPluginCallback,
-    configs?: Record<string, unknown>
+  public use<P extends Record<string, unknown>>(
+    plugin:
+      | FastifyPluginCallback<
+          P,
+          RawServerDefault,
+          FastifyTypeProviderDefault,
+          FastifyBaseLogger
+        >
+      | FastifyPluginAsync<
+          P,
+          RawServerDefault,
+          FastifyTypeProviderDefault,
+          FastifyBaseLogger
+        >,
+    options?: FastifyRegisterOptions<P>
   ): void {
-    this.fastify.register(plugin, configs);
+    const internalOptions = <FastifyRegisterOptions<P>>(options ?? {});
+
+    this.fastify.register(plugin, internalOptions);
   }
 
   public static getInstance(): WebServer {

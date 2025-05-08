@@ -1,6 +1,6 @@
 export const recursiveDataConvertFilterLayer = <T>(
   data: T,
-  formatter: <N extends Object>(params: N) => N
+  formatter: <N extends object>(params: N) => N
 ) => {
   if (Array.isArray(data)) {
     return data.map((item) => {
@@ -18,7 +18,7 @@ export const recursiveDataConvertFilterLayer = <T>(
 
 const recursiveDataConvertApplyLayer = <T>(
   object: T,
-  formatter: <N extends Object>(params: N) => N
+  formatter: <N extends object>(params: N) => N
 ): unknown => {
   if (!object) return object;
   const objectWithNewKeys = formatter(object);

@@ -1,4 +1,4 @@
-export const getIn = (object: Object, path: string) => {
+export const getIn = (object: object, path: string) => {
   const INDEX_PATTERN = /\[(\d+?)\]/;
 
   const splittedPath = path.split('.');

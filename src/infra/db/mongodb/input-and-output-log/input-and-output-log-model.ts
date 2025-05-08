@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 export interface InputAndOutputLogModel extends mongoose.Document {
   type: string;
-  payload: Object;
+  payload: object;
   created_at: Date;
 }
 

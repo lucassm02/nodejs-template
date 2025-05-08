@@ -1,4 +1,4 @@
-export const processValue = <T extends Object>(
+export const processValue = <T extends object>(
   object: T,
   manifest: { [P in keyof T]?: Function }
 ) => {

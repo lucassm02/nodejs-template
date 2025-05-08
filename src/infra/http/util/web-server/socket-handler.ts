@@ -11,7 +11,7 @@ export interface WebSocketMethods {
   message(...middlewares: RouteMiddlewareSocket[]): void;
   close(...middlewares: RouteMiddlewareSocket[]): void;
   ping(...middlewares: RouteMiddlewareSocket[]): void;
-  on(event: string | Symbol, ...middlewares: RouteMiddlewareSocket[]): void;
+  on(event: string | symbol, ...middlewares: RouteMiddlewareSocket[]): void;
 }
 
 export class SocketHandler {

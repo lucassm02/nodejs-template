@@ -8,7 +8,7 @@ import {
 
 export const datoraHttpLogger = () => {
   return function (
-    _target: Object,
+    _target: object,
     _key: string | symbol,
     descriptor: PropertyDescriptor
   ) {
