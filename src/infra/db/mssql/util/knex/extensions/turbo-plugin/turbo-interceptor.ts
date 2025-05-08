@@ -1,16 +1,11 @@
-import { createHash } from 'node:crypto';
 import k, { Knex } from 'knex';
 import NodeCache from 'node-cache';
 
-import { logger } from '@/util';
 import { makeCacheServer } from '@/infra/cache';
+import { generateHashKeyToMemJs, logger } from '@/util';
 
 type Services = 'memjs' | 'node-cache';
 type GenericObject = Record<string, unknown>;
-
-function generateHashKeyToMemJs(value: string): string {
-  return createHash('sha256').update(value).digest('hex');
-}
 
 const cache = new NodeCache({ stdTTL: 100, checkperiod: 120 });
 const memCache = makeCacheServer();

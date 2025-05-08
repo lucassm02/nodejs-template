@@ -3,6 +3,7 @@
     "acked",
     "agendash",
     "agentkeepalive",
+    "checkperiod",
     "codegen",
     "datora",
     "fastify",
