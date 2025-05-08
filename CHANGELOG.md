@@ -9,7 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Adds the `CacheRequestAdapter` wrapper of cache functionalities inside request adapter structure and interfaces
+- Add the `CacheRequestAdapter` wrapper of cache functionalities inside request adapter structure and interfaces.
+
+### Changed
+
+- Update dependencies.
+- Update Node.js version in Dockerfile.
+- Add type corrections to the RabbitMQ server.
+
+### Fixed
+
+- Correct logic to enable offline logger.
 
 ## [2.3.0] - 2025-05-06
 
