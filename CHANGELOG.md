@@ -5,13 +5,47 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.3.0] - 2025-03-19
+## [2.4.0] - 2025-05-08
 
 ### Added
 
 - Adds the `CacheRequestAdapter` wrapper of cache functionalities inside request adapter structure and interfaces
 
+## [2.3.0] - 2025-05-06
 
+### Added
+
+- New `normalize` and `normalizeOptions` utilities for payload normalization in the reprocessing module.  
+- APM decorators for handlers, enabling instrumentation.  
+- Functionality to extract RabbitMQ options from the `RABBIT_OPTIONS` environment variable.  
+
+### Changed
+
+- Renamed non-standard folder from `utils` to `util`.  
+- Improved application startup and shutdown process.  
+- Enhanced MemCached connection process and added connection timeout.  
+- Updated the `.env.example` file.  
+- Adjusted when Elastic is started.  
+- Added protocol adaptation for new RabbitMQ implementations.  
+- Improved handler processing logic to prevent subsequent handlers from executing prematurely.  
+- Optimized APM decorators.  
+
+### Fixed
+
+- Added normalization before message validation in the reprocessing module.  
+- Optimized `searchLabels` to prevent maximum call stack overflow.  
+
+### Deprecated
+
+- _No deprecations._  
+
+### Removed
+
+- _No removals._  
+
+### Security
+
+- _No security fixes.
 
 ## [2.2.0] - 2025-03-19
 

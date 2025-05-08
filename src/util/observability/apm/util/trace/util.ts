@@ -1,12 +1,26 @@
 // TODO: We should seek better alternatives in the future, but for now, it's not a problem.
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { traceLabels, TransactionOptions } from './trace-protocols';
+import { TraceLabels, TransactionOptions } from './types';
 
 export const searchLabels = (
-  labels: traceLabels | undefined,
+  labels: TraceLabels | undefined,
   args: any | undefined
-): Object =>
-  Object.entries(args ?? {}).reduce((acc, [key, value]) => {
+): Object => {
+  const entries = Object.entries(labels || {});
+
+  const areTheyAllIndices = entries.every(
+    ([_, value]) => typeof value === 'number'
+  );
+
+  if (areTheyAllIndices) {
+    const newEntries = entries.map(([key, index]) => {
+      return [key, args[index]];
+    });
+
+    return Object.fromEntries(newEntries);
+  }
+
+  return Object.entries(args ?? {}).reduce((acc, [key, value]) => {
     const label = Object.entries(labels ?? {}).find(
       // eslint-disable-next-line eqeqeq
       ([, labelValue]) => labelValue == key
@@ -21,6 +35,7 @@ export const searchLabels = (
 
     return { ...acc, [label[0]]: value };
   }, {});
+};
 
 export const labelParamsToString = (params: object) => {
   return Object.entries(params).reduce((acc, [key, value]) => {
@@ -55,7 +70,8 @@ export const getType = (subType: string): string | void => {
         'graphql',
         'mailer',
         'resource',
-        'handler'
+        'handler',
+        'function'
       ]
     },
     {

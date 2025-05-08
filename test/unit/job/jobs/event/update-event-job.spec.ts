@@ -1,4 +1,4 @@
-import { Logger } from '@/data/protocols/utils';
+import { Logger } from '@/data/protocols/util';
 import { ErrorHandler, UpdateEvent } from '@/domain/usecases';
 import { UpdateEventJob } from '@/job/jobs/event';
 import { UpdateEventStub } from '@/test/unit/domain/usecases';

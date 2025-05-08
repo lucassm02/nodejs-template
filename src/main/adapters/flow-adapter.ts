@@ -14,22 +14,23 @@ export default <Data extends Record<string, unknown>>(data: Data) =>
 
     let resolve!: Function;
 
-    const nextFunction = () => {
-      event.emit(NEXT_EVENT_SYMBOL);
-    };
-
     const callStack = callbacks
       .map((middleware) => async () => {
         let nextFunctionWasCalled = false;
 
-        function nextFunctionDecorator() {
+        function nextFunction() {
           if (nextFunctionWasCalled) return;
-          nextFunction();
           nextFunctionWasCalled = true;
         }
 
         try {
-          return await middleware(data, nextFunctionDecorator);
+          const response = await middleware(data, nextFunction);
+
+          if (nextFunctionWasCalled) {
+            event.emit(NEXT_EVENT_SYMBOL);
+          }
+
+          return response;
         } catch (error) {
           throw error;
         } finally {
@@ -40,7 +41,7 @@ export default <Data extends Record<string, unknown>>(data: Data) =>
       })
       .reverse();
 
-    event.on(NEXT_EVENT_SYMBOL, async () => {
+    event.on(NEXT_EVENT_SYMBOL, () => {
       const handler = callStack.pop();
 
       if (handler === undefined) {
@@ -48,7 +49,7 @@ export default <Data extends Record<string, unknown>>(data: Data) =>
         return;
       }
 
-      await handler();
+      handler();
     });
 
     event.once(RESOLVER_EVENT_SYMBOL, () => {

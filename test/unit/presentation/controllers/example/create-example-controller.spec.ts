@@ -1,4 +1,4 @@
-import { CommitAll } from '@/data/protocols/utils';
+import { CommitAll } from '@/data/protocols/util';
 import { CreateExampleController } from '@/presentation/controllers';
 import { commitAllStub } from '@/test/unit/data/protocols/utils';
 import { databaseTransactionMock } from '@/test/unit/domain/models';

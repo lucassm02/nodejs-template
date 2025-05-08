@@ -6,7 +6,7 @@ import { ElasticsearchTransport } from 'winston-elasticsearch';
 import ecsFormat from '@elastic/ecs-winston-format';
 import pkg from '@/../package.json';
 import { createMongoLog } from '@/main/facades';
-import { ELASTICSEARCH, LOGGER } from '@/util/constants';
+import { ELASTICSEARCH, LOGGER, MONGO } from '@/util/constants';
 
 import { elasticAPM, getAPMTransactionIds } from '../../apm';
 import { defaultIndexTemplate } from './elasticsearch';
@@ -117,7 +117,13 @@ export class CustomLogger {
   public log(params: LogParams, type?: LoggerType): void;
   public log(data: LogParams | Error, type: LoggerType = 'default'): void {
     if (!LOGGER.ENABLED) return;
-    const logger = type === 'offline' ? this.offlineLogger : this.defaultLogger;
+
+    let logger = this.defaultLogger;
+
+    if (MONGO.ENABLED && type === 'offline') {
+      logger = this.offlineLogger;
+    }
+
     this.handler(data, logger);
   }
 

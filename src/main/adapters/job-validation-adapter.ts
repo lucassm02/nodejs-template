@@ -1,4 +1,5 @@
 import { Job } from '@/job/protocols';
+import { normalizeReprocessingPayload } from '@/job/util';
 import { YupSchema } from '@/presentation/protocols';
 import {
   convertCamelCaseKeysToSnakeCase,
@@ -9,8 +10,10 @@ import {
 export function messageValidationAdapter(
   schema: YupSchema
 ): (payload: Job.Payload, state: Job.State, next: Job.Next) => Job.Result {
-  return async (payload: Job.Payload, _state: Job.State, next: Job.Next) => {
+  return async (payload: Job.Payload, state: Job.State, next: Job.Next) => {
     try {
+      normalizeReprocessingPayload(payload, state);
+
       const messageInSnakeCase = convertCamelCaseKeysToSnakeCase(payload);
 
       await schema.validate(messageInSnakeCase, {

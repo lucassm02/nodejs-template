@@ -1,4 +1,4 @@
-import { Logger } from '@/data/protocols/utils';
+import { Logger } from '@/data/protocols/util';
 import { ErrorHandler, GetCacheValue } from '@/domain/usecases';
 import { GetCacheValueMiddleware } from '@/presentation/middlewares';
 import { SharedState } from '@/job/protocols';

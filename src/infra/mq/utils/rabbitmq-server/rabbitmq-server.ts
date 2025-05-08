@@ -2,6 +2,7 @@ import { readdirSync } from 'fs';
 import { resolve } from 'path';
 import { EventEmitter } from 'stream';
 import { Channel, Connection, Message, connect } from 'amqplib';
+import { randomInt, randomUUID } from 'crypto';
 
 import { Job } from '@/job/protocols';
 import { jobAdapter } from '@/main/adapters';
@@ -9,7 +10,8 @@ import {
   amqpLogger,
   CONSUMER,
   convertCamelCaseKeysToSnakeCase,
-  convertSnakeCaseKeysToCamelCase
+  convertSnakeCaseKeysToCamelCase,
+  RABBIT
 } from '@/util';
 import { logger } from '@/util/observability';
 import { apmSpan, apmTransaction } from '@/util/observability/apm';
@@ -25,11 +27,17 @@ import {
 
 export class RabbitMqServer {
   private connection: Connection | null = null;
-  private channel: Channel | null = null;
-  private consumers: Map<string, Consumer> = new Map();
+  private channelPoolLength = 3;
+  private channelPool: Map<string, Channel> = new Map();
+
+  private consumers: Map<string, { channel: Channel; consumer: Consumer }> =
+    new Map();
+
   private messages: Set<Message> = new Set();
-  private uri!: string;
-  private prefetch!: number;
+  private url!: string;
+
+  private defaultPrefetch: number | undefined = undefined;
+
   private queueLoaderOptions: {
     allowAll: boolean;
     denyAll: boolean;
@@ -42,46 +50,44 @@ export class RabbitMqServer {
     allow: []
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private optionsFromEnv: Record<string, any> | null = null;
+
   private thereIsAPendingRestart = false;
-  private preventChannelRecover = false;
   private closing = false;
-  private theChannelIsActive = false;
 
   public Error = {
     CredentialsNotDefined:
       'Credentials not defined, use setCredentials to define credentials',
     InvalidCredentialFieldValue: (field: string) =>
       `Invalid value for (${field}) field`,
-    InvalidPrefetchValue: 'Prefetch must be a number'
+    InvalidPrefetchValue: 'Prefetch must be a number',
+    ConnectionNotDefined:
+      'The connection has not been defined, you must start a connection before continuing',
+    EmptyChannelPool:
+      'The channel pool is empty; for the class to work properly, the channel pool must have at least one channel '
   };
 
   private event = new EventEmitter();
 
-  private events = { RESTART: Symbol('RESTART'), ACK: Symbol('ACK') };
+  private events = {
+    RESTART: Symbol('RESTART'),
+    ACK: Symbol('ACK'),
+    CHECK_CHANNEL_POOL: Symbol('CHECK_CHANNEL_POOL'),
+    REBUILD_CONSUMER: Symbol('REBUILD_CONSUMER')
+  };
 
   private static instance: RabbitMqServer;
 
   constructor(private credentials: Credentials | null = null) {
     if (this.credentials) this.setCredentials(this.credentials);
 
-    for (const item of CONSUMER.LIST) {
-      if (item === '*') {
-        this.queueLoaderOptions.allowAll = true;
-        this.queueLoaderOptions.denyAll = false;
-        continue;
-      }
-      if (item === '!*') {
-        this.queueLoaderOptions.allowAll = false;
-        this.queueLoaderOptions.denyAll = true;
-        continue;
-      }
-
-      if (item[0] === '!') {
-        this.queueLoaderOptions.deny.push(item.substring(1));
-      } else {
-        this.queueLoaderOptions.allow.push(item);
-      }
+    if (RABBIT.DEFAULT_PREFETCH) {
+      this.defaultPrefetch = RABBIT.DEFAULT_PREFETCH;
     }
+
+    this.extractQueueOptions();
+    this.loadOptionsFromEnv();
   }
 
   public static getInstance(): RabbitMqServer {
@@ -92,12 +98,28 @@ export class RabbitMqServer {
     return RabbitMqServer.instance;
   }
 
-  public setPrefetch(prefetch: number) {
-    if (typeof prefetch !== 'number')
-      throw new Error(this.Error.InvalidPrefetchValue);
+  private logger(error: Error): void;
+  private logger(args: {
+    level: string;
+    message: string;
+    payload?: Record<string, unknown>;
+  }): void;
+  private logger(
+    args: Error & {
+      level: string;
+      message: string;
+      payload?: Record<string, unknown>;
+    }
+  ) {
+    logger.log(args);
+  }
 
-    this.prefetch = prefetch;
-    return this;
+  private loadOptionsFromEnv() {
+    if (typeof process.env.RABBIT_OPTIONS !== 'string') return;
+
+    this.optionsFromEnv = this.parseOptionsFromString(
+      process.env.RABBIT_OPTIONS
+    );
   }
 
   public setCredentials(credentials: Credentials) {
@@ -110,30 +132,26 @@ export class RabbitMqServer {
       ? `/${credentials.virtualHost}`
       : '';
 
-    this.uri = `amqp://${credentials.user}:${credentials.password}@${credentials.host}:${credentials.port}${virtualHost}`;
+    this.url = `amqp://${credentials.user}:${credentials.password}@${credentials.host}:${credentials.port}${virtualHost}`;
     return this;
   }
 
   public async start() {
-    logger.log({ level: 'info', message: 'Starting connection' });
+    this.logger({ level: 'info', message: 'Starting connection' });
     if (!this.connection) {
-      if (!this.uri) throw new Error(this.Error.CredentialsNotDefined);
-      this.connection = await connect(this.uri);
+      if (!this.url) throw new Error(this.Error.CredentialsNotDefined);
+      this.connection = await connect(this.url);
     }
 
-    if (!this.channel) {
-      this.channel = await this.connection.createChannel();
-    }
+    await this.createChannelPool(this.channelPoolLength);
 
-    this.theChannelIsActive = true;
-
-    if (typeof this.prefetch === 'number') {
-      await this.channel.prefetch(this.prefetch);
+    if (this.channelPool.size === 0) {
+      throw new Error(this.Error.EmptyChannelPool);
     }
 
     this.startEventLiveners();
 
-    logger.log({ level: 'info', message: 'Connection started' });
+    this.logger({ level: 'info', message: 'Connection started' });
 
     return this;
   }
@@ -154,47 +172,32 @@ export class RabbitMqServer {
   }
 
   public async stop() {
-    logger.log({ level: 'info', message: 'Closing connection' });
+    this.logger({ level: 'info', message: 'Closing connection' });
 
     if (this.closing) {
       return;
     }
 
     this.closing = true;
-    this.preventChannelRecover = true;
 
     await this.waitForPendingProcessing();
 
-    this.channel?.removeAllListeners();
     this.connection?.removeAllListeners();
     this.event.removeAllListeners();
-
-    if (this.channel) {
-      try {
-        await this.channel.close();
-      } catch (error) {
-        logger.log(error);
-      } finally {
-        this.theChannelIsActive = false;
-      }
-    }
 
     if (this.connection) {
       try {
         await this.connection.close();
       } catch (error) {
-        logger.log(error);
+        this.logger(error);
       }
 
       this.closing = false;
     }
 
-    this.channel = null;
     this.connection = null;
 
-    logger.log({ level: 'info', message: 'Connection closed' });
-
-    this.preventChannelRecover = false;
+    this.logger({ level: 'info', message: 'Connection closed' });
 
     return this;
   }
@@ -204,24 +207,22 @@ export class RabbitMqServer {
   }
 
   public async cancelConsumers() {
-    logger.log({ level: 'info', message: 'Closing consumers' });
-    if (!this.channel) {
-      return;
-    }
+    this.logger({ level: 'info', message: 'Closing consumers' });
+
     const consumers = Array.from(this.consumers);
 
-    const promises = consumers.map(async ([key]) => {
+    const promises = consumers.map(async ([key, value]) => {
       try {
-        await this.channel?.cancel(key);
-      } catch (error) {
-        logger.log(error);
-      } finally {
         this.consumers.delete(key);
+        await value.channel.cancel(key);
+        await value.channel.close();
+      } catch (error) {
+        this.logger(error);
       }
     });
 
     await Promise.allSettled(promises);
-    logger.log({
+    this.logger({
       level: 'info',
       message: 'All consumer are closed'
     });
@@ -229,42 +230,29 @@ export class RabbitMqServer {
 
   public async restart() {
     const RESTAR_TIMEOUT = 1500;
-    logger.log({ level: 'info', message: 'Restart event' });
+    this.logger({ level: 'info', message: 'Restart event' });
     if (this.thereIsAPendingRestart) return;
-    logger.log({ level: 'info', message: 'Restart event accepted' });
+    this.logger({ level: 'info', message: 'Restart event accepted' });
     this.thereIsAPendingRestart = true;
 
     try {
       await this.stop();
       await this.start();
     } catch (error) {
-      logger.log({ level: 'info', message: 'Error when restarting' });
-      logger.log(error);
+      this.logger({ level: 'info', message: 'Error when restarting' });
+      this.logger(error);
       this.thereIsAPendingRestart = false;
       this.event.emit(this.events.RESTART);
+      return;
     }
 
-    await this.rebuildConsumers(true);
+    await this.rebuildConsumers(false);
 
     setTimeout(() => {
       this.thereIsAPendingRestart = false;
     }, RESTAR_TIMEOUT);
 
     return this;
-  }
-
-  private async recoverChannel(): Promise<boolean> {
-    try {
-      logger.log({ level: 'info', message: 'Recover channel event' });
-      if (this.preventChannelRecover) return false;
-      logger.log({ level: 'info', message: 'Recover channel event accepted' });
-      await this.channel?.recover();
-      return true;
-    } catch (error) {
-      logger.log({ level: 'info', message: 'Error when recover channel' });
-      logger.log(error);
-      return false;
-    }
   }
 
   @loggerDecorator({
@@ -276,12 +264,33 @@ export class RabbitMqServer {
     params: { queue: 0, message: 1, headers: 2 }
   })
   public async publishInQueue(queue: string, message: object, headers: object) {
-    if (!this.connection || !this.channel) await this.restart();
-    const messageFromBuffer = this.convertMessageToBuffer(
+    if (!this.connection) {
+      this.logger({
+        level: 'error',
+        message: 'Unable to publish message, connection not defined',
+        payload: { queue, message, headers }
+      });
+      throw new Error(this.Error.ConnectionNotDefined);
+    }
+
+    if (this.channelPool.size === 0) {
+      this.logger({
+        level: 'error',
+        message: 'Unable to publish message, empty channel pool',
+        payload: { queue, message, headers }
+      });
+      throw new Error(this.Error.EmptyChannelPool);
+    }
+
+    const chanelIndex = randomInt(0, this.channelPool.size - 1);
+
+    const buffer = this.convertMessageToBuffer(
       convertCamelCaseKeysToSnakeCase(message)
     );
 
-    this.channel?.sendToQueue(queue, messageFromBuffer, {
+    const channelList = Array.from(this.channelPool).map(([, value]) => value);
+
+    return channelList[chanelIndex].sendToQueue(queue, buffer, {
       headers
     });
   }
@@ -299,76 +308,130 @@ export class RabbitMqServer {
     routingKey: string,
     headers?: object
   ) {
-    if (!this.connection || !this.channel) await this.restart();
-    this.channel?.publish(
-      exchange,
-      routingKey,
-      this.convertMessageToBuffer(convertCamelCaseKeysToSnakeCase(message)),
-      { headers }
+    if (!this.connection) {
+      this.logger({
+        level: 'error',
+        message: 'Unable to publish message, connection not defined',
+        payload: { exchange, message, routingKey, headers }
+      });
+      throw new Error(this.Error.ConnectionNotDefined);
+    }
+
+    if (this.channelPool.size === 0) {
+      this.logger({
+        level: 'error',
+        message: 'Unable to publish message, empty channel pool',
+        payload: { exchange, message, routingKey, headers }
+      });
+      throw new Error(this.Error.EmptyChannelPool);
+    }
+
+    const buffer = this.convertMessageToBuffer(
+      convertCamelCaseKeysToSnakeCase(message)
     );
+
+    const chanelIndex = randomInt(0, this.channelPool.size - 1);
+
+    const channelList = Array.from(this.channelPool).map(([, value]) => value);
+
+    return channelList[chanelIndex].publish(exchange, routingKey, buffer, {
+      headers
+    });
   }
 
-  public async consume(queue: string, callback: ConsumerCallback) {
-    const consumer = await this.channel?.consume(queue, async (message) => {
-      if (!message) return;
+  public async consume(
+    queue: string,
+    callback: ConsumerCallback,
+    options?: { prefetch?: number }
+  ) {
+    try {
+      if (!this.connection) {
+        throw new Error(this.Error.ConnectionNotDefined);
+      }
 
-      try {
-        if (this.closing) this.reject(message);
+      const channel = await this.connection.createChannel();
 
-        this.messages.add(message);
+      if (options?.prefetch) {
+        await channel.prefetch(options.prefetch);
+      }
 
-        this.setCustomMessageProperties(message, { rejected: false });
+      const consumer = await channel.consume(queue, async (message) => {
+        if (!message) return;
 
-        const payload = {
-          body: convertSnakeCaseKeysToCamelCase(
-            this.convertMessageToJson(message)
-          ),
-          headers: message.properties.headers,
-          fields: { queue, ...message.fields },
-          properties: message.properties,
-          reject: (requeue?: boolean) => {
-            this.reject(message, requeue ?? true);
+        try {
+          if (this.closing) this.reject(message);
+
+          this.messages.add(message);
+
+          this.setCustomMessageProperties(message, { rejected: false });
+
+          const payload = {
+            body: convertSnakeCaseKeysToCamelCase(
+              this.convertMessageToJson(message)
+            ),
+            headers: message.properties.headers,
+            fields: { queue, ...message.fields },
+            properties: message.properties,
+            reject: (requeue?: boolean) => {
+              this.reject(message, requeue ?? true);
+            }
+          };
+
+          await this.transactionHandler(queue, payload, callback);
+        } catch (error) {
+          this.logger(error);
+          if (error.stack.includes('at JSON.parse')) {
+            this.logger({
+              level: 'warn',
+              message: 'Unable to convert message to JSON',
+              payload: {
+                message: message.content.toString(),
+                headers: message.properties.headers,
+                properties: { queue, ...message.fields }
+              }
+            });
           }
-        };
-
-        await this.transactionHandler(queue, payload, callback);
-      } catch (error) {
-        logger.log(error);
-        if (error.stack.includes('at JSON.parse')) {
-          logger.log({
-            level: 'warn',
-            message: 'Unable to convert message to JSON',
+        } finally {
+          this.logger({
+            level: 'verbose',
+            message: 'The message left the queue',
             payload: {
               message: message.content.toString(),
               headers: message.properties.headers,
               properties: { queue, ...message.fields }
             }
           });
+
+          this.ack(message);
+          this.messages.delete(message);
         }
-      } finally {
-        logger.log({
-          level: 'verbose',
-          message: 'The message left the queue',
-          payload: {
-            message: message.content.toString(),
-            headers: message.properties.headers,
-            properties: { queue, ...message.fields }
-          }
-        });
+      });
 
-        this.ack(message);
-        this.messages.delete(message);
-      }
-    });
+      channel.once('close', () => {
+        const REBUILD_DELAY = 1_000;
+        setTimeout(() => {
+          this.event.emit(this.events.REBUILD_CONSUMER, consumer.consumerTag);
+        }, REBUILD_DELAY);
+      });
 
-    if (!consumer) return;
+      channel.on('error', (error) => {
+        this.logger(error);
+      });
 
-    this.consumers.set(consumer.consumerTag, { queue, callback });
+      if (!consumer) return;
 
-    logger.log({
-      level: 'info',
-      message: `Consumer to ${queue} is online!`
-    });
+      this.consumers.set(consumer.consumerTag, {
+        channel,
+        consumer: { queue, callback, options }
+      });
+
+      this.logger({
+        level: 'info',
+        message: `Consumer to ${queue} is online!`
+      });
+    } catch (error) {
+      this.logger(error);
+    }
   }
 
   public makeConsumer(queue: string, ...callbacks: (Job | Function)[]): void;
@@ -380,8 +443,21 @@ export class RabbitMqServer {
     arg1: string | ConsumerOptions,
     ...callbacks: (Job | Function)[]
   ): void {
-    const queue = typeof arg1 === 'object' ? arg1.queue : arg1;
-    const enabled = typeof arg1 === 'object' ? !!arg1?.enabled : true;
+    let queue;
+    let enabled = true;
+    let prefetch;
+
+    if (typeof arg1 === 'object') {
+      queue = arg1.queue;
+      enabled = this.optionsFromEnv?.[queue]?.enabled ?? !!arg1.enabled;
+
+      prefetch =
+        this.optionsFromEnv?.[queue]?.prefetch ??
+        arg1?.prefetch ??
+        this.defaultPrefetch;
+    } else {
+      queue = arg1;
+    }
 
     const { allow, allowAll, deny, denyAll } = this.queueLoaderOptions;
 
@@ -391,7 +467,7 @@ export class RabbitMqServer {
 
     if (!enabled && !allowAll && !allow.includes(queue)) return;
 
-    this.consume(queue, jobAdapter(...callbacks));
+    this.consume(queue, jobAdapter(...callbacks), { prefetch });
   }
 
   public async consumersDirectory(path: string): Promise<void> {
@@ -418,6 +494,38 @@ export class RabbitMqServer {
         if (typeof setup !== 'function') continue;
 
         setup(this);
+      }
+    }
+  }
+
+  private async createChannelPool(poolLength: number) {
+    if (!this.connection) {
+      throw new Error(this.Error.ConnectionNotDefined);
+    }
+
+    const chanelPromises = [];
+
+    for (let index = 0; index < poolLength; index++) {
+      const promise = this.connection.createChannel();
+      chanelPromises.push(promise);
+    }
+
+    const pool = await Promise.allSettled(chanelPromises);
+
+    for (const item of pool) {
+      if (item.status === 'fulfilled') {
+        const channelId = randomUUID();
+
+        item.value.on('error', (error) => {
+          this.logger(error);
+        });
+
+        item.value.once('close', () => {
+          this.channelPool.delete(channelId);
+          this.event.emit(this.events.CHECK_CHANNEL_POOL);
+        });
+
+        this.channelPool.set(channelId, item.value);
       }
     }
   }
@@ -455,17 +563,22 @@ export class RabbitMqServer {
   private reject(message: Message, requeue?: boolean) {
     try {
       if (
-        !this.theChannelIsActive ||
-        !this.channel ||
+        !this.connection ||
         this.getCustomMessageProperties(message, 'rejected') ||
         this.getCustomMessageProperties(message, 'acked')
       )
         return;
+
       this.setCustomMessageProperties(message, { rejected: true });
-      this.channel.reject(message, requeue);
+
+      const { consumerTag } = message.fields;
+
+      if (!consumerTag) return;
+
+      this.consumers.get(consumerTag)?.channel.reject(message, requeue);
     } catch (error) {
-      logger.log(error);
-      logger.log({
+      this.logger(error);
+      this.logger({
         level: 'warn',
         message: 'Unable to reject message',
         payload: { message: message.content.toString() }
@@ -476,17 +589,22 @@ export class RabbitMqServer {
   private ack(message: Message) {
     try {
       if (
-        !this.theChannelIsActive ||
-        !this.channel ||
+        !this.connection ||
         this.getCustomMessageProperties(message, 'rejected') ||
         this.getCustomMessageProperties(message, 'acked')
       )
         return;
+
       this.setCustomMessageProperties(message, { acked: true });
-      this.channel.ack(message);
+
+      const { consumerTag } = message.fields;
+
+      if (!consumerTag) return;
+
+      this.consumers.get(consumerTag)?.channel.ack(message);
     } catch (error) {
-      logger.log(error);
-      logger.log({
+      this.logger(error);
+      this.logger({
         level: 'warn',
         message: 'Unable to ack message',
         payload: { message: message.content.toString() }
@@ -496,70 +614,106 @@ export class RabbitMqServer {
 
   private startEventLiveners() {
     this.connection?.on('error', (error) => {
-      logger.log(error);
-      this.event.emit(this.events.RESTART);
+      this.logger(error);
     });
 
-    this.channel?.on('error', async (error) => {
-      logger.log(error);
-
-      this.theChannelIsActive = false;
-
-      const wasItRecovered = await this.recoverChannel();
-
-      if (!wasItRecovered) {
-        this.event.emit(this.events.RESTART);
-      }
-    });
-
-    this.connection?.on('close', (error) => {
-      logger.log(error);
+    this.connection?.on('close', () => {
       if (!this.thereIsAPendingRestart) {
         this.event.emit(this.events.RESTART);
       }
     });
 
-    this.channel?.on('close', async (error) => {
-      logger.log(error);
-      logger.log(error);
+    this.event.on(this.events.RESTART, this.restart.bind(this));
+    this.event.on(this.events.CHECK_CHANNEL_POOL, async () => {
+      if (this.channelPool.size !== 0) return;
 
-      this.theChannelIsActive = false;
-
-      const wasItRecovered = await this.recoverChannel();
-
-      if (!wasItRecovered && !this.preventChannelRecover) {
-        this.event.emit(this.events.RESTART);
-      }
+      await this.createChannelPool(this.channelPoolLength);
     });
 
-    this.event.on(this.events.RESTART, this.restart.bind(this));
+    this.event.on(
+      this.events.REBUILD_CONSUMER,
+      this.rebuildConsumer.bind(this)
+    );
   }
 
   private async rebuildConsumers(deleteConsumers = true) {
-    logger.log({ level: 'info', message: 'Starting rebuilding consumers' });
-    if (!this.channel) {
-      this.event.emit(this.events.RESTART);
-      return;
-    }
+    this.logger({
+      level: 'info',
+      message: 'Starting rebuilding all consumers'
+    });
 
     const consumers = Array.from(this.consumers);
 
     const promises = consumers.map(async ([key, value]) => {
       try {
-        if (deleteConsumers) await this.channel?.cancel(key);
         this.consumers.delete(key);
-        return this.consume(value.queue, value.callback);
+        if (deleteConsumers) {
+          await value.channel.cancel(key);
+          await value.channel.close();
+        }
+        return this.consume(
+          value.consumer.queue,
+          value.consumer.callback,
+          value.consumer.options
+        );
       } catch (error) {
-        logger.log(error);
+        this.logger(error);
         return null;
       }
     });
 
     await Promise.allSettled(promises);
-    logger.log({
+
+    this.logger({
       level: 'info',
-      message: 'Consumer reconstruction completed'
+      message: 'All consumers reconstruction completed'
     });
+  }
+
+  private async rebuildConsumer(consumerTag: string) {
+    if (!this.connection) {
+      throw new Error(this.Error.ConnectionNotDefined);
+    }
+
+    if (this.thereIsAPendingRestart || this.closing) return;
+
+    this.logger({
+      level: 'info',
+      message: `Starting rebuilding consumer: ${consumerTag}`
+    });
+
+    const targetConsumer = this.consumers.get(consumerTag);
+
+    if (!targetConsumer) {
+      this.logger({
+        level: 'warn',
+        message: 'Unable to rebuild consumer, consumer not found',
+        payload: { consumerTag }
+      });
+      return;
+    }
+
+    try {
+      this.consumers.delete(consumerTag);
+      await targetConsumer.channel.cancel(consumerTag);
+      await targetConsumer.channel.close();
+
+      const promise = this.consume(
+        targetConsumer.consumer.queue,
+        targetConsumer.consumer.callback,
+        targetConsumer.consumer.options
+      );
+
+      this.logger({
+        level: 'info',
+        message: 'Consumer reconstruction completed'
+      });
+
+      return promise;
+    } catch (error) {
+      this.logger(error);
+      return null;
+    }
   }
 
   private convertMessageToBuffer(message: Record<string, unknown>): Buffer {
@@ -567,7 +721,7 @@ export class RabbitMqServer {
     return Buffer.from(string);
   }
 
-  private convertMessageToJson(message: Message): object {
+  private convertMessageToJson(message: Message): Record<string, unknown> {
     return JSON.parse(message.content.toString());
   }
 
@@ -591,5 +745,71 @@ export class RabbitMqServer {
     });
 
     return callback({ ...bodyAndHeadersToCamelCase, ...restOfPayload });
+  }
+
+  private extractQueueOptions() {
+    for (const item of CONSUMER.LIST) {
+      if (item === '*') {
+        this.queueLoaderOptions.allowAll = true;
+        this.queueLoaderOptions.denyAll = false;
+        continue;
+      }
+      if (item === '!*') {
+        this.queueLoaderOptions.allowAll = false;
+        this.queueLoaderOptions.denyAll = true;
+        continue;
+      }
+
+      if (item[0] === '!') {
+        this.queueLoaderOptions.deny.push(item.substring(1));
+      } else {
+        this.queueLoaderOptions.allow.push(item);
+      }
+    }
+  }
+
+  private parseOptionsFromString(
+    stringOptions: string
+  ): Record<string, unknown> {
+    const options: Record<string, unknown> = {};
+
+    function parseValue(value: string) {
+      if (value.toLowerCase() === 'true') {
+        return true;
+      }
+      if (value.toLowerCase() === 'false') {
+        return false;
+      }
+
+      const numberValue = Number(value);
+
+      if (!Number.isNaN(numberValue)) {
+        return numberValue;
+      }
+
+      return value;
+    }
+
+    const keyValuePairs = stringOptions.split(',').map((item) => item.trim());
+
+    for (const pair of keyValuePairs) {
+      const [path, value] = pair.split('=').map((item) => item.trim());
+      const pathParts = path.split('.');
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      pathParts.reduce((acc: any, part: string, index: number) => {
+        if (index === pathParts.length - 1) {
+          acc[part] = parseValue(value);
+
+          return acc[part];
+        }
+
+        acc[part] = acc[part] || {};
+
+        return acc[part];
+      }, options);
+    }
+
+    return options;
   }
 }

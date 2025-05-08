@@ -33,13 +33,18 @@ function coercion(
   throw new Error('INVALID_TYPE');
 }
 
-export default function flowManager(...options: Option[]): Function;
+export default function flowManager(options: Option[]): Function;
 export default function flowManager(
   firstOption: Option,
+  ...options: Option[]
+): Function;
+export default function flowManager(
+  arg1: Option[] | Option,
   ...restOfOptions: Option[]
 ) {
   return (...args: unknown[]) => {
-    const options = [firstOption, ...restOfOptions];
+    const firstOptions = Array.isArray(arg1) ? arg1 : [arg1];
+    const options = [...firstOptions, ...restOfOptions];
 
     for (const option of options) {
       if (!option.when) return option.handler(...args);
