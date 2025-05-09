@@ -1,6 +1,8 @@
 import memjs, { Client } from 'memjs';
 import { Error } from 'mongoose';
 
+import { apmSpan } from '@/util';
+
 type Connection = {
   host: string;
   port: number;
@@ -126,6 +128,10 @@ export class CacheServer {
     key: string,
     options?: GetOptions
   ): Promise<Buffer | undefined>;
+  @apmSpan({
+    options: { name: 'Get key', subType: 'memcached' },
+    params: { key: 0, options: 1 }
+  })
   public async get(key: string, options?: GetOptions) {
     this.checkConnection();
     const response = await this.server.get(key);
@@ -141,6 +147,10 @@ export class CacheServer {
     return response.value;
   }
 
+  @apmSpan({
+    options: { name: 'Delete key', subType: 'memcached' },
+    params: { key: 0 }
+  })
   public async delete(key: string): Promise<boolean> {
     this.checkConnection();
     return this.server.delete(key);
@@ -165,6 +175,10 @@ export class CacheServer {
     return typeof value === 'object' ? JSON.stringify(value) : value;
   }
 
+  @apmSpan({
+    options: { name: 'Set/Replace key', subType: 'memcached' },
+    params: { args: 0, action: 1 }
+  })
   private async define(
     args: unknown[],
     method: 'REPLACE' | 'SET'
