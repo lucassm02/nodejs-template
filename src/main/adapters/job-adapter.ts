@@ -57,9 +57,9 @@ export const jobAdapter = (...jobs: (Job | Function)[]) => {
 
       const newDesc = decorator(proto, methodName, desc);
 
-      Object.defineProperty(proto, methodName, newDesc);
+      const callback: Function = newDesc.value.bind(job);
 
-      return job.handle(payload, stateHook, next);
+      return callback(payload, stateHook, next);
     };
   });
 
