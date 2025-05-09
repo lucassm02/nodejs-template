@@ -7,6 +7,7 @@ import { RabbitMqServer } from '@/infra/mq/utils';
 import { WorkerManager, workerManager } from '@/infra/worker';
 import {
   CONSUMER,
+  DB,
   MEMCACHED,
   MONGO,
   RABBIT,
@@ -61,6 +62,15 @@ export async function bootstrap() {
       );
 
       process.exit(0);
+    }
+
+    async function connectToSQL() {
+      await checkDatabaseConnection();
+
+      logger.log({
+        level: 'info',
+        message: `SQL connection checked!`
+      });
     }
 
     async function connectToMongoose() {
@@ -118,8 +128,7 @@ export async function bootstrap() {
       'offline'
     );
 
-    promises.push(() => checkDatabaseConnection());
-
+    if (DB.ENABLED) promises.push(connectToSQL);
     if (MONGO.ENABLED) promises.push(connectToMongoose);
     if (RABBIT.ENABLED) promises.push(connectToRabbit);
     if (ENABLED_SERVICES.SERVER) promises.push(startServer);

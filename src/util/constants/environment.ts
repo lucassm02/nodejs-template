@@ -53,6 +53,10 @@ export const API = {
 };
 
 export const DB = {
+  ENABLED: process.env.DB_ENABLED
+    ? stringToBoolean(process.env.DB_ENABLED)
+    : true,
+  DB_TEST_CONNECTION_QUERY: process.env.DB_TEST_CONNECTION_QUERY || 'SELECT 1',
   CONFIG: process.env.DB_CONFIG || 'default',
   DIALECT: process.env.DB_DIALECT || 'mssql',
   HOST: process.env.DB_HOST || '',
@@ -78,7 +82,9 @@ export const RABBIT = {
 };
 
 export const MONGO = {
-  ENABLED: stringToBoolean(process.env.MONGO_ENABLED) ?? false,
+  ENABLED: process.env.MONGO_ENABLED
+    ? stringToBoolean(process.env.MONGO_ENABLED)
+    : true,
   USER: process.env.MONGO_USER || '',
   PASSWORD: process.env.MONGO_PASSWORD || '',
   HOST: process.env.MONGO_HOST || '',
