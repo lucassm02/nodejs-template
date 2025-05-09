@@ -49,7 +49,7 @@ export function makeStateDependencies<SharedState>({
 
       if (isAsync) {
         descriptor.value = async function (...args: any[]) {
-          validate(args);
+          validate(...args);
           return originalHandler.apply(this, args);
         };
 
@@ -57,7 +57,7 @@ export function makeStateDependencies<SharedState>({
       }
 
       descriptor.value = function (...args: any[]) {
-        validate(args);
+        validate(...args);
         return originalHandler.apply(this, args);
       };
 
