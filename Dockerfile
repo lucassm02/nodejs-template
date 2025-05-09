@@ -10,7 +10,7 @@ COPY --chown=node:node . .
 
 RUN yarn build
 
-FROM node:20.17.0-slim
+FROM node:22.15.0-slim
 LABEL maintainer="Santos <lucassm02@gmail.com.br>"
 
 ENV TZ=America/Sao_Paulo
