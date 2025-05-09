@@ -71,6 +71,8 @@ export const getType = (subType: string): string | void => {
         'mailer',
         'resource',
         'handler',
+        'worker',
+        'task',
         'function'
       ]
     },

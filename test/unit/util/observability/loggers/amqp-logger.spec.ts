@@ -6,7 +6,7 @@ describe('AMQP Logger Function', () => {
       options: {
         name: 'any_name',
         nameByParameter: 'any_name_by_parameter',
-        subType: 'any_sub_type'
+        subType: 'rabbitmq'
       }
     });
     expect(typeof decorator).toEqual('function');

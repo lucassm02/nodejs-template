@@ -1,9 +1,19 @@
 import { Job } from '@/job/protocols';
 import { apmSpan } from '@/util';
+import {
+  SpanOptions,
+  TraceLabels
+} from '@/util/observability/apm/util/trace/types';
 
 import makeFlow from './flow-adapter';
 
 const STATE_KEY = Symbol('STATE');
+
+type DecoratorOptions = {
+  options: SpanOptions;
+  params?: TraceLabels;
+  result?: TraceLabels;
+};
 
 type State = Record<string, unknown>;
 type Payload = Job.Payload & { [key: string | symbol]: State };
@@ -21,7 +31,7 @@ export const jobAdapter = (...jobs: (Job | Function)[]) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const stateHook = <[any, any]>[state, setState];
 
-      const decoratorOptions = {
+      const decoratorOptions: DecoratorOptions = {
         options: {
           name: '',
           subType: 'handler'

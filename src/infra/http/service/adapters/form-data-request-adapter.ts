@@ -9,8 +9,18 @@ import {
   datoraHttpLogger,
   logger as customLogger
 } from '@/util/observability/loggers/decorators';
+import {
+  SpanOptions,
+  TraceLabels
+} from '@/util/observability/loggers/make-decorator/protocols';
 
-const decorators = {
+type DecoratorOptions = {
+  options: SpanOptions;
+  params?: TraceLabels;
+  result?: TraceLabels;
+};
+
+const decorators: DecoratorOptions = {
   options: { subType: 'http', name: 'Http Request' },
   params: {
     'request-body': 'body',

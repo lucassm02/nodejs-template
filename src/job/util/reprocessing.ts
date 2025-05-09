@@ -46,15 +46,72 @@ type Options = {
 
 type Args = [Record<string, any>, [Record<string, any>, Function], Function];
 
+// TODO: REFACTOR THIS
 export function reprocessing(options: Options = {}) {
   return function (
     target: object,
     _key: string | symbol,
     descriptor: PropertyDescriptor
   ) {
-    const originalMethod = descriptor.value;
+    const originalHandler = descriptor.value;
+    const isAsync = originalHandler.constructor.name === 'AsyncFunction';
 
-    descriptor.value = async function (...args: Args) {
+    if (isAsync) {
+      descriptor.value = async function (...args: Args) {
+        const [payload, [state, setState], next] = args;
+
+        const delays = options.delays ?? REPROCESSING.DELAYS;
+        const maxTries = options.maxTries ?? REPROCESSING.MAX_TRIES;
+
+        const queueOptions = options.queueOptions ?? {
+          exchange: payload.fields.exchange,
+          routingKey: payload.fields.routingKey
+        };
+
+        const mqSendReprocessing = new MqSendReprocessing(
+          mqServer,
+          mqServer,
+          reprocessingRepository,
+          { queue: payload.fields.queue, ...queueOptions },
+          maxTries,
+          delays
+        );
+
+        try {
+          normalizeReprocessingPayload(payload, [state, setState]);
+
+          if (
+            skipMiddleware(state.reprocessing, target.constructor.name) &&
+            REPROCESSING.MODE === 'STOPPED_MIDDLEWARE'
+          ) {
+            return next();
+          }
+
+          setState({
+            reprocessing: { ...state.reprocessing, middleware: null }
+          });
+
+          const result = await originalHandler.apply(this, args);
+
+          return result;
+        } catch (error) {
+          if (!REPROCESSING.ENABLED || options.normalizeOnly) return;
+          mqSendReprocessing.reprocess({
+            middleware: target.constructor.name,
+            tries: state?.reprocessing?.tries,
+            progress: {
+              step: error?.step,
+              total: error?.total
+            },
+            data: { state, payload }
+          });
+        }
+      };
+
+      return descriptor;
+    }
+
+    descriptor.value = function (...args: Args) {
       const [payload, [state, setState], next] = args;
 
       const delays = options.delays ?? REPROCESSING.DELAYS;
@@ -88,7 +145,7 @@ export function reprocessing(options: Options = {}) {
           reprocessing: { ...state.reprocessing, middleware: null }
         });
 
-        const result = await originalMethod.apply(this, args);
+        const result = originalHandler.apply(this, args);
 
         return result;
       } catch (error) {

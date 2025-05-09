@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable guard-for-in */
 import { logger } from '@/util';
 
@@ -20,10 +21,10 @@ export function makeStateDependencies<SharedState>({
       const STATE_INDEX_IN_REQUEST = 1;
       const STATE_INDEX_IN_STATE = 0;
 
-      const originalMethod = descriptor.value;
+      const originalHandler = descriptor.value;
+      const isAsync = originalHandler.constructor.name === 'AsyncFunction';
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      descriptor.value = function (...args: any[]) {
+      function validate(...args: any[]) {
         for (const index in dependencies) {
           const DEPENDENCY_NAME = dependencies[index];
 
@@ -44,8 +45,20 @@ export function makeStateDependencies<SharedState>({
             if (exceptionHandler) return exceptionHandler(error);
           }
         }
+      }
 
-        return originalMethod.apply(this, args);
+      if (isAsync) {
+        descriptor.value = async function (...args: any[]) {
+          validate(args);
+          return originalHandler.apply(this, args);
+        };
+
+        return descriptor;
+      }
+
+      descriptor.value = function (...args: any[]) {
+        validate(args);
+        return originalHandler.apply(this, args);
       };
 
       return descriptor;

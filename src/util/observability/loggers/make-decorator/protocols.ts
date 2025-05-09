@@ -2,17 +2,19 @@ interface TraceObject {
   [label: string]: string | number;
 }
 
-export type traceLabels = number[] | string[] | TraceObject;
+export type TraceLabels = number[] | string[] | TraceObject;
 
-type appSubtype =
+type AppSubtype =
   | 'inferred'
   | 'controller'
   | 'graphql'
   | 'mailer'
   | 'resource'
   | 'handler'
-  | 'worker';
-type dbSubtype =
+  | 'worker'
+  | 'task'
+  | 'function';
+type DbSubtype =
   | 'cassandra'
   | 'cosmos-bd'
   | 'db2'
@@ -35,9 +37,9 @@ type dbSubtype =
   | 'sqlite3'
   | 'sql-server'
   | 'unknown';
-type externalSubtype = 'dubbo' | 'grpc' | 'http';
-type jsonSubtype = 'parse' | 'generate';
-type messagingSubtype =
+type ExternalSubtype = 'dubbo' | 'grpc' | 'http';
+type JsonSubtype = 'parse' | 'generate';
+type MessagingSubtype =
   | 'azure-queue'
   | 'azure-service-bus'
   | 'jms'
@@ -45,8 +47,8 @@ type messagingSubtype =
   | 'rabbitmq'
   | 'sns'
   | 'sqs';
-type storageSubtype = 'azure-blob' | 'azure-file' | 'azure-table' | 's3';
-type websocketSubtype = 'send';
+type StorageSubtype = 'azure-blob' | 'azure-file' | 'azure-table' | 's3';
+type WebsocketSubtype = 'send';
 
 type LiteralUnion<T extends U, U = string> = T | (U & object);
 
@@ -54,14 +56,13 @@ export interface SpanOptions {
   name?: string;
   nameByParameter?: string | number;
   subType?: LiteralUnion<
-    | appSubtype
-    | dbSubtype
-    | externalSubtype
-    | jsonSubtype
-    | messagingSubtype
-    | storageSubtype
-    | websocketSubtype
-    | string
+    | AppSubtype
+    | DbSubtype
+    | ExternalSubtype
+    | JsonSubtype
+    | MessagingSubtype
+    | StorageSubtype
+    | WebsocketSubtype
   >;
 }
 
@@ -69,12 +70,12 @@ export interface TransactionOptions {
   name?: string;
   nameByParameter?: string | number;
   type?: LiteralUnion<
-    | appSubtype
-    | dbSubtype
-    | externalSubtype
-    | jsonSubtype
-    | messagingSubtype
-    | storageSubtype
-    | websocketSubtype
+    | AppSubtype
+    | DbSubtype
+    | ExternalSubtype
+    | JsonSubtype
+    | MessagingSubtype
+    | StorageSubtype
+    | WebsocketSubtype
   >;
 }

@@ -1,12 +1,12 @@
-import { SpanOptions, traceLabels } from './protocols';
+import { SpanOptions, TraceLabels } from './protocols';
 import { getName, getType, searchLabels } from './utils';
 
 type LoggerOptions = { inputName: string; outputName: string };
 
 type LoggerParams = {
   options: SpanOptions;
-  input?: traceLabels;
-  output?: traceLabels;
+  input?: TraceLabels;
+  output?: TraceLabels;
 };
 
 export function makeDecorator<Logger extends Function>(
@@ -19,11 +19,38 @@ export function makeDecorator<Logger extends Function>(
       _key: string | symbol,
       descriptor: PropertyDescriptor
     ) {
-      const originalMethod = descriptor.value;
+      const originalHandler = descriptor.value;
+      const isAsync = originalHandler.constructor.name === 'AsyncFunction';
 
-      descriptor.value = async function <T>(...args: T[]) {
+      // TODO:  REFACTOR THIS
+      if (isAsync) {
+        descriptor.value = async function <T>(...args: T[]) {
+          const name = getName(args, options);
+          const methodResult = await originalHandler.apply(this, args);
+
+          const type = getType(options?.subType) ?? undefined;
+          const subType = options?.subType ?? undefined;
+
+          const inputData = searchLabels(input, args);
+          const outputData = searchLabels(output, methodResult);
+
+          logger?.({
+            name,
+            type,
+            subType,
+            [loggerOptions.inputName]: inputData,
+            [loggerOptions.outputName]: outputData
+          });
+
+          return methodResult;
+        };
+
+        return descriptor;
+      }
+
+      descriptor.value = function <T>(...args: T[]) {
         const name = getName(args, options);
-        const methodResult = await originalMethod.apply(this, args);
+        const methodResult = originalHandler.apply(this, args);
 
         const type = getType(options?.subType) ?? undefined;
         const subType = options?.subType ?? undefined;
@@ -31,7 +58,7 @@ export function makeDecorator<Logger extends Function>(
         const inputData = searchLabels(input, args);
         const outputData = searchLabels(output, methodResult);
 
-        await logger?.({
+        logger?.({
           name,
           type,
           subType,

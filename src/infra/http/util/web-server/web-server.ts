@@ -24,6 +24,10 @@ import {
   convertSnakeCaseKeysToCamelCase,
   logger
 } from '@/util';
+import {
+  SpanOptions,
+  TraceLabels
+} from '@/util/observability/apm/util/trace/types';
 
 import { WebSocketServer, WebSocketServerOptions } from '../websocket-server';
 import { Route } from './route';
@@ -42,6 +46,12 @@ export enum Exceptions {
   INVALID_PORT_VALUE = 'Port must be a number or a valid numerical string',
   REGISTER_ROUTE_AFTER_BOOTSTRAP_SERVER = 'Sorry, you cannot register routes after bootstraping the HTTP server'
 }
+
+type DecoratorOptions = {
+  options: SpanOptions;
+  params?: TraceLabels;
+  result?: TraceLabels;
+};
 
 type Endpoint = {
   method: keyof Router;
@@ -406,7 +416,7 @@ export class WebServer {
         ];
 
         function handler() {
-          const decoratorOptions = {
+          const decoratorOptions: DecoratorOptions = {
             options: {
               name: '',
               subType: 'handler'
@@ -486,7 +496,7 @@ export class WebServer {
       ];
 
       function handler() {
-        const decoratorOptions = {
+        const decoratorOptions: DecoratorOptions = {
           options: {
             name: '',
             subType: 'handler'

@@ -6,7 +6,7 @@ describe('WORKER Logger Function', () => {
       options: {
         name: 'any_name',
         nameByParameter: 'any_name_by_parameter',
-        subType: 'any_sub_type'
+        subType: 'worker'
       }
     });
     expect(typeof decorator).toEqual('function');

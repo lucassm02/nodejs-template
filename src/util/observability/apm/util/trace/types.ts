@@ -10,8 +10,9 @@ type AppSubtype =
   | 'graphql'
   | 'mailer'
   | 'resource'
-  | 'worker'
   | 'handler'
+  | 'worker'
+  | 'task'
   | 'function';
 type DbSubtype =
   | 'cassandra'
@@ -37,8 +38,8 @@ type DbSubtype =
   | 'sql-server'
   | 'unknown';
 type ExternalSubtype = 'dubbo' | 'grpc' | 'http';
-type jsonSubtype = 'parse' | 'generate';
-type messagingSubtype =
+type JsonSubtype = 'parse' | 'generate';
+type MessagingSubtype =
   | 'azure-queue'
   | 'azure-service-bus'
   | 'jms'
@@ -58,11 +59,10 @@ export interface SpanOptions {
     | AppSubtype
     | DbSubtype
     | ExternalSubtype
-    | jsonSubtype
-    | messagingSubtype
+    | JsonSubtype
+    | MessagingSubtype
     | StorageSubtype
     | WebsocketSubtype
-    | string
   >;
 }
 
@@ -73,8 +73,8 @@ export interface TransactionOptions {
     | AppSubtype
     | DbSubtype
     | ExternalSubtype
-    | jsonSubtype
-    | messagingSubtype
+    | JsonSubtype
+    | MessagingSubtype
     | StorageSubtype
     | WebsocketSubtype
   >;
