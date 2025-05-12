@@ -1,0 +1,10 @@
+process.env.NODE_ENV = 'test';
+process.env.TZ = 'America/Sao_Paulo';
+process.env.SERVER_BASE_URI = '/api/v1';
+process.env.API_BASE_URL = '/api/v1';
+process.env.DB_CONFIG = 'test';
+process.env.ELASTICSEARCH_ENABLED = false;
+process.env.APM_ENABLED = false;
+process.env.LOGGER_ENABLED = false;
+process.env.LOGGER_CONSOLE_LEVEL = 'error';
+process.env.LOGGER_DB_ENABLED = false;

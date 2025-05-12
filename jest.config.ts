@@ -4,6 +4,7 @@ import { compilerOptions } from './tsconfig.json';
 
 export default {
   clearMocks: true,
+  setupFiles: ['<rootDir>/jest.env.js'],
   collectCoverageFrom: ['<rootDir>/src/**/*.ts', '!<rootDir>/src/main/**'],
   coveragePathIgnorePatterns: ['/node_modules/', '/src/data/protocols/*'],
   modulePathIgnorePatterns: ['<rootDir>/dist/'],
