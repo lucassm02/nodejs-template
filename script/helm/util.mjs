@@ -18,7 +18,7 @@ export const DEFAULT_SECRET_VALUES = [
   'MONGO_PASSWORD',
   'ELASTICSEARCH_USERNAME',
   'ELASTICSEARCH_PASSWORD',
-  'APM_SECRET_TOKEN',
+  'APM_SECRET_TOKEN'
 ];
 
 export const ENVIRONMENT_VALUES_TO_IGNORE = ['SONAR_TOKEN'];
@@ -31,21 +31,21 @@ export const ENVIRONMENT_VALUES = {
     INGRESS_HOSTS: ['api.pagtel.com.br'],
     RESOURCES: {
       requests: {
-        cpu: '100m',
-        memory: '128Mi',
+        cpu: '75m',
+        memory: '75Mi'
       },
       limits: {
-        cpu: '100m',
-        memory: '150Mi',
-      },
+        cpu: '128m',
+        memory: '150Mi'
+      }
     },
     AUTOSCALING: {
       enabled: true,
       minReplicas: 2,
       maxReplicas: 5,
       targetCPUUtilizationPercentage: 80,
-      targetMemoryUtilizationPercentage: 80,
-    },
+      targetMemoryUtilizationPercentage: 80
+    }
   },
   HOMOLOGATION: {
     HELM_FILE_NAME: 'homologation-values',
@@ -54,21 +54,21 @@ export const ENVIRONMENT_VALUES = {
     INGRESS_HOSTS: ['homologation.pagtel.com.br'],
     RESOURCES: {
       requests: {
-        cpu: '100m',
-        memory: '128Mi',
+        cpu: '75m',
+        memory: '75Mi'
       },
       limits: {
         cpu: '100m',
-        memory: '150Mi',
-      },
+        memory: '150Mi'
+      }
     },
     AUTOSCALING: {
       enabled: true,
       minReplicas: 1,
       maxReplicas: 2,
       targetCPUUtilizationPercentage: 90,
-      targetMemoryUtilizationPercentage: 90,
-    },
+      targetMemoryUtilizationPercentage: 90
+    }
   },
   STAGING: {
     HELM_FILE_NAME: 'staging-values',
@@ -77,21 +77,21 @@ export const ENVIRONMENT_VALUES = {
     INGRESS_HOSTS: ['staging.pagtel.com.br'],
     RESOURCES: {
       requests: {
-        cpu: '100m',
-        memory: '128Mi',
+        cpu: '75m',
+        memory: '75Mi'
       },
       limits: {
         cpu: '100m',
-        memory: '150Mi',
-      },
+        memory: '150Mi'
+      }
     },
     AUTOSCALING: {
       enabled: true,
       minReplicas: 1,
       maxReplicas: 2,
       targetCPUUtilizationPercentage: 90,
-      targetMemoryUtilizationPercentage: 90,
-    },
+      targetMemoryUtilizationPercentage: 90
+    }
   },
   DEVELOPMENT: {
     HELM_FILE_NAME: 'development-values',
@@ -100,22 +100,22 @@ export const ENVIRONMENT_VALUES = {
     INGRESS_HOSTS: ['development.pagtel.com.br'],
     RESOURCES: {
       requests: {
-        cpu: '100m',
-        memory: '128Mi',
+        cpu: '75m',
+        memory: '75Mi'
       },
       limits: {
         cpu: '100m',
-        memory: '150Mi',
-      },
+        memory: '150Mi'
+      }
     },
     AUTOSCALING: {
       enabled: true,
       minReplicas: 1,
       maxReplicas: 2,
       targetCPUUtilizationPercentage: 90,
-      targetMemoryUtilizationPercentage: 90,
-    },
-  },
+      targetMemoryUtilizationPercentage: 90
+    }
+  }
 };
 
 export const writeHelmValuesFile = async (fileName, content = '') => {
@@ -124,7 +124,7 @@ export const writeHelmValuesFile = async (fileName, content = '') => {
 
   try {
     await access(folderPath, F_OK);
-  } catch (error) {
+  } catch (_error) {
     await mkdir(folderPath);
   }
 
@@ -148,7 +148,7 @@ export const writeHelmEnvironmentConfigFile = async (
 
   try {
     await access(folderPath, F_OK);
-  } catch (error) {
+  } catch (_error) {
     await mkdir(folderPath, { recursive: true });
   }
 
@@ -171,7 +171,7 @@ export const getEnvValues = async (fileName) => {
       .filter(Boolean);
 
     return Object.fromEntries(entries);
-  } catch (error) {
+  } catch (_error) {
     console.error(`${fileName} not found`);
     return process.exit(1);
   }
@@ -214,14 +214,19 @@ export const generateEnvironmentConfig = (data, appName, kind) => {
     kind,
     type,
     metadata: {
-      name: appName,
+      name: appName
     },
-    data,
+    data
   };
 };
 
 export const getGitlabContainerRegisterUrl = async () => {
-  const lines = await new Promise(function (resolve, reject) {
+  const DOCKER_REGISTER = {
+    GITHUB: 'ghcr.io',
+    GITLAB: 'registry.gitlab.com',
+    DEFAULT: 'docker.io'
+  };
+  const lines = await new Promise((resolve, reject) => {
     const chunks = [];
     const args = ['config', '--get', 'remote.origin.url'];
     const process = spawn('git', args);
@@ -237,14 +242,16 @@ export const getGitlabContainerRegisterUrl = async () => {
     });
   });
 
-  const gitLabRegisterBaseUrl = 'registry.gitlab.com';
-
-  const [, , ...uri] = lines[0]
+  const [, host, ...uri] = lines[0]
     .replace('.git', '')
     .split('/')
     .filter((str) => str !== '');
 
-  return [gitLabRegisterBaseUrl, ...uri].join('/');
+  const [, registerDomain = DOCKER_REGISTER.DEFAULT] = Object.entries(
+    DOCKER_REGISTER
+  ).find(([key]) => host.toUpperCase().includes(key.toUpperCase()));
+
+  return [registerDomain, ...uri].join('/');
 };
 
 export const getProjectRoutes = async () => {
@@ -283,7 +290,7 @@ export const getProjectRoutes = async () => {
       });
 
       return Promise.all(internPromises);
-    } catch (error) {
+    } catch (_error) {
       return null;
     }
   });
@@ -298,7 +305,7 @@ export const makeIngressHosts = (routes, environment, baseUrl) => {
 
   const paths = routes.map((path) => ({
     path: baseUrl + path,
-    pathType: 'Exact',
+    pathType: 'Exact'
   }));
 
   const hosts =

@@ -2,8 +2,8 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import Yaml from 'yaml';
 
-import packageProps from '../../package.json' assert { type: 'json' };
-import manifestTemplate from './manifest.json' assert { type: 'json' };
+import packageProps from '../../package.json' with { type: 'json' };
+import manifestTemplate from './manifest.json' with { type: 'json' };
 import {
   ENVIRONMENT_VALUES,
   writeHelmValuesFile,
@@ -14,7 +14,7 @@ import {
   generateHelmRequiredVariablesFromEnv,
   getGitlabContainerRegisterUrl,
   makeIngressHosts,
-  getProjectRoutes,
+  getProjectRoutes
 } from './util.mjs';
 
 export const handler = async (environment, scanRoutes, secrets = []) => {
@@ -24,7 +24,7 @@ export const handler = async (environment, scanRoutes, secrets = []) => {
     'PRODUCTION',
     'HOMOLOGATION',
     'DEVELOPMENT',
-    'STAGING',
+    'STAGING'
   ];
 
   if (!allowedEnvironments.includes(environmentToUpperCase)) {
