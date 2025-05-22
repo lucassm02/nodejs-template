@@ -453,7 +453,7 @@ export class RabbitMqServer {
 
     if (typeof arg1 === 'object') {
       queue = arg1.queue;
-      enabled = this.optionsFromEnv?.[queue]?.enabled ?? !!arg1.enabled;
+      enabled = this.optionsFromEnv?.[queue]?.enabled ?? arg1.enabled ?? true;
 
       prefetch =
         this.optionsFromEnv?.[queue]?.prefetch ??
