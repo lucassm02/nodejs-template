@@ -56,24 +56,7 @@ export class WorkerManager {
 
     this.agenda.database(mongoUrl, this.collectionName);
 
-    for (const item of WORKER.LIST) {
-      if (item === '*') {
-        this.workerLoaderOptions.allowAll = true;
-        this.workerLoaderOptions.denyAll = false;
-        continue;
-      }
-      if (item === '!*') {
-        this.workerLoaderOptions.allowAll = false;
-        this.workerLoaderOptions.denyAll = true;
-        continue;
-      }
-
-      if (item[0] === '!') {
-        this.workerLoaderOptions.deny.push(item.substring(1));
-      } else {
-        this.workerLoaderOptions.allow.push(item);
-      }
-    }
+    this.extractWorkerOptions();
   }
 
   public static getInstance(): WorkerManager {
@@ -177,5 +160,26 @@ export class WorkerManager {
     callback: () => Promise<void>
   ): Promise<void> {
     await callback();
+  }
+
+  private extractWorkerOptions() {
+    for (const item of WORKER.LIST) {
+      if (item === '*') {
+        this.workerLoaderOptions.allowAll = true;
+        this.workerLoaderOptions.denyAll = false;
+        continue;
+      }
+      if (item === '!*') {
+        this.workerLoaderOptions.allowAll = false;
+        this.workerLoaderOptions.denyAll = true;
+        continue;
+      }
+
+      if (item[0] === '!') {
+        this.workerLoaderOptions.deny.push(item.substring(1));
+      } else {
+        this.workerLoaderOptions.allow.push(item);
+      }
+    }
   }
 }
