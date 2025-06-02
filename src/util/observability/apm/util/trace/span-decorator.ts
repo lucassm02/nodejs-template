@@ -52,7 +52,9 @@ export function apmSpan({ options, params, result }: TraceParams) {
 
         const spanName = getName(args, options);
 
-        const span = apm.currentTransaction.startSpan(spanName)!;
+        const span = apm.currentTransaction.startSpan(spanName);
+
+        if (!span) return originalHandler.apply(this, args);
 
         const response = await originalHandler.apply(this, args);
 
@@ -83,7 +85,10 @@ export function apmSpan({ options, params, result }: TraceParams) {
 
       const spanName = getName(args, options);
 
-      const span = apm.currentTransaction.startSpan(spanName)!;
+      const span = apm.currentTransaction.startSpan(spanName);
+
+      if (!span) return originalHandler.apply(this, args);
+
       const response = originalHandler.apply(this, args);
 
       if (options.subType) {
