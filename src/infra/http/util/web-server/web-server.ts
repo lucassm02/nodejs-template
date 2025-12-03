@@ -90,6 +90,32 @@ export class WebServer {
       this.connections.add(socket);
       socket.on('close', () => this.connections.delete(socket));
     });
+
+    fastify.addContentTypeParser(
+      'application/json',
+      { parseAs: 'string' },
+      function (_req, body, done) {
+        if (!body) return done(null, {});
+        try {
+          done(null, JSON.parse(String(body)));
+        } catch (error) {
+          done(error as Error, undefined);
+        }
+      }
+    );
+
+    fastify.addContentTypeParser(
+      'application/x-www-form-urlencoded',
+      { parseAs: 'string' },
+      function (_req, body, done) {
+        try {
+          const parsed = Object.fromEntries(new URLSearchParams(String(body)));
+          done(null, parsed);
+        } catch (error) {
+          done(error as Error, undefined);
+        }
+      }
+    );
   }
 
   public getWebsocketServer = () => this.socketIO;
