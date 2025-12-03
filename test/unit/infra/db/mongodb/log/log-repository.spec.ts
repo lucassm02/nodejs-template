@@ -28,6 +28,11 @@ describe('Log Repository', () => {
       log_message: 'my_item',
       type: 'any_type'
     };
-    expect(createSpy).toHaveBeenCalledWith(expected);
+
+    const writeConcern = {
+      w: 0
+    };
+
+    expect(createSpy).toHaveBeenCalledWith(expected, { writeConcern });
   });
 });

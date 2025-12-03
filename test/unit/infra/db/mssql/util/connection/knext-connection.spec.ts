@@ -8,7 +8,15 @@ describe('KNEX connection config', () => {
     const config = getConfig();
 
     const values = Object.keys(config.connection);
-    const expectedValues = ['host', 'port', 'user', 'password', 'options'];
+    const expectedValues = [
+      'host',
+      'port',
+      'user',
+      'password',
+      'requestTimeout',
+      'options'
+    ];
+
     expect(values).toEqual(expectedValues);
     expect(config.client).toBeTruthy();
   });
