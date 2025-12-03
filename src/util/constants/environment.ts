@@ -85,6 +85,10 @@ export const MONGO = {
   ENABLED: process.env.MONGO_ENABLED
     ? stringToBoolean(process.env.MONGO_ENABLED)
     : true,
+  CONNECTION_TIMEOUT_MS: +(() =>
+    process.env.MONGO_CONNECTION_TIMEOUT_MS || 60000)(),
+  MAX_POOL_SIZE: +(() => process.env.MONGO_MAX_POOL_SIZE || 100)(),
+  MIN_POOL_SIZE: +(() => process.env.MONGO_MIN_POOL_SIZE || 1)(),
   USER: process.env.MONGO_USER || '',
   PASSWORD: process.env.MONGO_PASSWORD || '',
   HOST: process.env.MONGO_HOST || '',
