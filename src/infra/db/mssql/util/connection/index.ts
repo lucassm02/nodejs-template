@@ -12,11 +12,22 @@ const configs = {
       port: +DB.PORT,
       user: DB.USERNAME,
       password: DB.PASSWORD,
+      requestTimeout: DB.CONNECTION_TIMEOUT_MS,
       options: {
         encrypt: false,
         enableArithAbort: false,
         appName: pkg.name
       }
+    },
+    pool: {
+      max: DB.MAX_POOL,
+      min: DB.MIN_POOL,
+      acquireTimeoutMillis: DB.CONNECTION_TIMEOUT_MS,
+      createTimeoutMillis: DB.CONNECTION_TIMEOUT_MS,
+      destroyTimeoutMillis: DB.CONNECTION_TIMEOUT_MS,
+      idleTimeoutMillis: DB.IDLE_TIMEOUT_IN_MILLISECONDS,
+      reapIntervalMillis: DB.REPEAT_INTERVAL_IN_MS,
+      createRetryIntervalMillis: DB.CREATE_RETRY_INTERVAL_IN_MS
     }
   },
 
