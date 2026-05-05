@@ -1,5 +1,5 @@
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'node:crypto';
 
 export const generateUuid = () => {
-  return uuidv4().toUpperCase();
+  return randomUUID().toUpperCase();
 };

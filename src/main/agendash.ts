@@ -2,6 +2,7 @@ import { Agenda } from 'agenda';
 import agendash from 'agendash';
 import Fastify from 'fastify';
 
+import { MongoBackend } from '@agendajs/mongo-backend';
 import { MONGO, WORKER, logger } from '@/util';
 
 const { BASE_URI, PORT } = WORKER.DASHBOARD;
@@ -9,7 +10,9 @@ const { BASE_URI, PORT } = WORKER.DASHBOARD;
 const connection = `${MONGO.URL()}/${MONGO.NAME}?authSource=${MONGO.AUTH_SOURCE}`;
 const collection = 'agenda';
 
-const agenda = new Agenda().database(connection, collection);
+const agenda = new Agenda({
+  backend: new MongoBackend({ address: connection, collection })
+});
 
 const fastify = Fastify();
 

@@ -33,6 +33,6 @@ describe('Log Repository', () => {
       w: 0
     };
 
-    expect(createSpy).toHaveBeenCalledWith(expected, { writeConcern });
+    expect(createSpy).toHaveBeenCalledWith([expected], { writeConcern });
   });
 });

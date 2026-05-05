@@ -1,5 +1,5 @@
-ARG VARIANT="16"
-FROM mcr.microsoft.com/vscode/devcontainers/typescript-node:0-${VARIANT}
+ARG VARIANT="24-trixie"
+FROM mcr.microsoft.com/devcontainers/typescript-node:${VARIANT}
 
 ENV TZ=America/Sao_Paulo
 

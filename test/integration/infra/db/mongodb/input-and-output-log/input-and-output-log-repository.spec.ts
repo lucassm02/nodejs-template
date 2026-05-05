@@ -93,24 +93,29 @@ describe('InputAndOutputLog Repository', () => {
     await sut.create(mockLog);
     const [result] = await InputAndOutputLogModel.find();
 
-    const resultKeys = Object.keys(result);
-
-    const expectedKeys = [
-      '$__',
-      '$isNew',
-      '_doc',
-      'url',
-      'request',
-      'params',
-      'headers',
-      'response',
-      'body',
-      'payload'
-    ];
-
-    expect(resultKeys.length).toBe(10);
-    resultKeys.forEach((key) => {
-      expect(expectedKeys.includes(key)).toBe(true);
+    expect(result.toObject()).toMatchObject({
+      type: mockLog.type,
+      url: mockLog.url,
+      request: {
+        params: {
+          payment_id: mockLog.request.params.paymentId
+        },
+        headers: mockLog.request.headers
+      },
+      response: {
+        body: {
+          message: mockLog.response.body.message,
+          payload: {
+            payment_id: mockLog.response.body.payload.payment_id,
+            value: mockLog.response.body.payload.value,
+            resend: mockLog.response.body.payload.resend,
+            service: mockLog.response.body.payload.service
+          },
+          error: mockLog.response.body.error
+        },
+        headers: mockLog.response.headers,
+        code: mockLog.response.code
+      }
     });
   });
 });

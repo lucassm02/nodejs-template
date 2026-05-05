@@ -9,7 +9,7 @@ export class LogRepository implements CreateLogRepository {
   ): CreateLogRepository.Result {
     try {
       const formattedParams = convertCamelCaseKeysToSnakeCase(params);
-      await LogModel.create(formattedParams, { writeConcern: { w: 0 } });
+      await LogModel.create([formattedParams], { writeConcern: { w: 0 } });
     } catch (error) {
       logger.log(error);
     }

@@ -1,4 +1,4 @@
-FROM node:22.15.0-slim AS builder
+FROM node:24-trixie-slim AS builder
 
 WORKDIR /home/node/app
 
@@ -10,7 +10,7 @@ COPY --chown=node:node . .
 
 RUN yarn build
 
-FROM node:22.15.0-slim
+FROM node:24-trixie-slim
 LABEL maintainer="Santos <lucassm02@gmail.com.br>"
 
 ENV TZ=America/Sao_Paulo

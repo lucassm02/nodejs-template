@@ -13,6 +13,7 @@ const close = jest.fn().mockImplementation((callback) => {
 });
 
 const decorateRequest = jest.fn();
+const addContentTypeParser = jest.fn();
 
 const server = {
   listen: jest.fn(),
@@ -29,6 +30,7 @@ const fastifyMock = () => ({
   ready,
   close,
   decorateRequest,
+  addContentTypeParser,
   server
 });
 

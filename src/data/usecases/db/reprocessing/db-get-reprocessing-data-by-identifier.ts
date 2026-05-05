@@ -1,9 +1,7 @@
 import { GetReprocessingDataByIdentifierRepository } from '@/data/protocols/db';
 import { GetReprocessingDataByIdentifier } from '@/domain/usecases';
 
-export class DbGetReprocessingDataByIdentifier
-  implements GetReprocessingDataByIdentifier
-{
+export class DbGetReprocessingDataByIdentifier implements GetReprocessingDataByIdentifier {
   constructor(
     private readonly getReprocessingDataByIdentifierRepository: GetReprocessingDataByIdentifierRepository
   ) {}

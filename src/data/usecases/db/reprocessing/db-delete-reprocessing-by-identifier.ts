@@ -1,9 +1,7 @@
 import { DeleteReprocessingByIdentifierRepository } from '@/data/protocols/db';
 import { DeleteReprocessingByIdentifier } from '@/domain/usecases';
 
-export class DbDeleteReprocessingByIdentifier
-  implements DeleteReprocessingByIdentifier
-{
+export class DbDeleteReprocessingByIdentifier implements DeleteReprocessingByIdentifier {
   constructor(
     private readonly deleteReprocessingByIdentifierRepository: DeleteReprocessingByIdentifierRepository
   ) {}
