@@ -1,5 +1,7 @@
 // TODO: We should seek better alternatives in the future, but for now, it's not a problem.
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { sanitizeObject } from '@/util/security/sanitize-object';
+
 import { TraceLabels, TransactionOptions } from './types';
 
 export const searchLabels = (
@@ -38,7 +40,8 @@ export const searchLabels = (
 };
 
 export const labelParamsToString = (params: object) => {
-  return Object.entries(params).reduce((acc, [key, value]) => {
+  const sanitized = sanitizeObject(params);
+  return Object.entries(sanitized).reduce((acc, [key, value]) => {
     if (typeof value === 'object' || Array.isArray(value)) {
       return { ...acc, [key]: JSON.stringify(value) };
     }

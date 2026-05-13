@@ -5,6 +5,7 @@ import {
   generateUuid,
   getAPMTransactionIds
 } from '@/util';
+import { sanitizeObject } from '@/util/security/sanitize-object';
 
 export const datoraHttpLogger = () => {
   return function (
@@ -92,18 +93,18 @@ export const datoraHttpLogger = () => {
             transactionId: transactionIds.transactionId,
             traceId: transactionIds.traceId,
             eventId: transactionIds.transactionId,
-            request: {
+            request: sanitizeObject({
               requestId: generateUuid(),
               url: requestOptions.url,
               method: requestOptions.method,
               ...requestData,
               headers: requestOptions.headers
-            },
-            response: {
+            }),
+            response: sanitizeObject({
               statusCode: methodResult.statusCode,
               ...responseData,
               headers: methodResult.headers
-            },
+            }),
             createdAt: formatDate(new Date(), 'yyyy-MM-dd HH:mm:ss')
           }
         });

@@ -1,24 +1,50 @@
-const SENSITIVE_KEYWORDS = [
-  'cvv',
-  'authorization',
-  'password',
-  'auth',
-  'authentication',
-  'token',
-  'secret',
-  'apiKey',
-  'apikey',
-  'api_key',
-  'ssn',
-  'creditCard',
+const CARD_KEYWORDS = [
+  'card',
   'creditcard',
   'credit_card',
   'cardnumber',
   'card_number',
-  'card'
+  'pan'
 ];
 
-export function isSensitiveKey(key: string): boolean {
+const REDACT_KEYWORDS = [
+  'password',
+  'secret',
+  'token',
+  'apikey',
+  'api_key',
+  'auth',
+  'authorization',
+  'authentication',
+  'bearer',
+  'private',
+  'privatekey',
+  'private_key'
+];
+
+const PARTIAL_KEYWORDS = [
+  'cvv',
+  'ssn',
+  'cpf',
+  'cnpj',
+  'rg',
+  'pin',
+  'otp',
+  'mfa',
+  'expiry',
+  'expiration'
+];
+
+export type SensitiveKeyType = 'card' | 'redact' | 'partial';
+
+export function getSensitiveKeyType(key: string): SensitiveKeyType | null {
   const lower = key.toLowerCase();
-  return SENSITIVE_KEYWORDS.some((keyword) => lower.includes(keyword));
+  if (CARD_KEYWORDS.some((k) => lower.includes(k))) return 'card';
+  if (REDACT_KEYWORDS.some((k) => lower.includes(k))) return 'redact';
+  if (PARTIAL_KEYWORDS.some((k) => lower.includes(k))) return 'partial';
+  return null;
+}
+
+export function isSensitiveKey(key: string): boolean {
+  return getSensitiveKeyType(key) !== null;
 }

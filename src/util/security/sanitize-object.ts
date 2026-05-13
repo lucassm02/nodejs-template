@@ -1,30 +1,33 @@
-import { isSensitiveKey } from './is-sensitive-key';
-import { maskValue } from './mask-value';
+import { getSensitiveKeyType, SensitiveKeyType } from './is-sensitive-key';
+import { applyMask } from './mask-value';
 
 type AnyObject = Record<string, any>;
 
-const sensitiveSubValues = ['number', 'value', 'content'];
+const SENSITIVE_SUB_VALUES = ['number', 'value', 'content'];
 
-/**
- * Sanitizes an object: for each sensitive property,
- * masks 80% of the value; for the rest, it resorts in
- */
-export function sanitizeObject(obj: any, parentKey: string = ''): any {
+export function sanitizeObject(
+  obj: any,
+  parentType: SensitiveKeyType | null = null
+): any {
   if (Array.isArray(obj)) {
-    return obj.map((value) => sanitizeObject(value));
+    return obj.map((item) => sanitizeObject(item, parentType));
   }
+
   if (obj !== null && typeof obj === 'object') {
     const out: AnyObject = {};
     for (const [key, val] of Object.entries(obj)) {
-      if (
-        (isSensitiveKey(key) ||
-          (isSensitiveKey(parentKey) && sensitiveSubValues.includes(key))) &&
+      const keyType = getSensitiveKeyType(key);
+
+      if (keyType && ['string', 'number'].includes(typeof val)) {
+        out[key] = applyMask(String(val), keyType);
+      } else if (
+        parentType &&
+        SENSITIVE_SUB_VALUES.includes(key) &&
         ['string', 'number'].includes(typeof val)
       ) {
-        const str = String(val);
-        out[key] = maskValue(str);
+        out[key] = applyMask(String(val), parentType);
       } else {
-        out[key] = sanitizeObject(val, key);
+        out[key] = sanitizeObject(val, keyType ?? parentType);
       }
     }
     return out;

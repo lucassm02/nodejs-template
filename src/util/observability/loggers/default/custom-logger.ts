@@ -7,6 +7,7 @@ import ecsFormat from '@elastic/ecs-winston-format';
 import pkg from '@/../package.json';
 import { createMongoLog } from '@/main/facades';
 import { ELASTICSEARCH, LOGGER, MONGO } from '@/util/constants';
+import { sanitizeObject } from '@/util/security/sanitize-object';
 
 import { elasticAPM, getAPMTransactionIds } from '../../apm';
 import { defaultIndexTemplate } from './elasticsearch';
@@ -166,7 +167,7 @@ export class CustomLogger {
       application,
       message,
       level: <string>level ?? 'warn',
-      ...rest
+      ...sanitizeObject(rest)
     });
   }
 }
