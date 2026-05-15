@@ -1,4 +1,3 @@
-/* eslint-disable no-useless-catch */
 import EventEmitter from 'events';
 
 type Next = () => void;
@@ -9,10 +8,12 @@ export default <Data extends Record<string, unknown>>(data: Data) =>
   async () => {
     const NEXT_EVENT_SYMBOL = Symbol('NEXT');
     const RESOLVER_EVENT_SYMBOL = Symbol('RESOLVE');
+    const REJECT_EVENT_SYMBOL = Symbol('REJECT');
 
     const event = new EventEmitter();
 
     let resolve!: Function;
+    let reject!: Function;
 
     const callStack = callbacks
       .map((middleware) => async () => {
@@ -28,15 +29,13 @@ export default <Data extends Record<string, unknown>>(data: Data) =>
 
           if (nextFunctionWasCalled) {
             event.emit(NEXT_EVENT_SYMBOL);
+          } else {
+            event.emit(RESOLVER_EVENT_SYMBOL);
           }
 
           return response;
         } catch (error) {
-          throw error;
-        } finally {
-          if (!nextFunctionWasCalled) {
-            event.emit(RESOLVER_EVENT_SYMBOL);
-          }
+          event.emit(REJECT_EVENT_SYMBOL, error);
         }
       })
       .reverse();
@@ -53,15 +52,18 @@ export default <Data extends Record<string, unknown>>(data: Data) =>
     });
 
     event.once(RESOLVER_EVENT_SYMBOL, () => {
+      event.removeAllListeners();
       resolve(undefined);
     });
 
+    event.once(REJECT_EVENT_SYMBOL, (error) => {
+      event.removeAllListeners();
+      reject(error);
+    });
+
     return new Promise((resolveCallback, rejectCallback) => {
-      try {
-        resolve = resolveCallback;
-        event.emit(NEXT_EVENT_SYMBOL);
-      } catch (error) {
-        rejectCallback(error);
-      }
+      resolve = resolveCallback;
+      reject = rejectCallback;
+      event.emit(NEXT_EVENT_SYMBOL);
     });
   };

@@ -10,6 +10,7 @@ import {
   type RouteMiddlewareSocket
 } from '@/infra/http/util/web-server/types';
 import makeFlow from '@/main/adapters/flow-adapter';
+import { logger } from '@/util';
 
 type Options = {
   each: number;
@@ -31,24 +32,31 @@ export const useTimedRepeater = (
       return finish();
     };
 
-    const repeater = setInterval(async () => {
-      const server = webServer().getWebsocketServer();
+    const server = webServer().getWebsocketServer();
 
+    const repeater = setInterval(() => {
       const event = request[EVENT_KEY];
 
       const middlewares = args.map((middleware) => {
         return server.adapter(middleware, event);
       });
 
-      await makeFlow({
+      makeFlow({
         [REQUEST_KEY]: request,
         [STATE_KEY]: state,
         [SOCKET_KEY]: socket
-      })(...middlewares)();
-
-      if (socket.disconnected) {
-        return clearAll();
-      }
+      })(...middlewares)()
+        .then(() => {
+          if (socket.disconnected) clearAll();
+        })
+        .catch((error) => {
+          clearAll();
+          logger.log({
+            level: 'error',
+            message: 'Timed repeater error',
+            error
+          });
+        });
     }, each);
 
     const timer = setTimeout(() => {

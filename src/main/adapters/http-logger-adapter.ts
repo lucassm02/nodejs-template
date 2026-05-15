@@ -49,7 +49,8 @@ export const httpLoggerAdapter = (logger: Logger) =>
               request,
               response
             });
-          })();
+            // eslint-disable-next-line no-console
+          })().catch(console.error);
 
           return method.call(fastifyResponse, unknownBody);
         };

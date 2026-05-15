@@ -79,7 +79,7 @@ export class CacheServer {
     return this;
   }
 
-  public connect() {
+  public async connect() {
     if (!this.connectionString)
       throw new Error(this.Error.CREDENTIALS_NOT_DEFINED);
     if (this.connected) return;
@@ -88,6 +88,7 @@ export class CacheServer {
       retries: this.CONNECTION_RETIES,
       retry_delay: this.RETIES_TIMEOUT
     });
+    await this.server.set('__ping__', 'ok', { expires: 1 });
     this.connected = true;
   }
 

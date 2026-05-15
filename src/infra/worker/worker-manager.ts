@@ -106,10 +106,13 @@ export class WorkerManager {
 
     this.agenda.define(name, async (job, done) => {
       const { data, repeatInterval } = job.attrs;
-      await this.taskHandler(name, repeatInterval, data, () =>
-        jobAdapter(...callbacks)(data)
-      );
-      done();
+      try {
+        await this.taskHandler(name, repeatInterval, data, () =>
+          jobAdapter(...callbacks)(data)
+        );
+      } finally {
+        done();
+      }
     });
 
     if (repeatInterval) {
@@ -123,25 +126,29 @@ export class WorkerManager {
 
     const files = readdirSync(path);
 
-    for await (const fileName of files) {
-      const fileNameToUpperCase = fileName.toLocaleUpperCase();
+    const validFilePaths = files
+      .filter((fileName) => {
+        const fileNameToUpperCase = fileName.toLocaleUpperCase();
+        const hasAValidExtension = ignoreIfIncludes.map((text) =>
+          fileNameToUpperCase.includes(text)
+        );
+        const haveAValidName = extensionsToSearch.map((ext) =>
+          fileNameToUpperCase.endsWith(ext)
+        );
+        return (
+          haveAValidName.some(Boolean) && !hasAValidExtension.some(Boolean)
+        );
+      })
+      .map((fileName) => resolve(path, fileName));
 
-      const hasAValidExtension = ignoreIfIncludes.map((text) =>
-        fileNameToUpperCase.includes(text)
-      );
+    const modules = await Promise.all(
+      validFilePaths.map((filePath) => import(filePath))
+    );
 
-      const haveAValidName = extensionsToSearch.map((ext) =>
-        fileNameToUpperCase.endsWith(ext)
-      );
-
-      if (haveAValidName && hasAValidExtension) {
-        const filePath = resolve(path, fileName);
-        const setup = (await import(filePath)).default;
-
-        if (typeof setup !== 'function') continue;
-
-        setup(this);
-      }
+    for (const mod of modules) {
+      const setup = mod.default;
+      if (typeof setup !== 'function') continue;
+      setup(this);
     }
   }
 

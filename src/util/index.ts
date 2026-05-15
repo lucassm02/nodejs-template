@@ -3,7 +3,6 @@ export * from './comparation';
 export * from './constants';
 export * from './date';
 export * from './formatters';
-export * from './number';
 export * from './object';
 export * from './observability';
 export * from './promise';

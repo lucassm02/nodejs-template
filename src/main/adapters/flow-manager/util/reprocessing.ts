@@ -29,9 +29,7 @@ export function normalizeOptions(
     const handler = normalize(option.handler);
 
     const when =
-      typeof option.when === 'function'
-        ? normalize(option.when)
-        : option.handler;
+      typeof option.when === 'function' ? normalize(option.when) : option.when;
 
     return { when, handler, strict };
   });

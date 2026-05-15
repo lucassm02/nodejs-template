@@ -92,9 +92,9 @@ export async function bootstrap() {
       logger.log({ level: 'info', message: 'Consumer started' });
     }
 
-    function connectToMemcached() {
+    async function connectToMemcached() {
       cacheServer = setMemcachedConnection();
-      cacheServer.connect();
+      await cacheServer.connect();
       logger.log({ level: 'info', message: 'Memcached started!' });
     }
 
@@ -134,7 +134,7 @@ export async function bootstrap() {
     if (ENABLED_SERVICES.SERVER) promises.push(startServer);
     if (ENABLED_SERVICES.WORKER) promises.push(startWorker);
     if (ENABLED_SERVICES.DASHBOARD) promises.push(startAgendaDashboard);
-    if (MEMCACHED.ENABLED) connectToMemcached();
+    if (MEMCACHED.ENABLED) promises.push(connectToMemcached);
 
     await splitPromises(promises, 2);
 

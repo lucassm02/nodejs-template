@@ -153,26 +153,33 @@ export class RabbitMqServer {
       throw new Error(this.Error.EmptyChannelPool);
     }
 
-    this.startEventLiveners();
+    this.startEventListeners();
 
     this.logger({ level: 'info', message: 'Connection started' });
 
     return this;
   }
 
-  private async waitForPendingProcessing() {
+  private async waitForPendingProcessing(timeoutMs = 25_000) {
     const CHECK_INTERVAL = 100;
-    let interval;
-
-    await new Promise((resolve) => {
-      interval = setInterval(() => {
+    await new Promise<void>((resolve) => {
+      const interval = setInterval(() => {
         if (this.messages.size === 0) {
-          resolve(null);
+          clearTimeout(timeout);
+          clearInterval(interval);
+          resolve();
         }
       }, CHECK_INTERVAL);
-    });
 
-    clearInterval(interval);
+      const timeout = setTimeout(() => {
+        clearInterval(interval);
+        this.logger({
+          level: 'warn',
+          message: `Shutdown timeout reached with ${this.messages.size} message(s) still pending`
+        });
+        resolve();
+      }, timeoutMs);
+    });
   }
 
   public async stop() {
@@ -286,7 +293,7 @@ export class RabbitMqServer {
       throw new Error(this.Error.EmptyChannelPool);
     }
 
-    const chanelIndex = randomInt(0, this.channelPool.size - 1);
+    const chanelIndex = randomInt(0, this.channelPool.size);
 
     const buffer = this.convertMessageToBuffer(
       convertCamelCaseKeysToSnakeCase(message)
@@ -334,7 +341,7 @@ export class RabbitMqServer {
       convertCamelCaseKeysToSnakeCase(message)
     );
 
-    const chanelIndex = randomInt(0, this.channelPool.size - 1);
+    const chanelIndex = randomInt(0, this.channelPool.size);
 
     const channelList = Array.from(this.channelPool).map(([, value]) => value);
 
@@ -363,7 +370,7 @@ export class RabbitMqServer {
         if (!message) return;
 
         try {
-          if (this.closing) this.reject(message);
+          if (this.closing) return this.reject(message);
 
           this.messages.add(message);
 
@@ -384,7 +391,10 @@ export class RabbitMqServer {
           await this.transactionHandler(queue, payload, callback);
         } catch (error) {
           this.logger(error);
-          if (error.stack.includes('at JSON.parse')) {
+          if (
+            error instanceof Error &&
+            error.stack?.includes('at JSON.parse')
+          ) {
             this.logger({
               level: 'warn',
               message: 'Unable to convert message to JSON',
@@ -480,25 +490,29 @@ export class RabbitMqServer {
 
     const files = readdirSync(path);
 
-    for await (const fileName of files) {
-      const fileNameToUpperCase = fileName.toLocaleUpperCase();
+    const validFilePaths = files
+      .filter((fileName) => {
+        const fileNameToUpperCase = fileName.toLocaleUpperCase();
+        const hasAValidExtension = ignoreIfIncludes.map((text) =>
+          fileNameToUpperCase.includes(text)
+        );
+        const haveAValidName = extensionsToSearch.map((ext) =>
+          fileNameToUpperCase.endsWith(ext)
+        );
+        return (
+          haveAValidName.some(Boolean) && !hasAValidExtension.some(Boolean)
+        );
+      })
+      .map((fileName) => resolve(path, fileName));
 
-      const hasAValidExtension = ignoreIfIncludes.map((text) =>
-        fileNameToUpperCase.includes(text)
-      );
+    const modules = await Promise.all(
+      validFilePaths.map((filePath) => import(filePath))
+    );
 
-      const haveAValidName = extensionsToSearch.map((ext) =>
-        fileNameToUpperCase.endsWith(ext)
-      );
-
-      if (haveAValidName && hasAValidExtension) {
-        const filePath = resolve(path, fileName);
-        const setup = (await import(filePath)).default;
-
-        if (typeof setup !== 'function') continue;
-
-        setup(this);
-      }
+    for (const mod of modules) {
+      const setup = mod.default;
+      if (typeof setup !== 'function') continue;
+      setup(this);
     }
   }
 
@@ -616,7 +630,7 @@ export class RabbitMqServer {
     }
   }
 
-  private startEventLiveners() {
+  private startEventListeners() {
     this.connection?.on('error', (error) => {
       this.logger(error);
     });

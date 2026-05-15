@@ -21,7 +21,7 @@ webServer.socket({
   enabled: true,
   cors: {
     methods: ['GET', 'POST'],
-    origin: '*'
+    origin: SERVER.SOCKET.CORS_ORIGIN
   },
   transports: ['polling', 'websocket'],
   path: SERVER.SOCKET.HANDSHAKE_PATH

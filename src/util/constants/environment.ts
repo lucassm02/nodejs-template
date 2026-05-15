@@ -13,10 +13,11 @@ export const ENVIRONMENT = process.env.NODE_ENV || 'development';
 
 export const SERVER = {
   ENABLED: process.env.SERVER_ENABLED === 'true',
-  PORT: process.env.SERVER_PORT || 3000,
+  PORT: +(() => process.env.SERVER_PORT || 3000)(),
   BASE_URI: process.env.SERVER_BASE_URI || '',
   SOCKET: {
-    HANDSHAKE_PATH: process.env.SERVER_SOCKET_HANDSHAKE_PATH || ''
+    HANDSHAKE_PATH: process.env.SERVER_SOCKET_HANDSHAKE_PATH || '',
+    CORS_ORIGIN: process.env.SERVER_SOCKET_CORS_ORIGIN || '*'
   }
 };
 
@@ -30,7 +31,7 @@ export const WORKER = {
   LIST: getConsumerArrayFromEnv(process.env.WORKER_LIST),
   DASHBOARD: {
     ENABLED: process.env.WORKER_DASHBOARD_ENABLED === 'true',
-    PORT: process.env.WORKER_DASHBOARD_PORT || 8080,
+    PORT: +(() => process.env.WORKER_DASHBOARD_PORT || 8080)(),
     BASE_URI: process.env.WORKER_DASHBOARD_BASE_URI || '/dash'
   }
 };
@@ -44,8 +45,10 @@ export const LOGGER = {
 };
 
 export const ENCRYPTION = {
-  KEY: process.env.ENCRYPTION_KEY || '',
-  IV: process.env.ENCRYPTION_IV || ''
+  KEY:
+    process.env.ENCRYPTION_KEY ||
+    'f3defcbdcc7f070cccd4ae5c5caef68c70416cd32b518e92a717428a2a47782b',
+  IV: process.env.ENCRYPTION_IV || '408bf4cd088fef3e1059d9dd500d1399'
 };
 
 export const API = {
@@ -116,7 +119,7 @@ export const MEMCACHED = {
   PASSWORD: process.env.MEMCACHED_PASSWORD || '',
   HOST: process.env.MEMCACHED_HOST || '',
   PORT: +(() => process.env.MEMCACHED_PORT || 11211)(),
-  DEFAULT_TTL: process.env.MEMCACHED_DEFAULT_TTL || 60
+  DEFAULT_TTL: +(() => process.env.MEMCACHED_DEFAULT_TTL || 60)()
 };
 
 export const APM = {
@@ -136,6 +139,21 @@ export const ELASTICSEARCH = {
 export const REPROCESSING = {
   ENABLED: stringToBoolean(process.env.REPROCESSING_ENABLED) ?? false,
   MAX_TRIES: +(() => process.env.REPROCESSING_MAX_TRIES || 1)(),
-  DELAYS: process.env.REPROCESSING_DELAYS?.split(',').map(Number) || [],
+  DELAYS:
+    process.env.REPROCESSING_DELAYS?.split(',')
+      .map(Number)
+      .filter(Number.isFinite) || [],
   MODE: process.env.REPROCESSING_MODE || 'STOPPED_MIDDLEWARE'
 };
+
+if (DB.MIN_POOL > DB.MAX_POOL) {
+  throw new Error(
+    `Invalid DB pool config: DB_MIN_POOL (${DB.MIN_POOL}) cannot be greater than DB_MAX_POOL (${DB.MAX_POOL})`
+  );
+}
+
+if (MONGO.MIN_POOL_SIZE > MONGO.MAX_POOL_SIZE) {
+  throw new Error(
+    `Invalid Mongo pool config: MONGO_MIN_POOL_SIZE (${MONGO.MIN_POOL_SIZE}) cannot be greater than MONGO_MAX_POOL_SIZE (${MONGO.MAX_POOL_SIZE})`
+  );
+}

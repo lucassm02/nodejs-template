@@ -6,6 +6,9 @@ const {
 } = EXAMPLE_DB;
 
 export const seedExampleDatabase = async () => {
+  await sqlConnection(FOO.TABLE).delete();
+  await sqlConnection(EXAMPLE.TABLE).delete();
+
   await sqlConnection(FOO.TABLE).insert({
     [FOO.COLUMNS.FOO_ID]: 1,
     [FOO.COLUMNS.EXAMPLE_ID]: 1,

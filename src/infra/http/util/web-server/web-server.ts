@@ -238,17 +238,20 @@ export class WebServer {
 
   private async serverBootstrap(port: number, callback?: Function) {
     const CHECK_INTERVAL = 100;
-    let interval;
-
-    await new Promise((resolve) => {
-      interval = setInterval(() => {
+    const ROUTES_LOAD_TIMEOUT = 30_000;
+    await new Promise<void>((resolve, reject) => {
+      const interval = setInterval(() => {
         if (!this.isLoadingRoutes) {
-          resolve(null);
+          clearTimeout(timeout);
+          clearInterval(interval);
+          resolve();
         }
       }, CHECK_INTERVAL);
+      const timeout = setTimeout(() => {
+        clearInterval(interval);
+        reject(new Error('Timed out waiting for routes to load'));
+      }, ROUTES_LOAD_TIMEOUT);
     });
-
-    clearInterval(interval);
 
     this.socketIO?.bootstrap();
 
@@ -360,34 +363,34 @@ export class WebServer {
 
     this.isLoadingRoutes = true;
 
-    for await (const fileName of files) {
+    const validFiles = files.filter((fileName) => {
       const fileNameToUpperCase = fileName.toLocaleUpperCase();
-
       const hasAValidExtension = ignoreIfIncludes.map((text) =>
         fileNameToUpperCase.includes(text)
       );
-
       const haveAValidName = extensionsToSearch.map((ext) =>
         fileNameToUpperCase.endsWith(ext)
       );
+      return haveAValidName.some(Boolean) && !hasAValidExtension.some(Boolean);
+    });
 
-      if (haveAValidName && hasAValidExtension) {
-        const filePath = resolve(path, fileName);
+    const results = await Promise.allSettled(
+      validFiles.map((fileName) => import(resolve(path, fileName)))
+    );
 
-        try {
-          const setup = (await import(filePath)).default;
-
-          if (typeof setup !== 'function') continue;
-
-          setup(route);
-        } catch (error) {
-          logger.log(error);
-          logger.log({
-            level: 'error',
-            message: `Attempted to load route file ${fileName}, but encountered an error. Verify that the file exists and is correctly formatted.`
-          });
-        }
+    for (let i = 0; i < results.length; i++) {
+      const result = results[i];
+      if (result.status === 'rejected') {
+        logger.log(result.reason);
+        logger.log({
+          level: 'error',
+          message: `Attempted to load route file ${validFiles[i]}, but encountered an error. Verify that the file exists and is correctly formatted.`
+        });
+        continue;
       }
+      const setup = result.value.default;
+      if (typeof setup !== 'function') continue;
+      setup(route);
     }
 
     this.isLoadingRoutes = false;

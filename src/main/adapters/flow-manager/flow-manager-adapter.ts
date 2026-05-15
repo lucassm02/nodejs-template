@@ -72,7 +72,7 @@ export default function flowManager(
         });
 
         const result = valuesFound.map(
-          (valueFound) => !(valueFound !== 'boolean' && !valueFound)
+          (valueFound) => !(typeof valueFound !== 'boolean' && !valueFound)
         );
 
         const isValid = allValuesAreValid(result);
@@ -93,18 +93,10 @@ export default function flowManager(
         if (typeof valueFound !== 'boolean' && !valueFound) return false;
 
         if (
-          option.strict &&
           typeof valueFound === 'object' &&
           typeof expectedValue === 'object'
         ) {
-          return JSON.stringify(valueFound) === JSON.stringify(expectedValue);
-        }
-
-        if (
-          !option.strict &&
-          typeof valueFound === 'object' &&
-          typeof expectedValue === 'object'
-        ) {
+          if (option.strict) return valueFound === expectedValue;
           return equals(valueFound, expectedValue);
         }
 

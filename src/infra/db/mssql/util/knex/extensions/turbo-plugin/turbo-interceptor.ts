@@ -69,17 +69,17 @@ async function getCachedQuery(sql: Knex.Sql, service: Services) {
 
 function saveToCache(sql: Knex.Sql, result: unknown, service: Services) {
   setImmediate(async () => {
-    const resultSize = Buffer.byteLength(JSON.stringify(result));
-
-    if (resultSize > MAX_RESULT_SIZE) {
-      logger.log({
-        level: 'warn',
-        message: `Result size ${resultSize} exceeds maximum allowed size of ${MAX_RESULT_SIZE}. Cache not saved.`
-      });
-      return;
-    }
-
     try {
+      const resultSize = Buffer.byteLength(JSON.stringify(result));
+
+      if (resultSize > MAX_RESULT_SIZE) {
+        logger.log({
+          level: 'warn',
+          message: `Result size ${resultSize} exceeds maximum allowed size of ${MAX_RESULT_SIZE}. Cache not saved.`
+        });
+        return;
+      }
+
       await cacheQuery(sql, result, service);
     } catch (error) {
       logger.log({

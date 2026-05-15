@@ -52,19 +52,25 @@ export function makeDecorator<Logger extends Function>(
         const name = getName(args, options);
         const methodResult = originalHandler.apply(this, args);
 
-        const type = getType(options?.subType) ?? undefined;
-        const subType = options?.subType ?? undefined;
+        const logOutput = (result: unknown) => {
+          const type = getType(options?.subType) ?? undefined;
+          const subType = options?.subType ?? undefined;
+          const inputData = searchLabels(input, args);
+          const outputData = searchLabels(output, result);
+          logger?.({
+            name,
+            type,
+            subType,
+            [loggerOptions.inputName]: inputData,
+            [loggerOptions.outputName]: outputData
+          });
+        };
 
-        const inputData = searchLabels(input, args);
-        const outputData = searchLabels(output, methodResult);
-
-        logger?.({
-          name,
-          type,
-          subType,
-          [loggerOptions.inputName]: inputData,
-          [loggerOptions.outputName]: outputData
-        });
+        if (methodResult instanceof Promise) {
+          methodResult.then(logOutput).catch(() => {});
+        } else {
+          logOutput(methodResult);
+        }
 
         return methodResult;
       };
