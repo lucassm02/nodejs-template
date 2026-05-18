@@ -16,7 +16,7 @@ export default {
   coverageDirectory: 'coverage',
   coverageProvider: 'v8',
   moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, {
-    prefix: '<rootDir>/src/'
+    prefix: '<rootDir>/'
   }),
   automock: false
 };

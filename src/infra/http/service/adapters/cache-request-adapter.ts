@@ -46,8 +46,18 @@ export class CachedRequestAdapter implements HttpClient {
     const { url } = data;
     const headers = this.getRelevantHeaders(data.headers);
 
-    const keyObject = { method, url, headers, body: data.body };
+    const body = this.serializeBody(data.body);
+    const keyObject = { method, url, headers, body };
     return generateHashKeyToMemJs(JSON.stringify(keyObject));
+  }
+
+  private serializeBody(body: unknown): string {
+    if (typeof body !== 'object' || body === null) return String(body ?? '');
+    try {
+      return JSON.stringify(body);
+    } catch {
+      return '';
+    }
   }
 
   private getRelevantHeaders(

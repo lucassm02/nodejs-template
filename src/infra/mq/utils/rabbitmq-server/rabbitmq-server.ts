@@ -507,12 +507,21 @@ export class RabbitMqServer {
       })
       .map((fileName) => resolve(path, fileName));
 
-    const modules = await Promise.all(
+    const results = await Promise.allSettled(
       validFilePaths.map((filePath) => import(filePath))
     );
 
-    for (const mod of modules) {
-      const setup = mod.default;
+    for (let i = 0; i < results.length; i++) {
+      const result = results[i];
+      if (result.status === 'rejected') {
+        this.logger(result.reason);
+        this.logger({
+          level: 'error',
+          message: `Failed to load consumer file ${validFilePaths[i]}. Verify that the file exists and is correctly formatted.`
+        });
+        continue;
+      }
+      const setup = result.value.default;
       if (typeof setup !== 'function') continue;
       setup(this);
     }

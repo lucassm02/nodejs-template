@@ -1,6 +1,5 @@
 /* eslint-disable no-console */
 import { spawn } from 'child_process';
-import { F_OK } from 'node:fs';
 import { access, mkdir, readFile, writeFile, readdir } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -123,7 +122,7 @@ export const writeHelmValuesFile = async (fileName, content = '') => {
   const filePath = resolve(folderPath, fileName);
 
   try {
-    await access(folderPath, F_OK);
+    await access(folderPath);
   } catch (_error) {
     await mkdir(folderPath);
   }
@@ -147,7 +146,7 @@ export const writeHelmEnvironmentConfigFile = async (
   const filePath = resolve(folderPath, fileName);
 
   try {
-    await access(folderPath, F_OK);
+    await access(folderPath);
   } catch (_error) {
     await mkdir(folderPath, { recursive: true });
   }

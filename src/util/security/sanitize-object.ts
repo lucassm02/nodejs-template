@@ -17,7 +17,7 @@ export function sanitizeObject(
   if (obj !== null && typeof obj === 'object') {
     const out: AnyObject = {};
     for (const [key, val] of Object.entries(obj)) {
-      const keyType = getSensitiveKeyType(key);
+      const keyType = getSensitiveKeyType(key, val);
 
       if (keyType && ['string', 'number'].includes(typeof val)) {
         out[key] = applyMask(String(val), keyType);

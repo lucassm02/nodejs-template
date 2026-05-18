@@ -88,7 +88,7 @@ export default function flowManager(
           typeof expectedValue === 'object'
         ) {
           matches = option.strict
-            ? valueFound === expectedValue
+            ? JSON.stringify(valueFound) === JSON.stringify(expectedValue)
             : equals(valueFound, expectedValue);
         } else if (option.strict) {
           matches = valueFound === expectedValue;

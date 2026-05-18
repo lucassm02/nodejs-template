@@ -2,12 +2,12 @@
   "replicaCount": 1,
   "image": {
     "repository": "",
-    "pullPolicy": "Always",
+    "pullPolicy": "IfNotPresent",
     "tag": ""
   },
   "imagePullSecrets": [
     {
-      "name": "gitlab-container-register"
+      "name": "githubaccess"
     }
   ],
   "nameOverride": "",
@@ -27,18 +27,18 @@
   },
   "resources": {
     "requests": {
-      "cpu": "100m",
-      "memory": "128Mi"
+      "cpu": "75m",
+      "memory": "75Mi"
     },
     "limits": {
-      "cpu": "100m",
+      "cpu": "200m",
       "memory": "150Mi"
     }
   },
   "autoscaling": {
     "enabled": true,
     "minReplicas": 2,
-    "maxReplicas": 5,
+    "maxReplicas": 4,
     "targetCPUUtilizationPercentage": 80,
     "targetMemoryUtilizationPercentage": 80
   },

@@ -45,10 +45,8 @@ export const LOGGER = {
 };
 
 export const ENCRYPTION = {
-  KEY:
-    process.env.ENCRYPTION_KEY ||
-    'f3defcbdcc7f070cccd4ae5c5caef68c70416cd32b518e92a717428a2a47782b',
-  IV: process.env.ENCRYPTION_IV || '408bf4cd088fef3e1059d9dd500d1399'
+  KEY: process.env.ENCRYPTION_KEY || '',
+  IV: process.env.ENCRYPTION_IV || ''
 };
 
 export const API = {

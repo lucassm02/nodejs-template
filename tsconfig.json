@@ -20,17 +20,12 @@
     "skipLibCheck": true,
     "sourceMap": true,
     "declaration": true,
-    "baseUrl": "src",
-    "rootDirs": [
-      "src",
-      "test"
-    ],
     "paths": {
       "@/test/*": [
-        "../test/*"
+        "./test/*"
       ],
       "@/*": [
-        "*"
+        "./src/*"
       ]
     }
   },
