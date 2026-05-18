@@ -23,21 +23,19 @@ const recursiveDataConvertApplyLayer = <T>(
   if (!object) return object;
   const objectWithNewKeys = formatter(object);
   const objectEntries = Object.entries(objectWithNewKeys);
-  return objectEntries.reduce((accumulator, currentValue) => {
-    const [key, value] = currentValue;
-    if (Array.isArray(value)) {
-      const newValue = recursiveDataConvertFilterLayer(value, formatter);
-      return { ...accumulator, [key]: newValue };
-    }
-    if (value instanceof Date) {
-      return { ...accumulator, [key]: value };
-    }
-    if (typeof value === 'object') {
-      return {
-        ...accumulator,
-        [key]: recursiveDataConvertFilterLayer(value, formatter)
-      };
-    }
-    return { ...accumulator, [key]: value };
-  }, {});
+  return objectEntries.reduce(
+    (accumulator: Record<string, unknown>, [key, value]) => {
+      if (Array.isArray(value)) {
+        accumulator[key] = recursiveDataConvertFilterLayer(value, formatter);
+      } else if (value instanceof Date) {
+        accumulator[key] = value;
+      } else if (typeof value === 'object') {
+        accumulator[key] = recursiveDataConvertFilterLayer(value, formatter);
+      } else {
+        accumulator[key] = value;
+      }
+      return accumulator;
+    },
+    {}
+  );
 };

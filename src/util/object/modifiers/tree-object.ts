@@ -8,13 +8,19 @@ type Options = {
 };
 
 export const treeObject = (object: object, options: Options) => {
-  const objectEntries = Object.entries(object).filter(
-    ([key]) => key !== options.exception
-  );
+  const allEntries = Object.entries(object);
+  const objectEntries = allEntries.filter(([key]) => key !== options.exception);
 
-  const childEntries = objectEntries.filter(([key]) =>
-    key.includes(options.child)
-  );
+  const childEntries: [string, unknown][] = [];
+  const rest: [string, unknown][] = [];
+
+  for (const entry of objectEntries) {
+    if (entry[0].includes(options.child)) {
+      childEntries.push(entry);
+    } else {
+      rest.push(entry);
+    }
+  }
 
   const parsedChildEntries = childEntries.map(([key, value]) => {
     const newKey = key.replace(options.child, '');
@@ -23,10 +29,8 @@ export const treeObject = (object: object, options: Options) => {
 
   const child = Object.fromEntries(parsedChildEntries);
 
-  const rest = objectEntries.filter(([key]) => !key.includes(options.child));
-
   // TODO: .filter when many
-  const [exceptionKey, exceptionValue] = Object.entries(object).find(
+  const [exceptionKey, exceptionValue] = allEntries.find(
     ([key]) => key === options.exception
   ) as [string, unknown];
 

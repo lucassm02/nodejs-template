@@ -5,7 +5,6 @@ import { makeCacheServer } from '@/infra/cache';
 import { generateHashKeyToMemJs, logger } from '@/util';
 
 type Services = 'memjs' | 'node-cache';
-type GenericObject = Record<string, unknown>;
 
 const cache = new NodeCache({ stdTTL: 100, checkperiod: 120 });
 const memCache = makeCacheServer();
@@ -15,9 +14,16 @@ const MAX_RESULT_SIZE = 1024 * 1024 * 5; // ~ 5 MB
 
 const DEFAULT_CACHE_SERVICE = 'node-cache';
 
+let cachedMemoryOk = true;
+let lastMemoryCheck = 0;
+
 function checkMemoryUsage() {
-  const memoryUsage = process.memoryUsage();
-  return memoryUsage.heapUsed < MAX_MEMORY_USAGE;
+  const now = Date.now();
+  if (now - lastMemoryCheck > 1_000) {
+    lastMemoryCheck = now;
+    cachedMemoryOk = process.memoryUsage().heapUsed < MAX_MEMORY_USAGE;
+  }
+  return cachedMemoryOk;
 }
 
 function cacheKey(sql: Knex.Sql) {
@@ -29,19 +35,24 @@ function nodeCacheQuery(sql: Knex.Sql, result: unknown) {
   cache.set(key, result);
 }
 
-async function memCacheQuery(sql: Knex.Sql, result: GenericObject) {
+async function memCacheQuery(sql: Knex.Sql, serialized: string) {
   await memCache.set({
     key: generateHashKeyToMemJs(cacheKey(sql)),
-    value: result
+    value: serialized
   });
 }
 
-async function cacheQuery(sql: Knex.Sql, result: unknown, service: Services) {
+async function cacheQuery(
+  sql: Knex.Sql,
+  result: unknown,
+  serialized: string,
+  service: Services
+) {
   if (service === 'node-cache') {
     return nodeCacheQuery(sql, result);
   }
 
-  return memCacheQuery(sql, <GenericObject>result);
+  return memCacheQuery(sql, serialized);
 }
 
 async function getCachedQueryMemCache(sql: Knex.Sql) {
@@ -70,7 +81,8 @@ async function getCachedQuery(sql: Knex.Sql, service: Services) {
 function saveToCache(sql: Knex.Sql, result: unknown, service: Services) {
   setImmediate(async () => {
     try {
-      const resultSize = Buffer.byteLength(JSON.stringify(result));
+      const serialized = JSON.stringify(result);
+      const resultSize = Buffer.byteLength(serialized);
 
       if (resultSize > MAX_RESULT_SIZE) {
         logger.log({
@@ -80,7 +92,7 @@ function saveToCache(sql: Knex.Sql, result: unknown, service: Services) {
         return;
       }
 
-      await cacheQuery(sql, result, service);
+      await cacheQuery(sql, result, serialized, service);
     } catch (error) {
       logger.log({
         level: 'warn',

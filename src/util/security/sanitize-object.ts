@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { getSensitiveKeyType, SensitiveKeyType } from './is-sensitive-key';
 import { applyMask } from './mask-value';
 

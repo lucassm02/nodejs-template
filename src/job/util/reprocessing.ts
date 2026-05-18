@@ -96,7 +96,7 @@ export function reprocessing(options: Options = {}) {
           return result;
         } catch (error) {
           if (!REPROCESSING.ENABLED || options.normalizeOnly) return;
-          mqSendReprocessing.reprocess({
+          await mqSendReprocessing.reprocess({
             middleware: target.constructor.name,
             tries: state?.reprocessing?.tries,
             progress: {
@@ -111,7 +111,7 @@ export function reprocessing(options: Options = {}) {
       return descriptor;
     }
 
-    descriptor.value = function (...args: Args) {
+    descriptor.value = async function (...args: Args) {
       const [payload, [state, setState], next] = args;
 
       const delays = options.delays ?? REPROCESSING.DELAYS;
@@ -150,7 +150,7 @@ export function reprocessing(options: Options = {}) {
         return result;
       } catch (error) {
         if (!REPROCESSING.ENABLED || options.normalizeOnly) return;
-        mqSendReprocessing.reprocess({
+        await mqSendReprocessing.reprocess({
           middleware: target.constructor.name,
           tries: state?.reprocessing?.tries,
           progress: {

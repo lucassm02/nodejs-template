@@ -74,7 +74,7 @@ function resolveWrapper(resolve: (data: object | object[]) => void) {
       return;
     }
 
-    const doesTheSelectHaveNestedObjects = Object.keys(sample).find((key) =>
+    const doesTheSelectHaveNestedObjects = Object.keys(sample).some((key) =>
       key.includes(DELIMITER)
     );
 

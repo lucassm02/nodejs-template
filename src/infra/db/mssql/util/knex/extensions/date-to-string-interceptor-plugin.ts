@@ -16,11 +16,9 @@ function singleDataToStringInterceptor(data: Record<string, unknown>) {
   if (typeof data !== 'object') return data;
 
   if (Array.isArray(data)) {
-    const entries = data.map(Object.entries);
-    const newEntries = entries.map((entriesObjects) =>
-      entriesObjects.map(formatDateEntries)
+    return data.map((row) =>
+      Object.fromEntries(Object.entries(row).map(formatDateEntries))
     );
-    return newEntries.map(Object.fromEntries);
   }
 
   const entries = Object.entries(data);

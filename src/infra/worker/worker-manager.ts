@@ -51,7 +51,7 @@ export class WorkerManager {
         logger.log({ level: 'info', message: 'Scheduler started!' });
       })
       .on('error', (error) => {
-        logger.log({ level: 'info', message: error.message });
+        logger.log({ level: 'error', message: error.message });
       });
 
     this.agenda.database(mongoUrl, this.collectionName);

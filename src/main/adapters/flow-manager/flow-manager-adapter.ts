@@ -17,11 +17,6 @@ export type Option = {
   handler: Function;
 };
 
-const allValuesAreValid = (values: unknown[]): boolean => {
-  const findNonComplianceResult = values.find((value) => value === false);
-  return findNonComplianceResult !== false;
-};
-
 function coercion(
   value: string | number | boolean,
   type: 'string' | 'number' | 'bigint' | string
@@ -63,53 +58,50 @@ export default function flowManager(
       }
 
       if (Array.isArray(option.when)) {
-        const keyPaths = option.when.filter(
-          (value) => typeof value === 'string'
-        );
-
-        const valuesFound = keyPaths.map((value) => {
-          return getIn(args, value) ?? getIn(<object>args[0], value);
-        });
-
-        const result = valuesFound.map(
-          (valueFound) => !(typeof valueFound !== 'boolean' && !valueFound)
-        );
-
-        const isValid = allValuesAreValid(result);
-
+        let isValid = true;
+        for (const value of option.when) {
+          if (typeof value !== 'string') continue;
+          const valueFound =
+            getIn(args, value) ?? getIn(<object>args[0], value);
+          if (typeof valueFound !== 'boolean' && !valueFound) {
+            isValid = false;
+            break;
+          }
+        }
         if (!isValid) continue;
-
         return option.handler(...args);
       }
 
-      const whenEntries = Object.entries(option.when);
-
-      const result = whenEntries.map((entries) => {
-        const [targetKey, expectedValue] = entries;
-
+      let isValid = true;
+      for (const [targetKey, expectedValue] of Object.entries(option.when)) {
         const valueFound =
           getIn(args, targetKey) ?? getIn(<object>args[0], targetKey);
 
-        if (typeof valueFound !== 'boolean' && !valueFound) return false;
+        if (typeof valueFound !== 'boolean' && !valueFound) {
+          isValid = false;
+          break;
+        }
 
+        let matches: boolean;
         if (
           typeof valueFound === 'object' &&
           typeof expectedValue === 'object'
         ) {
-          if (option.strict) return valueFound === expectedValue;
-          return equals(valueFound, expectedValue);
+          matches = option.strict
+            ? valueFound === expectedValue
+            : equals(valueFound, expectedValue);
+        } else if (option.strict) {
+          matches = valueFound === expectedValue;
+        } else {
+          matches =
+            coercion(valueFound, typeof expectedValue) === expectedValue;
         }
 
-        if (option.strict) return valueFound === expectedValue;
-
-        const typeOfValue = typeof expectedValue;
-
-        const valueFoundAfterCoercion = coercion(valueFound, typeOfValue);
-
-        return valueFoundAfterCoercion === expectedValue;
-      });
-
-      const isValid = allValuesAreValid(result);
+        if (!matches) {
+          isValid = false;
+          break;
+        }
+      }
 
       if (isValid) return option.handler(...args);
     }

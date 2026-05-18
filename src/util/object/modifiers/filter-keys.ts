@@ -18,10 +18,10 @@ export const filterKeys = <T extends object>(
   ) {
     if (values.length === 0) return object;
 
-    const filteredEntries = Object.entries(object).filter(([key]) => {
-      if (action === 'ALLOW') return values.includes(key);
-      return !values.includes(key);
-    });
+    const valueSet = new Set(values);
+    const filteredEntries = Object.entries(object).filter(([key]) =>
+      action === 'ALLOW' ? valueSet.has(key) : !valueSet.has(key)
+    );
 
     return Object.fromEntries(filteredEntries);
   }

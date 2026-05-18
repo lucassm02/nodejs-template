@@ -33,14 +33,12 @@ export const useTimedRepeater = (
     };
 
     const server = webServer().getWebsocketServer();
+    const event = request[EVENT_KEY];
+    const middlewares = args.map((middleware) =>
+      server.adapter(middleware, event)
+    );
 
     const repeater = setInterval(() => {
-      const event = request[EVENT_KEY];
-
-      const middlewares = args.map((middleware) => {
-        return server.adapter(middleware, event);
-      });
-
       makeFlow({
         [REQUEST_KEY]: request,
         [STATE_KEY]: state,

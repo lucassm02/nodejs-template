@@ -1,6 +1,6 @@
-export const getIn = (object: object, path: string) => {
-  const INDEX_PATTERN = /\[(\d+?)\]/;
+const INDEX_PATTERN = /\[(\d+?)\]/;
 
+export const getIn = (object: object, path: string) => {
   const splittedPath = path.split('.');
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

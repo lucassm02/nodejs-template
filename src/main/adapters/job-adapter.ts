@@ -20,6 +20,32 @@ type Payload = Job.Payload & { [key: string | symbol]: State };
 
 export const jobAdapter = (...jobs: (Job | Function)[]) => {
   const adaptedJobs = jobs.map((job) => {
+    const decoratorOptions: DecoratorOptions = {
+      options: {
+        name: typeof job === 'function' ? job.name : job.constructor.name,
+        subType: 'handler'
+      },
+      params: { payload: 0, stateHook: 1 }
+    };
+
+    let decoratedHandler: Function;
+
+    if (typeof job === 'function') {
+      const decorator = apmSpan(decoratorOptions);
+      const desc: PropertyDescriptor = {
+        value: job.bind(null),
+        writable: true,
+        configurable: true,
+        enumerable: false
+      };
+      decoratedHandler = decorator({}, job.name, desc).value;
+    } else {
+      const decorator = apmSpan(decoratorOptions);
+      const proto = job.constructor.prototype;
+      const desc = Object.getOwnPropertyDescriptor(proto, 'handle')!;
+      decoratedHandler = decorator(proto, 'handle', desc).value.bind(job);
+    }
+
     return ({ [STATE_KEY]: state, ...payload }: Payload, next: Job.Next) => {
       const setState = (data: State) => {
         for (const key in data) {
@@ -31,45 +57,7 @@ export const jobAdapter = (...jobs: (Job | Function)[]) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const stateHook = <[any, any]>[state, setState];
 
-      const decoratorOptions: DecoratorOptions = {
-        options: {
-          name: '',
-          subType: 'handler'
-        },
-        params: { payload: 0, stateHook: 1 }
-      };
-
-      if (typeof job === 'function') {
-        decoratorOptions.options.name = job.name;
-        const decorator = apmSpan(decoratorOptions);
-        const proto = {};
-
-        const methodName = job.name;
-
-        const desc: PropertyDescriptor = {
-          value: job.bind(null),
-          writable: true,
-          configurable: true,
-          enumerable: false
-        };
-
-        const newDesc = decorator(proto, methodName, desc);
-
-        return newDesc.value(payload, stateHook, next);
-      }
-
-      decoratorOptions.options.name = job.constructor.name;
-      const decorator = apmSpan(decoratorOptions);
-
-      const proto = job.constructor.prototype;
-      const methodName = 'handle';
-      const desc = Object.getOwnPropertyDescriptor(proto, methodName)!;
-
-      const newDesc = decorator(proto, methodName, desc);
-
-      const callback: Function = newDesc.value.bind(job);
-
-      return callback(payload, stateHook, next);
+      return decoratedHandler(payload, stateHook, next);
     };
   });
 

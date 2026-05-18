@@ -56,25 +56,30 @@ export function apmSpan({ options, params, result }: TraceParams) {
 
         if (!span) return originalHandler.apply(this, args);
 
-        const response = await originalHandler.apply(this, args);
+        try {
+          const response = await originalHandler.apply(this, args);
 
-        if (options.subType) {
-          setTypeAndSubtype(options.subType, span);
-        }
+          if (options.subType) {
+            setTypeAndSubtype(options.subType, span);
+          }
 
-        if (params) {
-          setParams(params, args, span);
-        }
+          if (params) {
+            setParams(params, args, span);
+          }
 
-        if (!result) {
+          if (!result) {
+            span.end();
+            return response;
+          }
+
+          setResult(result, response, span);
           span.end();
+
           return response;
+        } catch (error) {
+          span.end();
+          throw error;
         }
-
-        setResult(result, response, span);
-        span.end();
-
-        return response;
       };
 
       return descriptor;

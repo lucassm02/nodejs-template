@@ -5,31 +5,44 @@ import { TraceLabels, TransactionOptions } from '../protocols';
 export const searchLabels = (
   labels: TraceLabels | undefined,
   args: any | undefined
-): object =>
-  Object.entries(args ?? {}).reduce((acc, [key, value]) => {
-    const label = Object.entries(labels ?? {}).find(
-      // eslint-disable-next-line eqeqeq
-      ([, labelValue]) => labelValue == key
+): object => {
+  const labelsValueToKey = new Map(
+    Object.entries(labels ?? {}).map(([k, v]) => [String(v), k])
+  );
+
+  function search(obj: any): object {
+    return Object.entries(obj ?? {}).reduce(
+      (acc: Record<string, unknown>, [key, value]) => {
+        const labelKey = labelsValueToKey.get(key);
+
+        if (!labelKey) {
+          if (typeof value === 'object' || Array.isArray(value)) {
+            Object.assign(acc, search(value));
+          }
+          return acc;
+        }
+
+        acc[labelKey] = value;
+        return acc;
+      },
+      {}
     );
+  }
 
-    if (!label) {
-      if (typeof value === 'object' || Array.isArray(value)) {
-        return { ...acc, ...searchLabels(labels, value) };
-      }
-      return acc;
-    }
-
-    return { ...acc, [label[0]]: value };
-  }, {});
+  return search(args);
+};
 
 export const labelParamsToString = (params: object) => {
-  return Object.entries(params).reduce((acc, [key, value]) => {
-    if (typeof value === 'object' || Array.isArray(value)) {
-      return { ...acc, [key]: JSON.stringify(value) };
-    }
-
-    return { ...acc, [key]: value };
-  }, {});
+  return Object.entries(params).reduce(
+    (acc: Record<string, string | number | boolean>, [key, value]) => {
+      acc[key] =
+        typeof value === 'object' || Array.isArray(value)
+          ? JSON.stringify(value)
+          : (value as string | number | boolean);
+      return acc;
+    },
+    {}
+  );
 };
 
 export const getName = (args: any[], options: TransactionOptions) => {
@@ -45,86 +58,57 @@ export const getName = (args: any[], options: TransactionOptions) => {
   return options.name || 'unnamed';
 };
 
+const SUBTYPE_TO_TYPE = new Map<string, string>([
+  ['inferred', 'app'],
+  ['controller', 'app'],
+  ['graphql', 'app'],
+  ['mailer', 'app'],
+  ['resource', 'app'],
+  ['handler', 'app'],
+  ['worker', 'app'],
+  ['task', 'app'],
+  ['function', 'app'],
+  ['cassandra', 'db'],
+  ['cosmos-bd', 'db'],
+  ['db2', 'db'],
+  ['derby', 'db'],
+  ['dynamodb', 'db'],
+  ['elasticsearch', 'db'],
+  ['h2', 'db'],
+  ['hsqldb', 'db'],
+  ['ingres', 'db'],
+  ['mariadb', 'db'],
+  ['memcached', 'db'],
+  ['mongodb', 'db'],
+  ['mssql', 'db'],
+  ['mysql', 'db'],
+  ['oracle', 'db'],
+  ['postgresql', 'db'],
+  ['redis', 'db'],
+  ['sqlite', 'db'],
+  ['sqlite3', 'db'],
+  ['sql-server', 'db'],
+  ['unknown', 'db'],
+  ['dubbo', 'external'],
+  ['grpc', 'external'],
+  ['http', 'external'],
+  ['parse', 'json'],
+  ['generate', 'json'],
+  ['azure-queue', 'messaging'],
+  ['azure-service-bus', 'messaging'],
+  ['jms', 'messaging'],
+  ['kafka', 'messaging'],
+  ['rabbitmq', 'messaging'],
+  ['sns', 'messaging'],
+  ['sqs', 'messaging'],
+  ['azure-blob', 'storage'],
+  ['azure-file', 'storage'],
+  ['azure-table', 'storage'],
+  ['s3', 'storage'],
+  ['send', 'websocket']
+]);
+
 export const getType = (subType: string | null | undefined): string | void => {
-  const types = [
-    {
-      type: 'app',
-      subtypes: [
-        'inferred',
-        'controller',
-        'graphql',
-        'mailer',
-        'resource',
-        'handler',
-        'worker',
-        'task',
-        'function'
-      ]
-    },
-    {
-      type: 'db',
-      subtypes: [
-        'cassandra',
-        'cosmos-bd',
-        'db2',
-        'derby',
-        'dynamodb',
-        'elasticsearch',
-        'graphql',
-        'h2',
-        'hsqldb',
-        'ingres',
-        'mariadb',
-        'memcached',
-        'mongodb',
-        'mssql',
-        'mysql',
-        'oracle',
-        'postgresql',
-        'redis',
-        'sqlite',
-        'sqlite3',
-        'sql-server',
-        'unknown'
-      ]
-    },
-    {
-      type: 'external',
-      subtypes: ['dubbo', 'grpc', 'http']
-    },
-    {
-      type: 'json',
-      subtypes: ['parse', 'generate']
-    },
-    {
-      type: 'messaging',
-      subtypes: [
-        'azure-queue',
-        'azure-service-bus',
-        'jms',
-        'kafka',
-        'rabbitmq',
-        'sns',
-        'sqs'
-      ]
-    },
-    {
-      type: 'storage',
-      subtypes: ['azure-blob', 'azure-file', 'azure-table', 's3']
-    },
-    {
-      type: 'websocket',
-      subtypes: ['send']
-    },
-    {
-      type: 'worker',
-      subtypes: ['task']
-    }
-  ];
-
   if (!subType) return;
-
-  for (const type of types) {
-    if (type.subtypes.includes(subType)) return type.type;
-  }
+  return SUBTYPE_TO_TYPE.get(subType);
 };

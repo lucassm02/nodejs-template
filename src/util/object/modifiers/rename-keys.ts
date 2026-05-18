@@ -3,12 +3,11 @@ export const renameKeys = <T extends object>(
   manifest: { [P in keyof T]?: string }
 ) => {
   if (typeof object !== 'object') return object;
-  const manifestEntries = Object.entries(manifest);
+  const manifestMap = new Map(Object.entries(manifest));
 
-  const renamedEntries = Object.entries(object).map((keyValue) => {
-    const matchValue = manifestEntries.find(([key]) => key === keyValue[0]);
-    if (matchValue) return [matchValue[1], keyValue[1]];
-    return keyValue;
+  const renamedEntries = Object.entries(object).map(([key, value]) => {
+    const newKey = manifestMap.get(key);
+    return newKey ? [newKey, value] : [key, value];
   });
 
   return Object.fromEntries(renamedEntries);

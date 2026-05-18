@@ -5,7 +5,6 @@ import https from 'https';
 import { HttpClient, Data, HttpResponse } from '@/data/protocols/http/adapters';
 import { logger } from '@/util';
 import { apmSpan } from '@/util/observability/apm';
-import { datoraHttpLogger } from '@/util/observability/loggers/decorators';
 import {
   SpanOptions,
   TraceLabels
@@ -64,7 +63,6 @@ export class RequestAdapter implements HttpClient {
     });
   }
 
-  @datoraHttpLogger()
   @apmSpan({
     options: decorators.options,
     params: decorators.params,

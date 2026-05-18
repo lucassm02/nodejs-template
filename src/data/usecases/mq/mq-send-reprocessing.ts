@@ -56,7 +56,7 @@ export class MqSendReprocessing implements SendReprocessing {
       const [delay] = DELAYS;
 
       if (!this.queueOptions.exchange) {
-        this.publishInQueueService.publishInQueue(
+        await this.publishInQueueService.publishInQueue(
           this.queueOptions.queue,
           newPayload,
           {
@@ -66,7 +66,7 @@ export class MqSendReprocessing implements SendReprocessing {
         return;
       }
 
-      this.publishInExchangeService.publishInExchange(
+      await this.publishInExchangeService.publishInExchange(
         this.queueOptions.exchange,
         newPayload,
         this.queueOptions.routingKey ?? '',
@@ -91,7 +91,7 @@ export class MqSendReprocessing implements SendReprocessing {
     }
 
     if (!this.queueOptions.exchange) {
-      this.publishInQueueService.publishInQueue(
+      await this.publishInQueueService.publishInQueue(
         this.queueOptions.queue,
         newPayload,
         {
@@ -101,7 +101,7 @@ export class MqSendReprocessing implements SendReprocessing {
       return;
     }
 
-    this.publishInExchangeService.publishInExchange(
+    await this.publishInExchangeService.publishInExchange(
       this.queueOptions.exchange,
       newPayload,
       this.queueOptions.routingKey ?? '',

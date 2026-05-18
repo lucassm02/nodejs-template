@@ -9,15 +9,14 @@ export const overrideAttributeValue = <T>({
 }: Options<T>): T => {
   const override = (object: any) => {
     if (typeof object !== 'object') return object;
-    const entries = Object.entries(object).map(([key, value]) => {
-      if (key === attribute) return;
-      if (key === copyFrom) return [attribute, value];
-      return [key, value];
-    });
+    const filteredEntries: [string, unknown][] = [];
 
-    const filteredEntries = entries.filter(
-      (item) => item !== undefined
-    ) as any[];
+    for (const [key, value] of Object.entries(object)) {
+      if (key === attribute) continue;
+      filteredEntries.push(
+        key === copyFrom ? [attribute as string, value] : [key, value]
+      );
+    }
 
     return Object.fromEntries(filteredEntries);
   };

@@ -5,10 +5,7 @@ import FormData from 'form-data';
 import { HttpClient, Data, HttpResponse } from '@/data/protocols/http/adapters';
 import { logger } from '@/util';
 import { apmSpan } from '@/util/observability/apm';
-import {
-  datoraHttpLogger,
-  logger as customLogger
-} from '@/util/observability/loggers/decorators';
+import { logger as customLogger } from '@/util/observability/loggers/decorators';
 import {
   SpanOptions,
   TraceLabels
@@ -57,7 +54,6 @@ export class FormDataRequestAdapter implements HttpClient {
     });
   }
 
-  @datoraHttpLogger()
   @customLogger({
     options: decorators.options,
     input: decorators.params,

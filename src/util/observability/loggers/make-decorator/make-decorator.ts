@@ -67,7 +67,12 @@ export function makeDecorator<Logger extends Function>(
         };
 
         if (methodResult instanceof Promise) {
-          methodResult.then(logOutput).catch(() => {});
+          methodResult.then(logOutput).catch((error) => {
+            // eslint-disable-next-line no-console
+            console.error(`Error logging output for method ${String(_key)}`);
+            // eslint-disable-next-line no-console
+            console.error(error);
+          });
         } else {
           logOutput(methodResult);
         }

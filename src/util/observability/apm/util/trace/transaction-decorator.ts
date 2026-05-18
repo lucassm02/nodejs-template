@@ -71,9 +71,9 @@ export function apmTransaction({ options, params, result }: TransactionParams) {
 
     descriptor.value = function <T>(...args: T[]) {
       const transactionName = getName(args, options);
-      const response = originalHandler.apply(this, args);
-
       const transaction = apm?.startTransaction(transactionName);
+
+      const response = originalHandler.apply(this, args);
 
       if (!transaction) return response;
 

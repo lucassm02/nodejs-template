@@ -35,9 +35,15 @@ const PARTIAL_KEYWORDS = [
   'expiration'
 ];
 
+const ALL_SENSITIVE_PATTERN = new RegExp(
+  [...CARD_KEYWORDS, ...REDACT_KEYWORDS, ...PARTIAL_KEYWORDS].join('|'),
+  'i'
+);
+
 export type SensitiveKeyType = 'card' | 'redact' | 'partial';
 
 export function getSensitiveKeyType(key: string): SensitiveKeyType | null {
+  if (!ALL_SENSITIVE_PATTERN.test(key)) return null;
   const lower = key.toLowerCase();
   if (CARD_KEYWORDS.some((k) => lower.includes(k))) return 'card';
   if (REDACT_KEYWORDS.some((k) => lower.includes(k))) return 'redact';

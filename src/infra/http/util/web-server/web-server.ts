@@ -589,6 +589,16 @@ export class WebServer {
     };
   }
 
+  private normalizeRequestCasing(request: {
+    body: unknown;
+    params: unknown;
+    query: unknown;
+  }) {
+    request.body = convertSnakeCaseKeysToCamelCase(request.body);
+    request.params = convertSnakeCaseKeysToCamelCase(request.params);
+    request.query = convertSnakeCaseKeysToCamelCase(request.query);
+  }
+
   private adapterHookWithFlow(
     middlewares: RouteMiddleware[]
   ): RouteHandlerMethod {
@@ -598,9 +608,7 @@ export class WebServer {
           request[STATE_KEY] = {};
         }
 
-        request.body = convertSnakeCaseKeysToCamelCase(request.body);
-        request.params = convertSnakeCaseKeysToCamelCase(request.params);
-        request.query = convertSnakeCaseKeysToCamelCase(request.query);
+        this.normalizeRequestCasing(request);
 
         await makeFlow({
           [REQUEST_KEY]: request,
@@ -620,9 +628,7 @@ export class WebServer {
           request[STATE_KEY] = {};
         }
 
-        request.body = convertSnakeCaseKeysToCamelCase(request.body);
-        request.params = convertSnakeCaseKeysToCamelCase(request.params);
-        request.query = convertSnakeCaseKeysToCamelCase(request.query);
+        this.normalizeRequestCasing(request);
 
         await makeFlow({
           [REQUEST_KEY]: request,

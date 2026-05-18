@@ -29,6 +29,7 @@ export class RabbitMqServer {
   private connection: ChannelModel | null = null;
   private channelPoolLength = 3;
   private channelPool: Map<string, Channel> = new Map();
+  private channelArray: Channel[] = [];
 
   private consumers: Map<string, { channel: Channel; consumer: Consumer }> =
     new Map();
@@ -299,9 +300,7 @@ export class RabbitMqServer {
       convertCamelCaseKeysToSnakeCase(message)
     );
 
-    const channelList = Array.from(this.channelPool).map(([, value]) => value);
-
-    return channelList[chanelIndex].sendToQueue(queue, buffer, {
+    return this.channelArray[chanelIndex].sendToQueue(queue, buffer, {
       headers
     });
   }
@@ -343,11 +342,14 @@ export class RabbitMqServer {
 
     const chanelIndex = randomInt(0, this.channelPool.size);
 
-    const channelList = Array.from(this.channelPool).map(([, value]) => value);
-
-    return channelList[chanelIndex].publish(exchange, routingKey, buffer, {
-      headers
-    });
+    return this.channelArray[chanelIndex].publish(
+      exchange,
+      routingKey,
+      buffer,
+      {
+        headers
+      }
+    );
   }
 
   public async consume(
@@ -540,10 +542,12 @@ export class RabbitMqServer {
 
         item.value.once('close', () => {
           this.channelPool.delete(channelId);
+          this.channelArray = Array.from(this.channelPool.values());
           this.event.emit(this.events.CHECK_CHANNEL_POOL);
         });
 
         this.channelPool.set(channelId, item.value);
+        this.channelArray = Array.from(this.channelPool.values());
       }
     }
   }

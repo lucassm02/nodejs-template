@@ -45,9 +45,8 @@ export class CachedRequestAdapter implements HttpClient {
     const method = data.method?.toUpperCase() || '';
     const { url } = data;
     const headers = this.getRelevantHeaders(data.headers);
-    const body = this.normalizeBody(data.body);
 
-    const keyObject = { method, url, headers, body };
+    const keyObject = { method, url, headers, body: data.body };
     return generateHashKeyToMemJs(JSON.stringify(keyObject));
   }
 
@@ -66,12 +65,6 @@ export class CachedRequestAdapter implements HttpClient {
     }
 
     return relevantHeaders;
-  }
-
-  private normalizeBody(body: unknown): unknown {
-    if (typeof body !== 'object' || body === null || body === undefined)
-      return body;
-    return JSON.parse(JSON.stringify(body));
   }
 
   private async getCachedResponse(

@@ -3,13 +3,12 @@ export const filterBy = <T, V>(
   by: (keyof T)[],
   value: V[]
 ): T[] => {
-  if (!value?.[0]) return records;
+  let result = records;
 
-  const result = records.filter((record) => record?.[by?.[0]] === value[0]);
+  for (let i = 0; i < by.length; i++) {
+    if (!value?.[i]) break;
+    result = result.filter((record) => record?.[by[i]] === value[i]);
+  }
 
-  const [, ...nextKeys] = by;
-  const [, ...nextValues] = value;
-
-  if (value?.[1]) return filterBy(result, nextKeys, nextValues);
   return result;
 };

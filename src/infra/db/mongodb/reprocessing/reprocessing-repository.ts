@@ -69,8 +69,14 @@ export class ReprocessingRepository
     finalDateTime,
     initialDateTime
   }: GetReprocessingDataRepository.Params): GetReprocessingDataRepository.Result {
+    const orConditions = [
+      queue !== undefined ? { queue } : null,
+      exchange !== undefined ? { exchange } : null,
+      routingKey !== undefined ? { routing_key: routingKey } : null
+    ].filter(Boolean);
+
     const query: Record<string, unknown> = {
-      $or: [{ queue }, { exchange }, { routing_key: routingKey }, {}],
+      ...(orConditions.length > 0 ? { $or: orConditions } : {}),
       deleted_at: null
     };
 
