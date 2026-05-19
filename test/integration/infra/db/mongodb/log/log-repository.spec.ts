@@ -38,8 +38,9 @@ describe('Log Repository', () => {
     };
 
     await sut.create(mockLog);
-    const [result] = await LogModel.find();
+    const result = await LogModel.findOne({ message: mockLog.message });
 
-    expect(result.toObject()).toMatchObject(mockLog);
+    expect(result).not.toBeNull();
+    expect(result!.toObject()).toMatchObject(mockLog);
   });
 });

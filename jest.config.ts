@@ -11,7 +11,12 @@ export default {
   clearMocks: true,
   setupFiles: ['<rootDir>/jest.env.js'],
   collectCoverageFrom: ['<rootDir>/src/**/*.ts', '!<rootDir>/src/main/**'],
-  coveragePathIgnorePatterns: ['/node_modules/', '/src/data/protocols/*'],
+  coveragePathIgnorePatterns: [
+    '/node_modules/',
+    '/src/data/protocols/*',
+    'protocols.ts',
+    '/util/observability/apm/util/trace/types.ts'
+  ],
   modulePathIgnorePatterns: ['<rootDir>/dist/'],
   coverageDirectory: 'coverage',
   coverageProvider: 'v8',

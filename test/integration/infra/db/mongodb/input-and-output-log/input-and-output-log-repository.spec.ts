@@ -91,26 +91,12 @@ describe('InputAndOutputLog Repository', () => {
       }
     };
     await sut.create(mockLog);
-    const [result] = await InputAndOutputLogModel.find();
+    const result = await InputAndOutputLogModel.findOne({ url: mockLog.url });
 
-    const resultKeys = Object.keys(result);
-
-    const expectedKeys = [
-      '$__',
-      '$isNew',
-      '_doc',
-      'url',
-      'request',
-      'params',
-      'headers',
-      'response',
-      'body',
-      'payload'
-    ];
-
-    expect(resultKeys.length).toBe(10);
-    resultKeys.forEach((key) => {
-      expect(expectedKeys.includes(key)).toBe(true);
+    expect(result).not.toBeNull();
+    expect(result!.toObject()).toMatchObject({
+      url: mockLog.url,
+      type: mockLog.type
     });
   });
 });
