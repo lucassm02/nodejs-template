@@ -40,13 +40,6 @@ describe('Log Repository', () => {
     await sut.create(mockLog);
     const [result] = await LogModel.find();
 
-    const resultKeys = Object.keys(result);
-
-    const expectedKeys = ['$__', '$isNew', '_doc', 'message', 'timestamp'];
-
-    expect(resultKeys.length).toBe(5);
-    resultKeys.forEach((key) => {
-      expect(expectedKeys.includes(key)).toBe(true);
-    });
+    expect(result.toObject()).toMatchObject(mockLog);
   });
 });
