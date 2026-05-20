@@ -25,7 +25,7 @@ export const jobAdapter = (...jobs: (Job | Function)[]) => {
         name: typeof job === 'function' ? job.name : job.constructor.name,
         subType: 'handler'
       },
-      params: { payload: 0, stateHook: 1 }
+      params: {}
     };
 
     let decoratedHandler: Function;

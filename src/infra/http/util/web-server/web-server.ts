@@ -455,7 +455,7 @@ export class WebServer {
 
           if (typeof middleware === 'function') {
             decoratorOptions.options.name = middleware.name;
-            decoratorOptions.params = { stateHook: 3 };
+            decoratorOptions.params = {};
             const decorator = apmSpan(decoratorOptions);
             const proto = {};
 
@@ -474,7 +474,7 @@ export class WebServer {
           }
 
           decoratorOptions.options.name = middleware.constructor.name;
-          decoratorOptions.params = { stateHook: 1 };
+          decoratorOptions.params = {};
           const decorator = apmSpan(decoratorOptions);
 
           const proto = middleware.constructor.prototype;
@@ -535,7 +535,7 @@ export class WebServer {
 
         if (typeof middleware === 'function') {
           decoratorOptions.options.name = middleware.name;
-          decoratorOptions.params = { stateHook: 3 };
+          decoratorOptions.params = {};
           const decorator = apmSpan(decoratorOptions);
           const proto = {};
 
@@ -554,7 +554,7 @@ export class WebServer {
         }
 
         decoratorOptions.options.name = middleware.constructor.name;
-        decoratorOptions.params = { stateHook: 1 };
+        decoratorOptions.params = {};
         const decorator = apmSpan(decoratorOptions);
 
         const proto = middleware.constructor.prototype;
