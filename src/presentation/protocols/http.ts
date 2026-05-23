@@ -14,3 +14,10 @@ export interface HttpResponse {
   body?: Record<string, unknown>;
   headers?: Record<string, unknown>;
 }
+
+export type DefaultRequestGeneric = {
+  Body: Record<string, unknown>;
+  Querystring: Record<string, unknown>;
+  Params: Record<string, unknown>;
+  Headers: Record<string, unknown>;
+};
