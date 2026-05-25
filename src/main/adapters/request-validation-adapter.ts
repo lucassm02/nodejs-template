@@ -1,7 +1,10 @@
 import { CallbackWithStateHook } from '@/infra/http/util/web-server/types';
 import { YupSchema } from '@/presentation/protocols';
 import { badRequest } from '@/presentation/utils/http-response';
-import { convertCamelCaseKeysToSnakeCase } from '@/util';
+import {
+  convertCamelCaseKeysToSnakeCase,
+  convertSnakeCaseKeysToCamelCase
+} from '@/util';
 import { formatYupError } from '@/util/formatters/yup-error-formatter';
 
 export function requestValidationAdapter(
@@ -19,9 +22,21 @@ export function requestValidationAdapter(
       const httpRequestInSnakeCase =
         convertCamelCaseKeysToSnakeCase(httpRequest);
 
-      await schema.validate(httpRequestInSnakeCase, {
+      const validatedSchema = await schema.validate(httpRequestInSnakeCase, {
         abortEarly: false
       });
+
+      if (!req.body) return next();
+
+      const bodyKeys = Object.keys(convertCamelCaseKeysToSnakeCase(req.body));
+
+      const filteredBodyData = Object.fromEntries(
+        Object.entries(validatedSchema).filter(([key]) =>
+          bodyKeys.includes(key)
+        )
+      );
+
+      req.body = convertSnakeCaseKeysToCamelCase(filteredBodyData);
 
       return next();
     } catch (error) {
