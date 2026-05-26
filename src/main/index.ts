@@ -1,7 +1,11 @@
-import { bootstrap } from './bootstrap';
+import { elasticAPM } from '@/util/observability/apm/factory';
 
-bootstrap().catch((error) => {
-  // eslint-disable-next-line no-console
-  console.error('Bootstrap failed:', error);
-  process.exit(1);
-});
+elasticAPM();
+
+import('./bootstrap')
+  .then(({ bootstrap }) => bootstrap())
+  .catch((error) => {
+    // eslint-disable-next-line no-console
+    console.error('Bootstrap failed:', error);
+    process.exit(1);
+  });

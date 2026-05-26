@@ -1,11 +1,11 @@
 import { ValidationError } from 'yup';
 
 import {
-  getReprocessingDataSchema,
   date,
+  getReprocessingDataSchema,
   optionalFinalDate,
   optionalInitialDate
-} from '@/validation/usecases';
+} from '@/validation/usecases/reprocessing/get-reprocessing-data-schema';
 import { sumDays } from '@/util';
 
 describe('GetReprocessingData Yup Schema', () => {

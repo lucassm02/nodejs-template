@@ -6,7 +6,7 @@ jest.mock('@/util', () => ({
   logger: { log: jest.fn() }
 }));
 
-const mockLogger = logger as { log: jest.Mock };
+const mockLogger = logger as unknown as { log: jest.Mock };
 
 const makeOptions = (overrides: Record<string, unknown> = {}) => ({
   description: 'TEST CALL',

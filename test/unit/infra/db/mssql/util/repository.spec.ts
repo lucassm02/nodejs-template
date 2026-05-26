@@ -16,6 +16,9 @@ const makeTransactionConn = () => ({
 });
 
 class TestRepository extends Repository {
+  testGetStoredConnection() {
+    return this.connection;
+  }
   async testGetConnection() {
     return this.getConnection();
   }
@@ -28,7 +31,7 @@ describe('Repository', () => {
   describe('constructor', () => {
     it('should set connection to sqlConnection', () => {
       const repo = new TestRepository();
-      expect(repo.connection).toBe(sqlConnectionMock);
+      expect(repo.testGetStoredConnection()).toBe(sqlConnectionMock);
     });
   });
 

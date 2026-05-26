@@ -1,7 +1,7 @@
 import memjs, { Client } from 'memjs';
 import { Error } from 'mongoose';
 
-import { apmSpan } from '@/util';
+import { apmSpan } from '@/util/observability/apm/util/trace/span-decorator';
 
 type Connection = {
   host: string;

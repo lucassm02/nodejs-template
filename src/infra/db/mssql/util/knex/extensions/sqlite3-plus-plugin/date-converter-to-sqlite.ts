@@ -1,6 +1,6 @@
 import { ContextType, Knex, Statement } from 'knex';
 
-import { convertDateToUnix, isDateValid } from '@/util';
+import { convertDateToUnix, isDateValid } from '../../utils';
 
 function parseValueToUnixTimestamp(statement: Statement): Statement {
   if (

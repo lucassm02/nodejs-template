@@ -2,7 +2,6 @@ import path from 'path';
 import { Mongoose } from 'mongoose';
 
 import { CacheServer } from '@/infra/cache/cache-server';
-import knexSetup from '@/infra/db/mssql/util/knex';
 import { RabbitMqServer } from '@/infra/mq/utils';
 import { WorkerManager, workerManager } from '@/infra/worker';
 import {
@@ -19,15 +18,9 @@ import {
 } from '@/util';
 
 import { getArgs } from './cli';
-import {
-  checkDatabaseConnection,
-  getMongooseConnection,
-  getRabbitmqConnection,
-  setMemcachedConnection
-} from './util';
-import { webServer } from './web-server';
-
-knexSetup();
+import { getMongooseConnection } from './util/get-mongoose-connection';
+import { getRabbitmqConnection } from './util/get-rabbitmq-connection';
+import { setMemcachedConnection } from './util/set-memcached-connection';
 
 const { server, consumer, dashboard, worker } = getArgs();
 
@@ -65,6 +58,10 @@ export async function bootstrap() {
     }
 
     async function connectToSQL() {
+      const { checkDatabaseConnection } = await import(
+        './util/check-database-connection'
+      );
+
       await checkDatabaseConnection();
 
       logger.log({
@@ -99,6 +96,8 @@ export async function bootstrap() {
     }
 
     async function startServer() {
+      const { webServer } = await import('./web-server');
+
       await webServer.listen(SERVER.PORT);
 
       logger.log({
@@ -156,6 +155,8 @@ export async function bootstrap() {
         }
 
         if (ENABLED_SERVICES.SERVER) {
+          const { webServer } = await import('./web-server');
+
           await webServer.close();
           logger.log({
             level: 'info',

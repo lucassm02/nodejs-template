@@ -34,13 +34,12 @@ export function apmTransaction({ options, params, result }: TransactionParams) {
       const labelsToString = labelParamsToString(labels);
       instanceOfTransaction.addLabels(labelsToString, true);
     };
-    const apm = elasticAPM().getAPM();
-
     const originalHandler = descriptor.value;
     const isAsync = originalHandler.constructor.name === 'AsyncFunction';
 
     if (isAsync) {
       descriptor.value = async function <T>(...args: T[]) {
+        const apm = elasticAPM().getAPM();
         const transactionName = getName(args, options);
         const transaction = apm?.startTransaction(transactionName);
 
@@ -70,6 +69,7 @@ export function apmTransaction({ options, params, result }: TransactionParams) {
     }
 
     descriptor.value = function <T>(...args: T[]) {
+      const apm = elasticAPM().getAPM();
       const transactionName = getName(args, options);
       const transaction = apm?.startTransaction(transactionName);
 

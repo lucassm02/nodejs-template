@@ -16,8 +16,6 @@ export function apmSpan({ options, params, result }: TraceParams) {
     _key: string | symbol,
     descriptor: PropertyDescriptor
   ) {
-    const apm = elasticAPM().getAPM();
-
     const setTypeAndSubtype = (subType: string, instanceOfSpan: Span) => {
       const type = getType(subType);
       if (type) instanceOfSpan.type = type;
@@ -48,6 +46,8 @@ export function apmSpan({ options, params, result }: TraceParams) {
 
     if (isAsync) {
       descriptor.value = async function <T>(...args: T[]) {
+        const apm = elasticAPM().getAPM();
+
         if (!apm?.currentTransaction) return originalHandler.apply(this, args);
 
         const spanName = getName(args, options);
@@ -86,6 +86,8 @@ export function apmSpan({ options, params, result }: TraceParams) {
     }
 
     descriptor.value = function <T>(...args: T[]) {
+      const apm = elasticAPM().getAPM();
+
       if (!apm?.currentTransaction) return originalHandler.apply(this, args);
 
       const spanName = getName(args, options);
