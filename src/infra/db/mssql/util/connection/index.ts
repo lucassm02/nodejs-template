@@ -1,7 +1,7 @@
 import pkg from '@/../package.json';
 import { DB } from '@/util/constants';
 
-import { knex } from '../knex';
+import { makeCustomKnex } from '../knex/factory';
 
 const configs = {
   default: {
@@ -42,4 +42,4 @@ const configs = {
 export const getConfig = () =>
   DB.CONFIG.toUpperCase() === 'TEST' ? configs.test : configs.default;
 
-export const sqlConnection = knex(getConfig());
+export const sqlConnection = makeCustomKnex()(getConfig());

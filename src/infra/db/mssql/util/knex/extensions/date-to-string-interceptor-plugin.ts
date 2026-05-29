@@ -1,7 +1,7 @@
 import { format } from 'date-fns';
 import k, { ContextType } from 'knex';
 
-import { isDateValid } from '@/util';
+import { isDateValid } from '../utils';
 
 function formatDateEntries([key, value]: [string, unknown]) {
   if (isDateValid(<Date>value)) {

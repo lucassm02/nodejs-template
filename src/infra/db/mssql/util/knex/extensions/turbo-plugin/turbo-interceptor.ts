@@ -2,7 +2,8 @@ import k, { Knex } from 'knex';
 import NodeCache from 'node-cache';
 
 import { makeCacheServer } from '@/infra/cache';
-import { generateHashKeyToMemJs, logger } from '@/util';
+import { generateHashKeyToMemJs } from '@/util/cache';
+import { logger } from '@/util/observability/loggers/default';
 
 type Services = 'memjs' | 'node-cache';
 

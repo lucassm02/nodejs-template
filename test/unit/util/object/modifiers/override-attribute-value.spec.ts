@@ -5,7 +5,7 @@ describe('overrideAttributeValue', () => {
     const input = { id: 1, oldName: 'value', other: 'x' };
     const result = overrideAttributeValue({
       from: input,
-      attribute: 'name',
+      attribute: 'name' as keyof typeof input,
       copyFrom: 'oldName'
     });
     expect(result).toEqual({ id: 1, other: 'x', name: 'value' });

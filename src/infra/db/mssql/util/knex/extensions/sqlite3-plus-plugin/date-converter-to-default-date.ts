@@ -1,6 +1,6 @@
 import k from 'knex';
 
-import { isDateValid } from '@/util';
+import { isDateValid } from '../../utils';
 
 function convertToDateValue([key, value]: [string, unknown]): [
   string,

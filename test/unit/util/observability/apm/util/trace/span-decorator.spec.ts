@@ -19,6 +19,10 @@ const makeTransactionMock = (
 });
 
 describe('apmSpan', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   describe('without active APM transaction', () => {
     it('should call original async method without instrumentation', async () => {
       mockElasticAPM.mockReturnValue({
@@ -145,6 +149,33 @@ describe('apmSpan', () => {
 
       await descriptor.value('test-value');
       expect(span.addLabels).toHaveBeenCalled();
+    });
+
+    it('should resolve APM at execution time before adding labels', async () => {
+      const span = makeSpanMock();
+      const transaction = makeTransactionMock(span);
+      mockElasticAPM.mockReturnValue({
+        getAPM: () => ({ currentTransaction: transaction })
+      } as any);
+
+      const descriptor: PropertyDescriptor = {
+        value: async (name: string) => name
+      };
+      const decorated = apmSpan({
+        options: { name: 'op', subType: 'handler' },
+        params: { name: 0 }
+      });
+      decorated({}, 'method', descriptor);
+
+      expect(mockElasticAPM).not.toHaveBeenCalled();
+
+      await descriptor.value('runtime-value');
+
+      expect(mockElasticAPM).toHaveBeenCalledTimes(1);
+      expect(span.addLabels).toHaveBeenCalledWith(
+        { name: 'runtime-value' },
+        true
+      );
     });
 
     it('should add labels from result for async method', async () => {

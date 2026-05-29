@@ -1,8 +1,9 @@
 import * as yup from 'yup';
 
-import { uuid } from '@/validation';
 import { CreateExample } from '@/domain/usecases';
 import { ShapeToSchema } from '@/validation/types';
+
+import { uuid } from '../base';
 
 export const exampleSchema = yup.object().shape({
   payment_id: uuid,

@@ -1,7 +1,7 @@
 import * as yup from 'yup';
 import { addHours, isBefore, isDate, isPast } from 'date-fns';
 
-import { string } from '@/validation';
+import { string } from '../base';
 
 export const date = yup
   .mixed()

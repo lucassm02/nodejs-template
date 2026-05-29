@@ -1,7 +1,8 @@
 import { EsCreateEvent } from '@/data/usecases/elasticsearch';
 import { Elasticsearch } from '@/infra/service';
 import { CreateEventJob } from '@/job/jobs/event';
-import { formatDate, getAPMTransactionIds, logger } from '@/util';
+import { getAPMTransactionIds, logger } from '@/util';
+import { formatDate } from '@/util/date';
 
 import { makeErrorHandler } from '../../usecases';
 

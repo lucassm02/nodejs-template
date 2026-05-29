@@ -101,8 +101,8 @@ describe('ReprocessingRepository', () => {
         .spyOn(ReprocessingModel, 'find')
         .mockReturnValueOnce({ exec: execMock } as any);
 
-      const initialDateTime = new Date('2024-01-01');
-      const finalDateTime = new Date('2024-01-31');
+      const initialDateTime = '2024-01-01';
+      const finalDateTime = '2024-01-31';
 
       await sut.get({ queue: 'q', initialDateTime, finalDateTime });
 

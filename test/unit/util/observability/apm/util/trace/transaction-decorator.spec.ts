@@ -12,6 +12,10 @@ const makeTransactionMock = () => ({
 });
 
 describe('apmTransaction', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   describe('without active APM', () => {
     it('should call original async method when APM is null', async () => {
       mockElasticAPM.mockReturnValue({ getAPM: () => null } as any);
@@ -98,6 +102,34 @@ describe('apmTransaction', () => {
 
       await descriptor.value('my-job');
       expect(transaction.addLabels).toHaveBeenCalled();
+    });
+
+    it('should resolve APM at execution time before adding labels', async () => {
+      const transaction = makeTransactionMock();
+      mockElasticAPM.mockReturnValue({
+        getAPM: () => ({
+          startTransaction: jest.fn().mockReturnValue(transaction)
+        })
+      } as any);
+
+      const descriptor: PropertyDescriptor = {
+        value: async (name: string) => name
+      };
+      const decorated = apmTransaction({
+        options: { nameByParameter: 0 },
+        params: { name: 0 }
+      });
+      decorated({}, 'method', descriptor);
+
+      expect(mockElasticAPM).not.toHaveBeenCalled();
+
+      await descriptor.value('my-job');
+
+      expect(mockElasticAPM).toHaveBeenCalledTimes(1);
+      expect(transaction.addLabels).toHaveBeenCalledWith(
+        { name: 'my-job' },
+        true
+      );
     });
 
     it('should add result labels for async method', async () => {

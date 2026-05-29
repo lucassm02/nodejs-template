@@ -36,7 +36,7 @@ describe('filterKeys', () => {
   });
 
   it('should return empty object when allowedKeys matches nothing', () => {
-    const input = { a: 1, b: 2 };
+    const input: Record<string, number> = { a: 1, b: 2 };
     const result = filterKeys(input, { allowedKeys: ['z'] });
     expect(result).toEqual({});
   });

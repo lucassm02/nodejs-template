@@ -1,6 +1,7 @@
 import { EsUpdateEvent } from '@/data/usecases/elasticsearch';
 import { Elasticsearch } from '@/infra/service';
-import { formatDate, getAPMTransactionIds, merge } from '@/util';
+import { getAPMTransactionIds, merge } from '@/util';
+import { formatDate } from '@/util/date';
 
 export const updateEventStatusToError = async () => {
   const elasticsearch = new Elasticsearch();
