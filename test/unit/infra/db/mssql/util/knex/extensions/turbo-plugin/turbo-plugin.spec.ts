@@ -18,8 +18,11 @@ jest.mock('@/infra/cache', () => ({
   })
 }));
 
-jest.mock('@/util', () => ({
-  generateHashKeyToMemJs: jest.fn().mockImplementation((k: string) => k),
+jest.mock('@/util/cache', () => ({
+  generateHashKeyToMemJs: jest.fn().mockImplementation((k: string) => k)
+}));
+
+jest.mock('@/util/observability/loggers/default', () => ({
   logger: { log: jest.fn() }
 }));
 
@@ -232,7 +235,7 @@ describe('turboInterceptorPlugin', () => {
   });
 
   it('should skip cache and log when result size exceeds max (lines 88-93)', async () => {
-    const { logger } = jest.requireMock('@/util');
+    const { logger } = jest.requireMock('@/util/observability/loggers/default');
     const origStringify = JSON.stringify;
 
     const intercepted = turboInterceptorPlugin(k);
@@ -263,7 +266,7 @@ describe('turboInterceptorPlugin', () => {
   });
 
   it('should log warn when cacheQuery throws inside saveToCache (lines 97-101)', async () => {
-    const { logger } = jest.requireMock('@/util');
+    const { logger } = jest.requireMock('@/util/observability/loggers/default');
 
     const intercepted = turboInterceptorPlugin(k);
     const db = intercepted(makeSqliteConfig()) as any;

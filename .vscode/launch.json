@@ -1,20 +1,113 @@
 {
-  // Use o IntelliSense para saber mais sobre os atributos possíveis.
-  // Focalizar para exibir as descrições dos atributos existentes.
-  // Para obter mais informações, acesse: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "API: debug",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "--enable-source-maps",
+        "--import",
+        "tsx"
+      ],
+      "program": "${workspaceFolder}/src/main/index.ts",
+      "envFile": "${workspaceFolder}/.env",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "autoAttachChildProcesses": false,
+      "smartStep": true,
+      "sourceMaps": true,
+      "skipFiles": [
+        "<node_internals>/**",
+        "${workspaceFolder}/node_modules/**"
+      ],
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/src/**",
+        "!**/node_modules/**"
+      ]
+    },
+    {
+      "name": "API: debug HTTP only",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "--enable-source-maps",
+        "--import",
+        "tsx"
+      ],
+      "program": "${workspaceFolder}/src/main/index.ts",
+      "envFile": "${workspaceFolder}/.env",
+      "env": {
+        "SERVER_ENABLED": "true",
+        "CONSUMER_ENABLED": "false",
+        "WORKER_ENABLED": "false",
+        "WORKER_DASHBOARD_ENABLED": "false"
+      },
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "autoAttachChildProcesses": false,
+      "smartStep": true,
+      "sourceMaps": true,
+      "skipFiles": [
+        "<node_internals>/**",
+        "${workspaceFolder}/node_modules/**"
+      ],
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/src/**",
+        "!**/node_modules/**"
+      ]
+    },
+    {
+      "name": "API: attach 9229",
       "type": "node",
       "request": "attach",
-      "protocol": "inspector",
+      "address": "localhost",
+      "port": 9229,
       "restart": true,
-      "name": "DEBUG",
+      "timeout": 30000,
+      "localRoot": "${workspaceFolder}",
+      "remoteRoot": "${workspaceFolder}",
+      "smartStep": true,
+      "sourceMaps": true,
       "skipFiles": [
-        "<node_internals>/**"
+        "<node_internals>/**",
+        "${workspaceFolder}/node_modules/**"
       ],
-      "outFiles": [
-        "${workspaceFolder}/**/*.js"
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/src/**",
+        "!**/node_modules/**"
+      ]
+    },
+    {
+      "name": "Jest: current file",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "--enable-source-maps",
+        "--inspect-brk",
+        "${workspaceFolder}/node_modules/.bin/jest",
+        "${file}",
+        "--runInBand",
+        "--detectOpenHandles=false"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "smartStep": true,
+      "sourceMaps": true,
+      "skipFiles": [
+        "<node_internals>/**",
+        "${workspaceFolder}/node_modules/**"
+      ],
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/src/**",
+        "${workspaceFolder}/test/**",
+        "!**/node_modules/**"
       ]
     }
   ]
