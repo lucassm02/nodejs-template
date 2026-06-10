@@ -2,11 +2,20 @@ import k from 'knex';
 
 import { isDateValid } from '../../utils';
 
+// Only convert strings that look like actual date representations:
+// - ISO 8601: "2026-04-25", "2026-04-25T14:58:00.000Z", "2026-04-25 14:58:00"
+// - JS Date.toString(): "Tue Apr 25 2026 ..."
+const DATE_STRING_RE = /^\d{4}-\d{2}-\d{2}|^(Mon|Tue|Wed|Thu|Fri|Sat|Sun) /;
+
 function convertToDateValue([key, value]: [string, unknown]): [
   string,
   unknown
 ] {
   if (!(value instanceof Date) && typeof value !== 'string') {
+    return [key, value];
+  }
+
+  if (typeof value === 'string' && !DATE_STRING_RE.test(value)) {
     return [key, value];
   }
 
