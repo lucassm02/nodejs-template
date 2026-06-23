@@ -7,7 +7,7 @@
     "helm:gen:development": "node script/helm/index.mjs -e development --scan-routes",
     "helm:gen:homologation": "node script/helm/index.mjs -e homologation --scan-routes",
     "prebuild": "rimraf dist",
-    "build": "babel src --extensions \".js,.ts\" --out-dir dist --copy-files --no-copy-ignored",
+    "build": "babel src --extensions \".js,.ts\" --out-dir dist --copy-files --no-copy-ignored --source-maps",
     "lint:staged": "yarn lint-staged",
     "lint": "yarn eslint src/** --fix",
     "check:types": "tsc --noEmit",
