@@ -3,6 +3,13 @@ import fastify from 'fastify';
 import { WebServer } from '@/infra/http/util/web-server/web-server';
 import { Route } from '@/infra/http/util/web-server/route';
 import { SERVER } from '@/util';
+import { elasticAPM } from '@/util/observability/apm/factory';
+
+jest.mock('@/util/observability/apm/factory', () => ({
+  elasticAPM: jest.fn(() => ({ getAPM: () => null }))
+}));
+
+const mockElasticAPM = elasticAPM as jest.MockedFunction<typeof elasticAPM>;
 
 const register = jest.fn();
 const ready = jest.fn().mockImplementation((callback) => {
@@ -14,6 +21,7 @@ const close = jest.fn().mockImplementation((callback) => {
 
 const decorateRequest = jest.fn();
 const addContentTypeParser = jest.fn();
+const addHook = jest.fn();
 
 const server = {
   listen: jest.fn(),
@@ -30,6 +38,7 @@ const fastifyMock = () => ({
   ready,
   close,
   decorateRequest,
+  addHook,
   addContentTypeParser,
   server
 });
@@ -55,6 +64,32 @@ const makeSut = (): SutType => {
 };
 
 describe('HttpServer', () => {
+  describe('setup', () => {
+    it('should register onSend hook', () => {
+      makeSut();
+
+      expect(addHook).toHaveBeenCalledWith('onSend', expect.any(Function));
+    });
+
+    it('should name APM transaction for unmapped routes', () => {
+      const setTransactionName = jest.fn();
+      mockElasticAPM.mockReturnValue({
+        getAPM: () => ({ setTransactionName })
+      } as unknown as ReturnType<typeof elasticAPM>);
+
+      makeSut();
+
+      const [, hook] = addHook.mock.calls.at(-1);
+      const done = jest.fn();
+      const payload = { message: 'Route GET:/missing not found' };
+
+      hook({ is404: true, method: 'GET' }, {}, payload, done);
+
+      expect(setTransactionName).toHaveBeenCalledWith('GET route not found');
+      expect(done).toHaveBeenCalledWith(null, payload);
+    });
+  });
+
   describe('#use', () => {
     it('should call fastify.register with the correct params', () => {
       const { sut } = makeSut();

@@ -66,6 +66,73 @@ describe('apmTransaction', () => {
       expect(transaction.type).toBe('worker');
     });
 
+    it('should use fallback name when transaction option name is blank', async () => {
+      const transaction = makeTransactionMock();
+      const startTransaction = jest.fn().mockReturnValue(transaction);
+      mockElasticAPM.mockReturnValue({
+        getAPM: () => ({
+          startTransaction
+        })
+      } as any);
+
+      const descriptor: PropertyDescriptor = {
+        value: async () => 'async-done'
+      };
+      const decorated = apmTransaction({
+        options: { name: ' ' }
+      });
+      decorated({}, 'method', descriptor);
+
+      await descriptor.value();
+
+      expect(startTransaction).toHaveBeenCalledWith('unnamed');
+    });
+
+    it('should use fallback name when nameByParameter resolves to an object', async () => {
+      const transaction = makeTransactionMock();
+      const startTransaction = jest.fn().mockReturnValue(transaction);
+      mockElasticAPM.mockReturnValue({
+        getAPM: () => ({
+          startTransaction
+        })
+      } as any);
+
+      const descriptor: PropertyDescriptor = {
+        value: async (payload: object) => payload
+      };
+      const decorated = apmTransaction({
+        options: { nameByParameter: 0, name: 'payload-transaction' }
+      });
+      decorated({}, 'method', descriptor);
+
+      await descriptor.value({ name: 'invalid-transaction-name' });
+
+      expect(startTransaction).toHaveBeenCalledWith('payload-transaction');
+    });
+
+    it('should end async transaction when original method throws', async () => {
+      const transaction = makeTransactionMock();
+      mockElasticAPM.mockReturnValue({
+        getAPM: () => ({
+          startTransaction: jest.fn().mockReturnValue(transaction)
+        })
+      } as any);
+
+      const descriptor: PropertyDescriptor = {
+        value: async () => {
+          throw new Error('fail');
+        }
+      };
+      const decorated = apmTransaction({
+        options: { name: 'failing-tx', type: 'worker' }
+      });
+      decorated({}, 'method', descriptor);
+
+      await expect(descriptor.value()).rejects.toThrow('fail');
+      expect(transaction.end).toHaveBeenCalledTimes(1);
+      expect(transaction.type).toBe('worker');
+    });
+
     it('should start and end a transaction for sync method', () => {
       const transaction = makeTransactionMock();
       mockElasticAPM.mockReturnValue({

@@ -76,6 +76,44 @@ describe('apmSpan', () => {
       expect(span.subtype).toBe('http');
     });
 
+    it('should use fallback name when span option name is blank', async () => {
+      const span = makeSpanMock();
+      const transaction = makeTransactionMock(span);
+      mockElasticAPM.mockReturnValue({
+        getAPM: () => ({ currentTransaction: transaction })
+      } as any);
+
+      const descriptor: PropertyDescriptor = { value: async () => 'done' };
+      const decorated = apmSpan({
+        options: { name: ' ', subType: 'handler' }
+      });
+      decorated({}, 'method', descriptor);
+
+      await descriptor.value();
+
+      expect(transaction.startSpan).toHaveBeenCalledWith('unnamed');
+    });
+
+    it('should use fallback name when nameByParameter resolves to an object', async () => {
+      const span = makeSpanMock();
+      const transaction = makeTransactionMock(span);
+      mockElasticAPM.mockReturnValue({
+        getAPM: () => ({ currentTransaction: transaction })
+      } as any);
+
+      const descriptor: PropertyDescriptor = {
+        value: async (payload: object) => payload
+      };
+      const decorated = apmSpan({
+        options: { nameByParameter: 0, name: 'payload-handler' }
+      });
+      decorated({}, 'method', descriptor);
+
+      await descriptor.value({ name: 'invalid-span-name' });
+
+      expect(transaction.startSpan).toHaveBeenCalledWith('payload-handler');
+    });
+
     it('should end span even on error in async method', async () => {
       const span = makeSpanMock();
       const transaction = makeTransactionMock(span);

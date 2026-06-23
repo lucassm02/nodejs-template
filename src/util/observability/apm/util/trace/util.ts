@@ -57,17 +57,43 @@ export const labelParamsToString = (params: object) => {
   );
 };
 
-export const getName = (args: any[], options: TransactionOptions) => {
-  if (args?.[options.nameByParameter as any])
-    return args[options.nameByParameter as any];
+const DEFAULT_TRACE_NAME = 'unnamed';
+
+const normalizeTraceName = (name: unknown): string | null => {
+  if (typeof name === 'string') {
+    const trimmedName = name.trim();
+    return trimmedName || null;
+  }
+
+  if (
+    typeof name === 'number' ||
+    typeof name === 'boolean' ||
+    typeof name === 'bigint'
+  ) {
+    return String(name);
+  }
+
+  return null;
+};
+
+export const getName = (args: any[], options: TransactionOptions): string => {
+  const nameByIndex = normalizeTraceName(
+    args?.[options.nameByParameter as any]
+  );
+  if (nameByIndex) return nameByIndex;
 
   const findObject = args.find(
     (value) => value?.[options.nameByParameter as any]
   );
 
-  if (findObject) return findObject[options.nameByParameter as any];
+  if (findObject) {
+    const nameByProperty = normalizeTraceName(
+      findObject[options.nameByParameter as any]
+    );
+    if (nameByProperty) return nameByProperty;
+  }
 
-  return options.name || 'unnamed';
+  return normalizeTraceName(options.name) ?? DEFAULT_TRACE_NAME;
 };
 
 const SUBTYPE_TO_TYPE = new Map<string, string>([

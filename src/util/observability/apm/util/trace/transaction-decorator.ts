@@ -43,26 +43,23 @@ export function apmTransaction({ options, params, result }: TransactionParams) {
         const transactionName = getName(args, options);
         const transaction = apm?.startTransaction(transactionName);
 
-        const response = await originalHandler.apply(this, args);
+        if (options.type && transaction) transaction.type = options.type;
 
-        if (!transaction) return response;
+        try {
+          const response = await originalHandler.apply(this, args);
 
-        if (options.type) transaction.type = options.type;
+          if (!transaction) return response;
 
-        if (params) {
-          setParams(params, args, transaction);
-        }
+          if (params) {
+            setParams(params, args, transaction);
+          }
 
-        if (!result) {
-          transaction.end();
+          if (result) setResult(result, response, transaction);
+
           return response;
+        } finally {
+          transaction?.end();
         }
-
-        setResult(result, response, transaction);
-
-        transaction.end();
-
-        return response;
       };
 
       return descriptor;
@@ -73,26 +70,23 @@ export function apmTransaction({ options, params, result }: TransactionParams) {
       const transactionName = getName(args, options);
       const transaction = apm?.startTransaction(transactionName);
 
-      const response = originalHandler.apply(this, args);
+      if (options.type && transaction) transaction.type = options.type;
 
-      if (!transaction) return response;
+      try {
+        const response = originalHandler.apply(this, args);
 
-      if (options.type) transaction.type = options.type;
+        if (!transaction) return response;
 
-      if (params) {
-        setParams(params, args, transaction);
-      }
+        if (params) {
+          setParams(params, args, transaction);
+        }
 
-      if (!result) {
-        transaction.end();
+        if (result) setResult(result, response, transaction);
+
         return response;
+      } finally {
+        transaction?.end();
       }
-
-      setResult(result, response, transaction);
-
-      transaction.end();
-
-      return response;
     };
 
     return descriptor;

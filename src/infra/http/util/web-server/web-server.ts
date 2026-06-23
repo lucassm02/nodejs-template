@@ -22,12 +22,10 @@ import {
   apmSpan,
   convertCamelCaseKeysToSnakeCase,
   convertSnakeCaseKeysToCamelCase,
+  elasticAPM,
   logger
 } from '@/util';
-import {
-  SpanOptions,
-  TraceLabels
-} from '@/util/observability/apm/util/trace/types';
+import { SpanOptions } from '@/util/observability/apm/util/trace/types';
 
 import { WebSocketServer, WebSocketServerOptions } from '../websocket-server';
 import { Route } from './route';
@@ -49,8 +47,6 @@ export enum Exceptions {
 
 type DecoratorOptions = {
   options: SpanOptions;
-  params?: TraceLabels;
-  result?: TraceLabels;
 };
 
 type Endpoint = {
@@ -89,6 +85,15 @@ export class WebServer {
     fastify.server.on('connection', (socket) => {
       this.connections.add(socket);
       socket.on('close', () => this.connections.delete(socket));
+    });
+
+    fastify.addHook('onSend', (request, _reply, payload, done) => {
+      if (request.is404) {
+        const method = request.method || 'UNKNOWN';
+        elasticAPM().getAPM()?.setTransactionName(`${method} route not found`);
+      }
+
+      done(null, payload);
     });
 
     fastify.addContentTypeParser(
@@ -449,13 +454,11 @@ export class WebServer {
             options: {
               name: '',
               subType: 'handler'
-            },
-            params: {}
+            }
           };
 
           if (typeof middleware === 'function') {
             decoratorOptions.options.name = middleware.name;
-            decoratorOptions.params = { stateHook: 3 };
             const decorator = apmSpan(decoratorOptions);
             const proto = {};
 
@@ -474,7 +477,6 @@ export class WebServer {
           }
 
           decoratorOptions.options.name = middleware.constructor.name;
-          decoratorOptions.params = { stateHook: 1 };
           const decorator = apmSpan(decoratorOptions);
 
           const proto = middleware.constructor.prototype;
@@ -529,13 +531,11 @@ export class WebServer {
           options: {
             name: '',
             subType: 'handler'
-          },
-          params: {}
+          }
         };
 
         if (typeof middleware === 'function') {
           decoratorOptions.options.name = middleware.name;
-          decoratorOptions.params = { stateHook: 3 };
           const decorator = apmSpan(decoratorOptions);
           const proto = {};
 
@@ -554,7 +554,6 @@ export class WebServer {
         }
 
         decoratorOptions.options.name = middleware.constructor.name;
-        decoratorOptions.params = { stateHook: 1 };
         const decorator = apmSpan(decoratorOptions);
 
         const proto = middleware.constructor.prototype;
