@@ -1,5 +1,3 @@
-import { Agenda } from 'agenda';
-import agendash from 'agendash';
 import Fastify from 'fastify';
 
 import { MONGO, WORKER, logger } from '@/util';
@@ -9,27 +7,49 @@ const { BASE_URI, PORT } = WORKER.DASHBOARD;
 const connection = `${MONGO.URL()}/${MONGO.NAME}?authSource=${MONGO.AUTH_SOURCE}`;
 const collection = 'agenda';
 
-const agenda = new Agenda().database(connection, collection);
+async function bootstrapAgendaDashboard() {
+  const [{ Agenda }, { MongoBackend }, { createFastifyPlugin }] =
+    await Promise.all([
+      import('agenda'),
+      import('@agendajs/mongo-backend'),
+      import('agendash')
+    ]);
 
-const fastify = Fastify();
+  const agenda = new Agenda({
+    backend: new MongoBackend({
+      address: connection,
+      collection
+    })
+  });
 
-const middleware = agendash(agenda, {
-  title: 'Agenda Dashboard',
-  middleware: 'fastify'
-});
+  await agenda.ready;
 
-fastify.register(middleware, { prefix: BASE_URI });
-fastify.listen({ port: +PORT }, (error) => {
-  if (error) {
+  const fastify = Fastify();
+  const middleware = createFastifyPlugin(agenda);
+
+  fastify.register(middleware, { prefix: BASE_URI });
+  fastify.listen({ port: +PORT }, (error) => {
+    if (error) {
+      logger.log(error);
+      process.exit(1);
+    }
+
+    logger.log(
+      {
+        level: 'info',
+        message: `Agendash started at: http://127.0.0.1:${PORT}${BASE_URI}/`
+      },
+      'offline'
+    );
+  });
+}
+
+bootstrapAgendaDashboard().catch((error) => {
+  if (error instanceof Error) {
     logger.log(error);
-    process.exit(1);
+  } else {
+    logger.log(new Error(String(error)));
   }
 
-  logger.log(
-    {
-      level: 'info',
-      message: `Agendash started at: http://127.0.0.1:${PORT}${BASE_URI}/`
-    },
-    'offline'
-  );
+  process.exit(1);
 });

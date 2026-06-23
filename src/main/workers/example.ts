@@ -7,13 +7,13 @@ const tenMinutes = 60 * 10;
 export default (manager: WorkerManager) => {
   manager.makeWorker(
     { name: 'example' },
-    makeExampleJob(),
-    makeSaveInCacheJob({
-      key: 'example',
-      value: 'validateToken',
-      subKey: 'encryptedToken',
-      extractField: 'token',
-      ttl: tenMinutes
-    })
+    makeExampleJob()
+    // makeSaveInCacheJob({
+    //   key: 'example',
+    //   value: 'validateToken',
+    //   subKey: 'encryptedToken',
+    //   extractField: 'token',
+    //   ttl: tenMinutes
+    // })
   );
 };
