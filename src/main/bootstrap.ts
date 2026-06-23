@@ -2,6 +2,8 @@ import path from 'path';
 import { Mongoose } from 'mongoose';
 
 import { CacheServer } from '@/infra/cache/cache-server';
+import { InputAndOutputLogRepository } from '@/infra/db/mongodb/input-and-output-log/input-and-output-log-repository';
+import { LogRepository } from '@/infra/db/mongodb/log/log-repository';
 import { RabbitMqServer } from '@/infra/mq/utils';
 import { WorkerManager, workerManager } from '@/infra/worker';
 import {
@@ -178,6 +180,11 @@ export async function bootstrap() {
         });
 
         if (mongoose) {
+          await Promise.all([
+            InputAndOutputLogRepository.flush(),
+            LogRepository.flush()
+          ]);
+
           await mongoose.disconnect();
 
           logger.log(

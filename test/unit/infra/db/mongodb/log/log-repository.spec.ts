@@ -8,14 +8,19 @@ type SutTypes = {
 const makeSut = (): SutTypes => ({ sut: new LogRepository() });
 
 describe('Log Repository', () => {
-  it('should create a logModel', async () => {
+  afterEach(async () => {
+    jest.restoreAllMocks();
+    await LogRepository.flush();
+  });
+
+  it('should buffer log and call model insertMany on flush', async () => {
     const { sut } = makeSut();
 
-    const createSpy = jest
-      .spyOn(LogModel, 'create')
-      .mockImplementationOnce(() => Promise.resolve(<any>{}));
+    const insertManySpy = jest
+      .spyOn(LogModel, 'insertMany')
+      .mockResolvedValueOnce([]);
 
-    sut.create({
+    await sut.create({
       level: 'any_level',
       id: 'my_id',
       log_message: 'my_item',
@@ -29,10 +34,13 @@ describe('Log Repository', () => {
       type: 'any_type'
     };
 
-    const writeConcern = {
-      w: 0
-    };
+    expect(insertManySpy).not.toHaveBeenCalled();
 
-    expect(createSpy).toHaveBeenCalledWith(expected, { writeConcern });
+    await LogRepository.flush();
+
+    expect(insertManySpy).toHaveBeenCalledWith([expected], {
+      ordered: false,
+      writeConcern: { w: 0 }
+    });
   });
 });

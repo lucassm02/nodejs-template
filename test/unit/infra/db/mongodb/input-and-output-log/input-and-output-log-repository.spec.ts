@@ -8,14 +8,19 @@ type SutTypes = {
 const makeSut = (): SutTypes => ({ sut: new InputAndOutputLogRepository() });
 
 describe('InputAndOutputLog Repository', () => {
-  it('should call model create method', async () => {
+  afterEach(async () => {
+    jest.restoreAllMocks();
+    await InputAndOutputLogRepository.flush();
+  });
+
+  it('should buffer log and call model insertMany on flush', async () => {
     const { sut } = makeSut();
 
-    const createSpy = jest
-      .spyOn(InputAndOutputLogModel, 'create')
-      .mockImplementationOnce(() => Promise.resolve(<any>{}));
+    const insertManySpy = jest
+      .spyOn(InputAndOutputLogModel, 'insertMany')
+      .mockResolvedValueOnce([]);
 
-    sut.create({
+    await sut.create({
       type: 'any_type',
       id: 'my_id',
       inputPayload: { item: 'my_item' }
@@ -29,10 +34,13 @@ describe('InputAndOutputLog Repository', () => {
       type: 'any_type'
     };
 
-    const writeConcern = {
-      w: 0
-    };
+    expect(insertManySpy).not.toHaveBeenCalled();
 
-    expect(createSpy).toHaveBeenCalledWith(expected, { writeConcern });
+    await InputAndOutputLogRepository.flush();
+
+    expect(insertManySpy).toHaveBeenCalledWith([expected], {
+      ordered: false,
+      writeConcern: { w: 0 }
+    });
   });
 });

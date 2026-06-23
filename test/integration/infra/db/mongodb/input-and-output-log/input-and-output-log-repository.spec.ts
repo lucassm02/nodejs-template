@@ -26,6 +26,7 @@ describe('InputAndOutputLog Repository', () => {
   });
 
   beforeEach(async () => {
+    await InputAndOutputLogRepository.flush();
     await InputAndOutputLogModel.deleteMany({});
   });
 
@@ -91,6 +92,8 @@ describe('InputAndOutputLog Repository', () => {
       }
     };
     await sut.create(mockLog);
+    await InputAndOutputLogRepository.flush();
+
     const result = await InputAndOutputLogModel.findOne({ url: mockLog.url });
 
     expect(result).not.toBeNull();

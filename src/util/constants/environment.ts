@@ -39,7 +39,9 @@ export const WORKER = {
 export const LOGGER = {
   ENABLED: stringToBoolean(process.env.LOGGER_ENABLED) || true,
   DB: {
-    ENABLED: stringToBoolean(process.env.LOGGER_DB_ENABLED) || false
+    ENABLED: stringToBoolean(process.env.LOGGER_DB_ENABLED) || false,
+    BULK_SIZE: +(() => process.env.LOGGER_DB_BULK_SIZE || 10)(),
+    FLUSH_INTERVAL_MS: +(() => process.env.LOGGER_DB_FLUSH_INTERVAL_MS || 100)()
   },
   CONSOLE: { LEVEL: process.env.LOGGER_CONSOLE_LEVEL || 'info' }
 };

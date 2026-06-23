@@ -28,6 +28,8 @@ A configuracao e carregada com `dotenv` e centralizada em `src/util/constants/en
 - `LOGGER_ENABLED`: habilita logging.
 - `LOGGER_CONSOLE_LEVEL`: nivel minimo no console.
 - `LOGGER_DB_ENABLED`: habilita persistencia de logs no Mongo.
+- `LOGGER_DB_BULK_SIZE`: quantidade maxima de logs por insert em lote.
+- `LOGGER_DB_FLUSH_INTERVAL_MS`: intervalo maximo para descarregar o buffer de logs no Mongo.
 
 ## ENCRYPTION
 

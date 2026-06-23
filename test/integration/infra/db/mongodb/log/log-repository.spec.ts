@@ -26,6 +26,7 @@ describe('Log Repository', () => {
   });
 
   beforeEach(async () => {
+    await LogRepository.flush();
     await LogModel.deleteMany({});
   });
 
@@ -38,6 +39,8 @@ describe('Log Repository', () => {
     };
 
     await sut.create(mockLog);
+    await LogRepository.flush();
+
     const result = await LogModel.findOne({ message: mockLog.message });
 
     expect(result).not.toBeNull();
