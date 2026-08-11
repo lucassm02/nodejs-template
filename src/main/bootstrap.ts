@@ -114,7 +114,7 @@ export async function bootstrap() {
 
       logger.log({
         level: 'info',
-        message: `Base URL: http://127.0.0.1:${SERVER.PORT}${SERVER.BASE_URI}`
+        message: `Base URL: http://localhost:${SERVER.PORT}${SERVER.BASE_URI}`
       });
     }
 
