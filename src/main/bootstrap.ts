@@ -15,8 +15,7 @@ import {
   SERVER,
   WORKER,
   elasticAPM,
-  logger,
-  splitPromises
+  logger
 } from '@/util';
 
 import { getArgs } from './cli';
@@ -39,8 +38,6 @@ const SHUTDOWN_TIMEOUT = 30_000;
 export async function bootstrap() {
   try {
     elasticAPM();
-
-    const promises: Array<() => Promise<unknown>> = [];
 
     let rabbitServer: RabbitMqServer | null = null;
     let worker: WorkerManager | null = null;
@@ -83,8 +80,14 @@ export async function bootstrap() {
 
     async function connectToRabbit() {
       rabbitServer = await getRabbitmqConnection();
+    }
 
-      if (!ENABLED_SERVICES.CONSUMER) return;
+    async function startConsumers() {
+      if (!rabbitServer) {
+        throw new Error(
+          'RabbitMQ connection must be started before RabbitMQ consumers'
+        );
+      }
 
       const consumersFolder = path.resolve(__dirname, 'consumers');
       await rabbitServer.consumersDirectory(consumersFolder);
@@ -129,22 +132,33 @@ export async function bootstrap() {
       'offline'
     );
 
-    if (DB.ENABLED) promises.push(connectToSQL);
-    if (MONGO.ENABLED) promises.push(connectToMongoose);
-    if (RABBIT.ENABLED) promises.push(connectToRabbit);
-    if (ENABLED_SERVICES.SERVER) promises.push(startServer);
-    if (ENABLED_SERVICES.WORKER) promises.push(startWorker);
-    if (ENABLED_SERVICES.DASHBOARD) promises.push(startAgendaDashboard);
-    if (MEMCACHED.ENABLED) promises.push(connectToMemcached);
+    if (MONGO.ENABLED) await connectToMongoose();
 
-    await splitPromises(promises, 2);
+    const servicePromises: Promise<unknown>[] = [];
 
-    setTimeout(() => {
-      logger.log(
-        { level: 'info', message: 'Check completed, all services are online' },
-        'offline'
-      );
-    }, 500);
+    if (DB.ENABLED) servicePromises.push(connectToSQL());
+    if (RABBIT.ENABLED) servicePromises.push(connectToRabbit());
+    if (MEMCACHED.ENABLED) servicePromises.push(connectToMemcached());
+
+    await Promise.all(servicePromises);
+
+    const serverPromises: Promise<unknown>[] = [];
+
+    if (ENABLED_SERVICES.CONSUMER) {
+      serverPromises.push(startConsumers());
+    }
+    if (ENABLED_SERVICES.WORKER) serverPromises.push(startWorker());
+    if (ENABLED_SERVICES.DASHBOARD) {
+      serverPromises.push(startAgendaDashboard());
+    }
+    if (ENABLED_SERVICES.SERVER) serverPromises.push(startServer());
+
+    await Promise.all(serverPromises);
+
+    logger.log(
+      { level: 'info', message: 'Check completed, all services are online' },
+      'offline'
+    );
 
     async function gracefulShutdown() {
       try {
