@@ -11,6 +11,11 @@ const agendaEveryMock = jest.fn().mockResolvedValue(undefined);
 const agendaStartMock = jest.fn().mockResolvedValue(undefined);
 const agendaStopMock = jest.fn().mockResolvedValue(undefined);
 const mockMongoBackendConstructor = jest.fn();
+const mongoBackendConnectMock = jest.fn().mockResolvedValue(undefined);
+const mongoClientConnectMock = jest.fn().mockResolvedValue(undefined);
+const mongoClientCloseMock = jest.fn().mockResolvedValue(undefined);
+const mongoDatabase = {};
+const mongoClientDbMock = jest.fn().mockReturnValue(mongoDatabase);
 
 jest.mock('agenda', () => ({
   Agenda: jest.fn().mockImplementation(() => ({
@@ -25,8 +30,13 @@ jest.mock('agenda', () => ({
 jest.mock('@agendajs/mongo-backend', () => ({
   MongoBackend: jest.fn().mockImplementation((config) => {
     mockMongoBackendConstructor(config);
-    return {};
-  })
+    return { connect: mongoBackendConnectMock };
+  }),
+  MongoClient: jest.fn().mockImplementation(() => ({
+    connect: mongoClientConnectMock,
+    close: mongoClientCloseMock,
+    db: mongoClientDbMock
+  }))
 }));
 
 jest.mock('@/main/adapters', () => ({
@@ -47,7 +57,10 @@ jest.mock('@/util', () => ({
   MONGO: {
     URL: () => 'mongodb://localhost:27017',
     NAME: 'test',
-    AUTH_SOURCE: 'admin'
+    AUTH_SOURCE: 'admin',
+    CONNECTION_TIMEOUT_MS: 1000,
+    MAX_POOL_SIZE: 10,
+    MIN_POOL_SIZE: 1
   },
   WORKER: { LIST: [] }
 }));
@@ -73,10 +86,66 @@ describe('WorkerManager', () => {
       const { sut } = makeSut();
       await sut.start();
       expect(agendaStartMock).toHaveBeenCalledTimes(1);
+      expect(mongoClientConnectMock).toHaveBeenCalledTimes(1);
+      expect(mongoBackendConnectMock).toHaveBeenCalledTimes(1);
       expect(mockMongoBackendConstructor).toHaveBeenCalledWith({
-        address: 'mongodb://localhost:27017/test?authSource=admin',
+        mongo: mongoDatabase,
         collection: 'agenda'
       });
+    });
+
+    it('should propagate MongoDB connection errors and close the client', async () => {
+      const connectionError = new Error('MongoDB unavailable');
+      mongoClientConnectMock.mockRejectedValueOnce(connectionError);
+      const { sut } = makeSut();
+
+      await expect(sut.start()).rejects.toThrow(connectionError);
+
+      expect(agendaStartMock).not.toHaveBeenCalled();
+      expect(mongoClientCloseMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('should wait for worker registrations before starting Agenda', async () => {
+      let finishRegistration: () => void = () => undefined;
+      agendaEveryMock.mockReturnValueOnce(
+        new Promise<void>((resolveRegistration) => {
+          finishRegistration = resolveRegistration;
+        })
+      );
+      const { sut } = makeSut();
+
+      sut.makeWorker(
+        { name: 'delayed-job', repeatInterval: '1 minute' },
+        jest.fn()
+      );
+      const starting = sut.start();
+      const earlyResult = await Promise.race([
+        starting.then(() => 'resolved'),
+        new Promise((resolveResult) => {
+          setTimeout(() => resolveResult('pending'), 20);
+        })
+      ]);
+
+      expect(earlyResult).toBe('pending');
+      expect(agendaStartMock).not.toHaveBeenCalled();
+      finishRegistration();
+      await expect(starting).resolves.toBeUndefined();
+      expect(agendaStartMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('should propagate worker registration errors from start', async () => {
+      const registrationError = new Error('Could not schedule worker');
+      agendaEveryMock.mockRejectedValueOnce(registrationError);
+      const { sut } = makeSut();
+
+      sut.makeWorker(
+        { name: 'invalid-job', repeatInterval: 'invalid' },
+        jest.fn()
+      );
+
+      await expect(sut.start()).rejects.toThrow(registrationError);
+      expect(agendaStartMock).not.toHaveBeenCalled();
+      expect(mongoClientCloseMock).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -85,6 +154,7 @@ describe('WorkerManager', () => {
       const { sut } = makeSut();
       await sut.stop();
       expect(agendaStopMock).toHaveBeenCalledTimes(1);
+      expect(mongoClientCloseMock).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -93,7 +163,8 @@ describe('WorkerManager', () => {
       const { sut } = makeSut();
       const job = jest.fn();
 
-      await sut.makeWorker({ name: 'my-job', repeatInterval: '1 minute' }, job);
+      sut.makeWorker({ name: 'my-job', repeatInterval: '1 minute' }, job);
+      await sut.start();
 
       expect(agendaDefineMock).toHaveBeenCalledWith(
         'my-job',
@@ -105,7 +176,8 @@ describe('WorkerManager', () => {
     it('should define a worker without scheduling when no repeatInterval', async () => {
       const { sut } = makeSut();
 
-      await sut.makeWorker({ name: 'one-shot' }, jest.fn());
+      sut.makeWorker({ name: 'one-shot' }, jest.fn());
+      await sut.start();
 
       expect(agendaDefineMock).toHaveBeenCalledWith(
         'one-shot',
@@ -117,7 +189,7 @@ describe('WorkerManager', () => {
     it('should skip disabled worker when not in allowAll/allow list', async () => {
       const { sut } = makeSut();
 
-      await sut.makeWorker({ name: 'disabled-job', enabled: false }, jest.fn());
+      sut.makeWorker({ name: 'disabled-job', enabled: false }, jest.fn());
 
       expect(agendaDefineMock).not.toHaveBeenCalled();
     });
@@ -125,7 +197,8 @@ describe('WorkerManager', () => {
     it('should register disabled worker when enabled option is true explicitly', async () => {
       const { sut } = makeSut();
 
-      await sut.makeWorker({ name: 'forced-job', enabled: true }, jest.fn());
+      sut.makeWorker({ name: 'forced-job', enabled: true }, jest.fn());
+      await sut.start();
 
       expect(agendaDefineMock).toHaveBeenCalled();
     });
@@ -137,7 +210,7 @@ describe('WorkerManager', () => {
       WORKER.LIST = ['!blocked-job'];
       const sut = new WorkerManager();
 
-      await sut.makeWorker({ name: 'blocked-job' }, jest.fn());
+      sut.makeWorker({ name: 'blocked-job' }, jest.fn());
 
       expect(agendaDefineMock).not.toHaveBeenCalled();
       WORKER.LIST = [];
@@ -148,7 +221,8 @@ describe('WorkerManager', () => {
       WORKER.LIST = ['*'];
       const sut = new WorkerManager();
 
-      await sut.makeWorker({ name: 'any-job', enabled: false }, jest.fn());
+      sut.makeWorker({ name: 'any-job', enabled: false }, jest.fn());
+      await sut.start();
 
       expect(agendaDefineMock).toHaveBeenCalled();
       WORKER.LIST = [];
@@ -159,7 +233,7 @@ describe('WorkerManager', () => {
       WORKER.LIST = ['!*'];
       const sut = new WorkerManager();
 
-      await sut.makeWorker({ name: 'some-job' }, jest.fn());
+      sut.makeWorker({ name: 'some-job' }, jest.fn());
 
       expect(agendaDefineMock).not.toHaveBeenCalled();
       WORKER.LIST = [];
@@ -170,7 +244,8 @@ describe('WorkerManager', () => {
       WORKER.LIST = ['!*', 'allowed-job'];
       const sut = new WorkerManager();
 
-      await sut.makeWorker({ name: 'allowed-job' }, jest.fn());
+      sut.makeWorker({ name: 'allowed-job' }, jest.fn());
+      await sut.start();
 
       expect(agendaDefineMock).toHaveBeenCalled();
       WORKER.LIST = [];
@@ -236,7 +311,8 @@ describe('WorkerManager', () => {
       const { sut } = makeSut();
       const job = jest.fn().mockResolvedValue(undefined);
 
-      await sut.makeWorker({ name: 'cb-job' }, job);
+      sut.makeWorker({ name: 'cb-job' }, job);
+      await sut.start();
 
       const defineCallback = agendaDefineMock.mock.calls[0][1];
       const done = jest.fn();

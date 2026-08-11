@@ -22,6 +22,7 @@ import { getArgs } from './cli';
 import { getMongooseConnection } from './util/get-mongoose-connection';
 import { getRabbitmqConnection } from './util/get-rabbitmq-connection';
 import { setMemcachedConnection } from './util/set-memcached-connection';
+import type { AgendaDashboard } from './agendash';
 
 const { server, consumer, dashboard, worker } = getArgs();
 
@@ -43,6 +44,7 @@ export async function bootstrap() {
     let worker: WorkerManager | null = null;
     let cacheServer: CacheServer | null = null;
     let mongoose: Mongoose | null = null;
+    let agendaDashboard: AgendaDashboard | null = null;
 
     if (Object.values(ENABLED_SERVICES).every((item) => item === false)) {
       logger.log(
@@ -117,14 +119,15 @@ export async function bootstrap() {
     }
 
     async function startAgendaDashboard() {
-      await import('./agendash');
+      const { bootstrapAgendaDashboard } = await import('./agendash');
+      agendaDashboard = await bootstrapAgendaDashboard();
     }
 
     async function startWorker() {
       worker = workerManager();
-      await worker.start();
       const workersFolder = path.resolve(__dirname, 'workers');
       await worker.tasksDirectory(workersFolder);
+      await worker.start();
     }
 
     logger.log(
@@ -182,6 +185,14 @@ export async function bootstrap() {
 
         if (worker) {
           await worker.stop();
+        }
+
+        if (agendaDashboard) {
+          await agendaDashboard.close();
+          logger.log({
+            level: 'info',
+            message: 'Agenda Dashboard interrupted'
+          });
         }
 
         if (rabbitServer) {

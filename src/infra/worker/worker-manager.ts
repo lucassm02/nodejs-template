@@ -1,11 +1,11 @@
 import { readdirSync } from 'fs';
 import { resolve } from 'path';
 import type { Agenda as AgendaInstance, Job as AgendaJob } from 'agenda';
+import type { MongoClient } from 'mongodb';
 
 import { Job } from '@/job/protocols';
 import { jobAdapter } from '@/main/adapters';
 import {
-  MONGO,
   WORKER,
   apmTransaction,
   elasticAPM,
@@ -14,10 +14,13 @@ import {
 } from '@/util';
 
 import { WorkerOptions } from './types';
+import { createMongoAgenda } from './create-mongo-agenda';
 
 export class WorkerManager {
   private static instance: WorkerManager;
   private agenda: Promise<AgendaInstance> | null = null;
+  private mongoClient: MongoClient | null = null;
+  private workerRegistrations: Promise<void>[] = [];
   private collectionName = 'agenda';
   private workerLoaderOptions: {
     allowAll: boolean;
@@ -39,27 +42,21 @@ export class WorkerManager {
 
   private async getAgenda(): Promise<AgendaInstance> {
     if (!this.agenda) {
-      this.agenda = this.createAgenda();
+      this.agenda = this.createAgenda().catch((error) => {
+        this.agenda = null;
+        throw error;
+      });
     }
 
     return this.agenda;
   }
 
   private async createAgenda(): Promise<AgendaInstance> {
-    const [{ Agenda }, { MongoBackend }] = await Promise.all([
-      import('agenda'),
-      import('@agendajs/mongo-backend')
-    ]);
-    const mongoUrl = `${MONGO.URL()}/${MONGO.NAME}?authSource=${
-      MONGO.AUTH_SOURCE
-    }`;
+    const { agenda, mongoClient } = await createMongoAgenda(
+      this.collectionName
+    );
 
-    const agenda = new Agenda({
-      backend: new MongoBackend({
-        address: mongoUrl,
-        collection: this.collectionName
-      })
-    });
+    this.mongoClient = mongoClient;
 
     agenda
       .on('fail', (error) => {
@@ -88,22 +85,44 @@ export class WorkerManager {
   }
 
   public async start() {
-    const agenda = await this.getAgenda();
-    return agenda.start();
+    try {
+      await Promise.all(this.workerRegistrations);
+      const agenda = await this.getAgenda();
+      return await agenda.start();
+    } catch (error) {
+      await this.mongoClient?.close();
+      this.mongoClient = null;
+      this.agenda = null;
+      throw error;
+    }
   }
 
   public async stop() {
     const agenda = await this.getAgenda();
-    return agenda.stop();
+
+    try {
+      return await agenda.stop();
+    } finally {
+      await this.mongoClient?.close();
+      this.mongoClient = null;
+      this.agenda = null;
+    }
   }
 
   public makeWorker(
-    options: WorkerOptions,
-    ...callbacks: (Job | Function)[]
-  ): void;
-  public async makeWorker(
     arg1: WorkerOptions,
     ...callbacks: (Job | Function)[]
+  ): void {
+    const registration = this.registerWorker(arg1, callbacks);
+
+    // Mark early failures as handled until start() propagates them.
+    registration.catch(() => undefined);
+    this.workerRegistrations.push(registration);
+  }
+
+  private async registerWorker(
+    arg1: WorkerOptions,
+    callbacks: (Job | Function)[]
   ): Promise<void> {
     const { repeatInterval, name } = arg1;
 
@@ -182,7 +201,7 @@ export class WorkerManager {
       }
       const setup = result.value.default;
       if (typeof setup !== 'function') continue;
-      setup(this);
+      await setup(this);
     }
   }
 

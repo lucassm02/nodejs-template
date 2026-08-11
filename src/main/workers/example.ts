@@ -1,19 +1,7 @@
 import { WorkerManager } from '@/infra/worker';
 
-import { makeExampleJob, makeSaveInCacheJob } from '../factories/jobs';
-
-const tenMinutes = 60 * 10;
+import { makeExampleJob } from '../factories/jobs';
 
 export default (manager: WorkerManager) => {
-  manager.makeWorker(
-    { name: 'example' },
-    makeExampleJob()
-    // makeSaveInCacheJob({
-    //   key: 'example',
-    //   value: 'validateToken',
-    //   subKey: 'encryptedToken',
-    //   extractField: 'token',
-    //   ttl: tenMinutes
-    // })
-  );
+  manager.makeWorker({ name: 'example' }, makeExampleJob());
 };
