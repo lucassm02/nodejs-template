@@ -4,8 +4,10 @@ import { LOGGER, convertCamelCaseKeysToSnakeCase, logger } from '@/util';
 import { LogModel } from './log-model';
 import { BulkInsertBuffer } from '../util/bulk-insert-buffer';
 
+// A log write failure must not go back through the database transport, or the
+// error feeds the very buffer that produced it.
 const logBufferError = (error: unknown) => {
-  logger.log(error instanceof Error ? error : new Error(String(error)));
+  logger.log(error instanceof Error ? error : new Error(String(error)), 'offline');
 };
 
 export class LogRepository implements CreateLogRepository {
@@ -14,6 +16,7 @@ export class LogRepository implements CreateLogRepository {
     {
       maxSize: LOGGER.DB.BULK_SIZE,
       flushIntervalMs: LOGGER.DB.FLUSH_INTERVAL_MS,
+      maxQueueSize: LOGGER.DB.MAX_QUEUE_SIZE,
       onError: logBufferError
     }
   );
@@ -25,7 +28,7 @@ export class LogRepository implements CreateLogRepository {
       const formattedParams = convertCamelCaseKeysToSnakeCase(params);
       LogRepository.buffer.enqueue(formattedParams);
     } catch (error) {
-      logger.log(error);
+      logger.log(<Error>error, 'offline');
     }
   }
 

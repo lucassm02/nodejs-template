@@ -33,7 +33,7 @@ export class ElasticAPM {
       serverUrl: APM.SERVER_URL,
       environment: APM.ENVIRONMENT,
       active: true,
-      captureBody: 'all',
+      captureBody: APM.CAPTURE_BODY,
       captureHeaders: true,
       captureErrorLogStackTraces: 'always',
       captureExceptions: true,
@@ -41,7 +41,7 @@ export class ElasticAPM {
       payloadLogFile: filePath,
       instrument: true,
       instrumentIncomingHTTPRequests: true,
-      captureSpanStackTraces: true
+      spanStackTraceMinDuration: APM.SPAN_STACK_TRACE_MIN_DURATION
     });
   }
 

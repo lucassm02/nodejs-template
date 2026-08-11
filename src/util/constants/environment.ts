@@ -41,7 +41,9 @@ export const LOGGER = {
   DB: {
     ENABLED: stringToBoolean(process.env.LOGGER_DB_ENABLED) || false,
     BULK_SIZE: +(() => process.env.LOGGER_DB_BULK_SIZE || 10)(),
-    FLUSH_INTERVAL_MS: +(() => process.env.LOGGER_DB_FLUSH_INTERVAL_MS || 100)()
+    FLUSH_INTERVAL_MS: +(() =>
+      process.env.LOGGER_DB_FLUSH_INTERVAL_MS || 100)(),
+    MAX_QUEUE_SIZE: +(() => process.env.LOGGER_DB_MAX_QUEUE_SIZE || 10_000)()
   },
   CONSOLE: { LEVEL: process.env.LOGGER_CONSOLE_LEVEL || 'info' }
 };
@@ -85,12 +87,15 @@ export const RABBIT = {
   HOST: process.env.RABBIT_HOST || '',
   VIRTUAL_HOST: process.env.RABBIT_VIRTUAL_HOST || '',
   PORT: +(() => process.env.RABBIT_PORT || 5672)(),
+  // Without a prefetch the broker delivers the whole queue at once and the
+  // process holds every message in heap, so the default must be bounded.
   DEFAULT_PREFETCH: (() => {
-    if (process.env.RABBIT_DEFAULT_PREFETCH) {
-      return Number(process.env.RABBIT_DEFAULT_PREFETCH);
-    }
+    const DEFAULT = 10;
+    const value = Number(process.env.RABBIT_DEFAULT_PREFETCH);
 
-    return null;
+    if (!Number.isInteger(value) || value <= 0) return DEFAULT;
+
+    return value;
   })()
 };
 
@@ -126,7 +131,28 @@ export const APM = {
   ENABLED: stringToBoolean(process.env.APM_ENABLED) ?? false,
   SECRET_TOKEN: process.env.APM_SECRET_TOKEN || '',
   SERVER_URL: process.env.APM_SERVER_URL || '',
-  ENVIRONMENT: process.env.APM_ENVIRONMENT || ''
+  ENVIRONMENT: process.env.APM_ENVIRONMENT || '',
+  // Capture a stack trace only for spans at least this long. Kibana's central
+  // config exposes the same knob under `span_stack_trace_min_duration`.
+  // `-1` disables span stack traces, `0` captures every span. The `10ms`
+  // default matches the behaviour of the deprecated `captureSpanStackTraces`.
+  SPAN_STACK_TRACE_MIN_DURATION: (() => {
+    const DEFAULT = '10ms';
+    const value = process.env.APM_SPAN_STACK_TRACE_MIN_DURATION?.trim();
+
+    if (!value || !/^-?\d+(\.\d+)?(ms|s|m)?$/.test(value)) return DEFAULT;
+
+    return value;
+  })(),
+  CAPTURE_BODY: (() => {
+    const DEFAULT = 'all';
+    const options = ['off', 'errors', 'transactions', 'all'] as const;
+    const value = process.env.APM_CAPTURE_BODY;
+
+    type CaptureBody = (typeof options)[number];
+
+    return options.includes(<CaptureBody>value) ? <CaptureBody>value : DEFAULT;
+  })()
 };
 
 export const ELASTICSEARCH = {

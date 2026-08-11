@@ -434,8 +434,60 @@ export class WebServer {
     };
   }
 
+  // The decorator, the PropertyDescriptor and the bind are stable per
+  // middleware, so they are built once at route registration instead of on
+  // every request.
+  private decorateMiddleware(middleware: RouteMiddleware) {
+    const decoratorOptions: DecoratorOptions = {
+      options: {
+        name:
+          typeof middleware === 'function'
+            ? middleware.name
+            : middleware.constructor.name,
+        subType: 'handler'
+      }
+    };
+
+    const decorator = apmSpan(decoratorOptions);
+
+    if (typeof middleware === 'function') {
+      const desc: PropertyDescriptor = {
+        value: middleware.bind(null),
+        writable: true,
+        configurable: true,
+        enumerable: false
+      };
+
+      const handler: Function = decorator({}, middleware.name, desc).value;
+
+      return (
+        request: unknown,
+        reply: unknown,
+        next: Middleware.Next,
+        stateHook: unknown
+      ) => handler(request, reply, next, stateHook);
+    }
+
+    const proto = middleware.constructor.prototype;
+    const methodName = 'handle';
+    const desc = Object.getOwnPropertyDescriptor(proto, methodName)!;
+
+    const handler: Function = decorator(proto, methodName, desc).value.bind(
+      middleware
+    );
+
+    return (
+      request: unknown,
+      _reply: unknown,
+      next: Middleware.Next,
+      stateHook: unknown
+    ) => handler(request, stateHook, next);
+  }
+
   private adaptMiddlewares(middlewares: RouteMiddleware[]) {
     return middlewares.map((middleware) => {
+      const handler = this.decorateMiddleware(middleware);
+
       return async (
         {
           [STATE_KEY]: state,
@@ -449,48 +501,7 @@ export class WebServer {
           this.makeSetStateInRequest(state)
         ];
 
-        function handler() {
-          const decoratorOptions: DecoratorOptions = {
-            options: {
-              name: '',
-              subType: 'handler'
-            }
-          };
-
-          if (typeof middleware === 'function') {
-            decoratorOptions.options.name = middleware.name;
-            const decorator = apmSpan(decoratorOptions);
-            const proto = {};
-
-            const methodName = middleware.name;
-
-            const desc: PropertyDescriptor = {
-              value: middleware.bind(null),
-              writable: true,
-              configurable: true,
-              enumerable: false
-            };
-
-            const newDesc = decorator(proto, methodName, desc);
-
-            return newDesc.value(request, reply, next, stateHook);
-          }
-
-          decoratorOptions.options.name = middleware.constructor.name;
-          const decorator = apmSpan(decoratorOptions);
-
-          const proto = middleware.constructor.prototype;
-          const methodName = 'handle';
-          const desc = Object.getOwnPropertyDescriptor(proto, methodName)!;
-
-          const newDesc = decorator(proto, methodName, desc);
-
-          const callback: Function = newDesc.value.bind(middleware);
-
-          return callback(request, stateHook, next);
-        }
-
-        const response = await handler();
+        const response = await handler(request, reply, next, stateHook);
 
         if (!response) return;
 
@@ -513,6 +524,8 @@ export class WebServer {
   }
 
   public adapter(middleware: RouteMiddleware) {
+    const handler = this.decorateMiddleware(middleware);
+
     return async (
       {
         [STATE_KEY]: state,
@@ -526,48 +539,7 @@ export class WebServer {
         this.makeSetStateInRequest(state)
       ];
 
-      function handler() {
-        const decoratorOptions: DecoratorOptions = {
-          options: {
-            name: '',
-            subType: 'handler'
-          }
-        };
-
-        if (typeof middleware === 'function') {
-          decoratorOptions.options.name = middleware.name;
-          const decorator = apmSpan(decoratorOptions);
-          const proto = {};
-
-          const methodName = middleware.name;
-
-          const desc: PropertyDescriptor = {
-            value: middleware.bind(null),
-            writable: true,
-            configurable: true,
-            enumerable: false
-          };
-
-          const newDesc = decorator(proto, methodName, desc);
-
-          return newDesc.value(request, reply, next, stateHook);
-        }
-
-        decoratorOptions.options.name = middleware.constructor.name;
-        const decorator = apmSpan(decoratorOptions);
-
-        const proto = middleware.constructor.prototype;
-        const methodName = 'handle';
-        const desc = Object.getOwnPropertyDescriptor(proto, methodName)!;
-
-        const newDesc = decorator(proto, methodName, desc);
-
-        const callback: Function = newDesc.value.bind(middleware);
-
-        return callback(request, stateHook, next);
-      }
-
-      const response = await handler();
+      const response = await handler(request, reply, next, stateHook);
 
       if (!response) return;
 
@@ -601,6 +573,8 @@ export class WebServer {
   private adapterHookWithFlow(
     middlewares: RouteMiddleware[]
   ): RouteHandlerMethod {
+    const adaptedMiddlewares = this.adaptMiddlewares(middlewares);
+
     return async (request, reply) => {
       try {
         if (!request[STATE_KEY]) {
@@ -613,7 +587,7 @@ export class WebServer {
           [REQUEST_KEY]: request,
           [STATE_KEY]: request[STATE_KEY],
           [REPLY_KEY]: reply
-        })(...this.adaptMiddlewares(middlewares))();
+        })(...adaptedMiddlewares)();
       } catch (error) {
         reply.status(500).send(serverError(error));
       }
@@ -621,6 +595,8 @@ export class WebServer {
   }
 
   private adapterWithFlow(middlewares: RouteMiddleware[]): RouteHandlerMethod {
+    const adaptedMiddlewares = this.adaptMiddlewares(middlewares);
+
     return async (request, reply) => {
       try {
         if (!request[STATE_KEY]) {
@@ -633,7 +609,7 @@ export class WebServer {
           [REQUEST_KEY]: request,
           [STATE_KEY]: request[STATE_KEY],
           [REPLY_KEY]: reply
-        })(...this.adaptMiddlewares(middlewares))();
+        })(...adaptedMiddlewares)();
 
         if (reply.sent) return;
 

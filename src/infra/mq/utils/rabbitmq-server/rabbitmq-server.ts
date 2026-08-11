@@ -382,7 +382,9 @@ export class RabbitMqServer {
             body: convertSnakeCaseKeysToCamelCase(
               this.convertMessageToJson(message)
             ),
-            headers: message.properties.headers,
+            headers: convertSnakeCaseKeysToCamelCase(
+              message.properties.headers ?? {}
+            ),
             fields: { queue, ...message.fields },
             properties: message.properties,
             reject: (requeue?: boolean) => {
@@ -769,13 +771,9 @@ export class RabbitMqServer {
     payload: Payload,
     callback: Function
   ): Promise<void> {
-    const { body, headers, ...restOfPayload } = payload;
-    const bodyAndHeadersToCamelCase = convertSnakeCaseKeysToCamelCase({
-      body,
-      headers
-    });
-
-    return callback({ ...bodyAndHeadersToCamelCase, ...restOfPayload });
+    // body and headers already arrive in camelCase from `consume`; converting
+    // them again cost one extra deep copy of the whole message per delivery.
+    return callback(payload);
   }
 
   private extractQueueOptions() {

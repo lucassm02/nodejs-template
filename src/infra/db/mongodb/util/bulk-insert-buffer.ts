@@ -10,6 +10,7 @@ type InsertManyModel<T extends object> = {
 type BulkInsertBufferOptions = {
   maxSize: number;
   flushIntervalMs: number;
+  maxQueueSize?: number;
   onError?: (error: unknown) => void;
 };
 
@@ -24,6 +25,8 @@ export class BulkInsertBuffer<T extends object> {
   private flushing: Promise<void> | null = null;
   private readonly maxSize: number;
   private readonly flushIntervalMs: number;
+  private readonly maxQueueSize: number;
+  private dropped = 0;
 
   constructor(
     private readonly model: InsertManyModel<T>,
@@ -37,9 +40,20 @@ export class BulkInsertBuffer<T extends object> {
       Number.isFinite(options.flushIntervalMs) && options.flushIntervalMs > 0
         ? options.flushIntervalMs
         : 1000;
+    this.maxQueueSize =
+      Number.isFinite(options.maxQueueSize) && (options.maxQueueSize ?? 0) > 0
+        ? <number>options.maxQueueSize
+        : 10_000;
   }
 
   public enqueue(document: T): void {
+    // If the destination is slow the queue would grow unbounded and trade an
+    // I/O problem for a heap one, so the oldest documents are dropped.
+    if (this.queue.length >= this.maxQueueSize) {
+      this.queue.shift();
+      this.dropped += 1;
+    }
+
     this.queue.push(document);
 
     if (this.queue.length >= this.maxSize) {
@@ -48,6 +62,10 @@ export class BulkInsertBuffer<T extends object> {
     }
 
     this.scheduleFlush();
+  }
+
+  public getDroppedCount(): number {
+    return this.dropped;
   }
 
   public async flush(): Promise<void> {
