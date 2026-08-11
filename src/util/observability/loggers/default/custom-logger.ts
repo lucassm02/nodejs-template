@@ -1,4 +1,5 @@
 import path from 'path';
+import mongoose from 'mongoose';
 import { Logger, createLogger, format, transports } from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import { ElasticsearchTransport } from 'winston-elasticsearch';
@@ -32,6 +33,8 @@ type LogParams = {
 };
 
 type LoggerType = 'offline' | 'default';
+
+const MONGOOSE_CONNECTED_STATE = 1;
 
 const apm = elasticAPM().getAPM();
 
@@ -121,7 +124,10 @@ export class CustomLogger {
 
     let logger = this.offlineLogger;
 
-    if (MONGO.ENABLED && type !== 'offline') {
+    const isMongoConnected =
+      mongoose.connection.readyState === MONGOOSE_CONNECTED_STATE;
+
+    if (MONGO.ENABLED && isMongoConnected && type !== 'offline') {
       logger = this.logger;
     }
 

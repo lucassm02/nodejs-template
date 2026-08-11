@@ -1,10 +1,10 @@
 import { CustomLogger } from '@/util/observability/loggers/default/custom-logger';
 
 jest.mock('winston', () => ({
-  createLogger: jest.fn().mockReturnValue({
+  createLogger: jest.fn().mockImplementation(() => ({
     add: jest.fn(),
     log: jest.fn()
-  }),
+  })),
   format: {
     combine: jest.fn((...args) => args),
     timestamp: jest.fn().mockReturnValue('ts-format'),
@@ -20,6 +20,11 @@ jest.mock('winston', () => ({
   transports: {
     Console: jest.fn()
   }
+}));
+
+jest.mock('mongoose', () => ({
+  __esModule: true,
+  default: { connection: { readyState: 1 } }
 }));
 
 jest.mock('winston-daily-rotate-file', () => jest.fn());
@@ -59,10 +64,15 @@ jest.mock('@/util/security/sanitize-object', () => ({
 const getWinston = () => jest.requireMock('winston');
 const getConstants = () => jest.requireMock('@/util/constants');
 const getAPMModule = () => jest.requireMock('@/util/observability/apm');
+const getMongoose = () => jest.requireMock('mongoose').default;
 
-const getLoggerInstance = () => {
+const getLoggerInstances = () => {
   const { createLogger } = getWinston();
-  return (createLogger as jest.Mock).mock.results.slice(-1)[0]?.value;
+  const [logger, offlineLogger] = (createLogger as jest.Mock).mock.results
+    .slice(-2)
+    .map(({ value }) => value);
+
+  return { logger, offlineLogger };
 };
 
 beforeEach(() => {
@@ -71,6 +81,7 @@ beforeEach(() => {
   getConstants().LOGGER.DB.ENABLED = false;
   getConstants().ELASTICSEARCH.ENABLED = false;
   getConstants().MONGO.ENABLED = true;
+  getMongoose().connection.readyState = 1;
   getAPMModule().elasticAPM.mockReturnValue({ getAPM: () => null });
   getAPMModule().getAPMTransactionIds.mockReturnValue(null);
 });
@@ -136,27 +147,65 @@ describe('CustomLogger', () => {
     it('should log params object with main logger when MONGO is enabled', () => {
       const { sut } = makeSut();
       sut.log({ level: 'info', message: 'hello' });
-      const loggerInst = getLoggerInstance();
-      expect(loggerInst?.log).toHaveBeenCalledWith(
+      const { logger, offlineLogger } = getLoggerInstances();
+      expect(logger.log).toHaveBeenCalledWith(
         expect.objectContaining({ level: 'info', message: 'hello' })
       );
+      expect(offlineLogger.log).not.toHaveBeenCalled();
     });
 
     it('should use offlineLogger when MONGO.ENABLED is false', () => {
       getConstants().MONGO.ENABLED = false;
       const { sut } = makeSut();
       sut.log({ level: 'warn', message: 'offline-msg' });
-      const loggerInst = getLoggerInstance();
-      expect(loggerInst?.log).toHaveBeenCalledWith(
+      const { logger, offlineLogger } = getLoggerInstances();
+      expect(offlineLogger.log).toHaveBeenCalledWith(
         expect.objectContaining({ message: 'offline-msg' })
+      );
+      expect(logger.log).not.toHaveBeenCalled();
+    });
+
+    it('should use offlineLogger when MongoDB is disconnected', () => {
+      getMongoose().connection.readyState = 0;
+      const { sut } = makeSut();
+
+      sut.log({ level: 'warn', message: 'mongo-disconnected' });
+
+      const { logger, offlineLogger } = getLoggerInstances();
+      expect(offlineLogger.log).toHaveBeenCalledWith(
+        expect.objectContaining({ message: 'mongo-disconnected' })
+      );
+      expect(logger.log).not.toHaveBeenCalled();
+    });
+
+    it('should check the MongoDB connection state on every log call', () => {
+      const { sut } = makeSut();
+      const { logger, offlineLogger } = getLoggerInstances();
+
+      sut.log({ level: 'info', message: 'while-connected' });
+
+      getMongoose().connection.readyState = 0;
+      sut.log({ level: 'warn', message: 'while-disconnected' });
+
+      getMongoose().connection.readyState = 1;
+      sut.log({ level: 'info', message: 'after-reconnection' });
+
+      expect(offlineLogger.log).toHaveBeenCalledWith(
+        expect.objectContaining({ message: 'while-disconnected' })
+      );
+      expect(logger.log).toHaveBeenCalledWith(
+        expect.objectContaining({ message: 'while-connected' })
+      );
+      expect(logger.log).toHaveBeenCalledWith(
+        expect.objectContaining({ message: 'after-reconnection' })
       );
     });
 
     it('should use offlineLogger when type is offline', () => {
       const { sut } = makeSut();
       sut.log({ level: 'warn', message: 'offline-type' }, 'offline');
-      const loggerInst = getLoggerInstance();
-      expect(loggerInst?.log).toHaveBeenCalledWith(
+      const { offlineLogger } = getLoggerInstances();
+      expect(offlineLogger.log).toHaveBeenCalledWith(
         expect.objectContaining({ message: 'offline-type' })
       );
     });
@@ -165,8 +214,8 @@ describe('CustomLogger', () => {
       const { sut } = makeSut();
       const error = new Error('something broke');
       sut.log(error);
-      const loggerInst = getLoggerInstance();
-      expect(loggerInst?.log).toHaveBeenCalledWith(
+      const { logger } = getLoggerInstances();
+      expect(logger.log).toHaveBeenCalledWith(
         expect.objectContaining({ level: 'error', message: 'something broke' })
       );
     });
@@ -175,8 +224,8 @@ describe('CustomLogger', () => {
       const { sut } = makeSut();
       const error = new Error('stack-error');
       sut.log(error);
-      const loggerInst = getLoggerInstance();
-      expect(loggerInst?.log).toHaveBeenCalledWith(
+      const { logger } = getLoggerInstances();
+      expect(logger.log).toHaveBeenCalledWith(
         expect.objectContaining({ stack: expect.any(String) })
       );
     });
@@ -188,8 +237,8 @@ describe('CustomLogger', () => {
       });
       const { sut } = makeSut();
       sut.log({ level: 'info', message: 'traced' });
-      const loggerInst = getLoggerInstance();
-      expect(loggerInst?.log).toHaveBeenCalledWith(
+      const { logger } = getLoggerInstances();
+      expect(logger.log).toHaveBeenCalledWith(
         expect.objectContaining({
           traceId: 'trace-abc',
           transactionId: 'tx-xyz'
@@ -204,8 +253,8 @@ describe('CustomLogger', () => {
         message: 'with-payload',
         payload: { key: 'val' }
       });
-      const loggerInst = getLoggerInstance();
-      expect(loggerInst?.log).toHaveBeenCalledWith(
+      const { logger } = getLoggerInstances();
+      expect(logger.log).toHaveBeenCalledWith(
         expect.objectContaining({ level: 'debug', message: 'with-payload' })
       );
     });
