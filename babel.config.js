@@ -1,9 +1,10 @@
 module.exports = {
   presets: [
-    ['@babel/preset-env', { targets: { node: 'current' } }],
+    ['@babel/preset-env', { targets: { node: '24' }, modules: false }],
     '@babel/preset-typescript'
   ],
   plugins: [
+    './script/babel/dynamic-import-extension.cjs',
     [
       'module-resolver',
       {
@@ -12,7 +13,6 @@ module.exports = {
         }
       }
     ],
-    '@babel/plugin-transform-typescript',
     '@babel/plugin-transform-modules-commonjs',
     ['@babel/plugin-proposal-decorators', { legacy: true }],
     ['@babel/plugin-proposal-class-properties', { loose: true }],

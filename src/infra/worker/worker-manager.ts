@@ -1,7 +1,7 @@
 import { readdirSync } from 'fs';
 import { resolve } from 'path';
+import type { Agenda as AgendaInstance, Job as AgendaJob } from 'agenda';
 
-import { Agenda } from '@hokify/agenda';
 import { Job } from '@/job/protocols';
 import { jobAdapter } from '@/main/adapters';
 import {
@@ -17,7 +17,7 @@ import { WorkerOptions } from './types';
 
 export class WorkerManager {
   private static instance: WorkerManager;
-  private agenda!: Agenda;
+  private agenda: Promise<AgendaInstance> | null = null;
   private collectionName = 'agenda';
   private workerLoaderOptions: {
     allowAll: boolean;
@@ -34,15 +34,37 @@ export class WorkerManager {
   constructor() {
     elasticAPM();
 
-    this.agenda = new Agenda();
+    this.extractWorkerOptions();
+  }
 
+  private async getAgenda(): Promise<AgendaInstance> {
+    if (!this.agenda) {
+      this.agenda = this.createAgenda();
+    }
+
+    return this.agenda;
+  }
+
+  private async createAgenda(): Promise<AgendaInstance> {
+    const [{ Agenda }, { MongoBackend }] = await Promise.all([
+      import('agenda'),
+      import('@agendajs/mongo-backend')
+    ]);
     const mongoUrl = `${MONGO.URL()}/${MONGO.NAME}?authSource=${
       MONGO.AUTH_SOURCE
     }`;
 
-    this.agenda
+    const agenda = new Agenda({
+      backend: new MongoBackend({
+        address: mongoUrl,
+        collection: this.collectionName
+      })
+    });
+
+    agenda
       .on('fail', (error) => {
-        logger.log({ level: 'error', message: error.message });
+        const message = error instanceof Error ? error.message : String(error);
+        logger.log({ level: 'error', message });
       })
       .on('ready', () => {
         logger.log({ level: 'info', message: 'Scheduler ready!' });
@@ -54,9 +76,7 @@ export class WorkerManager {
         logger.log({ level: 'error', message: error.message });
       });
 
-    this.agenda.database(mongoUrl, this.collectionName);
-
-    this.extractWorkerOptions();
+    return agenda;
   }
 
   public static getInstance(): WorkerManager {
@@ -68,11 +88,13 @@ export class WorkerManager {
   }
 
   public async start() {
-    return this.agenda.start();
+    const agenda = await this.getAgenda();
+    return agenda.start();
   }
 
   public async stop() {
-    return this.agenda.stop();
+    const agenda = await this.getAgenda();
+    return agenda.stop();
   }
 
   public makeWorker(
@@ -104,11 +126,14 @@ export class WorkerManager {
       message: `New worker was registered, name: ${name}${cronText}`
     });
 
-    this.agenda.define(name, async (job, done) => {
+    const agenda = await this.getAgenda();
+
+    agenda.define(name, async (job: AgendaJob, done) => {
       const { data, repeatInterval } = job.attrs;
+      const payload = (data ?? {}) as Record<string, unknown>;
       try {
-        await this.taskHandler(name, repeatInterval, data, () =>
-          jobAdapter(...callbacks)(data)
+        await this.taskHandler(name, repeatInterval, payload, () =>
+          jobAdapter(...callbacks)(payload)
         );
       } finally {
         done();
@@ -116,7 +141,7 @@ export class WorkerManager {
     });
 
     if (repeatInterval) {
-      await this.agenda.every(repeatInterval, name, {});
+      await agenda.every(repeatInterval, name, {});
     }
   }
 

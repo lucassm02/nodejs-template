@@ -6,21 +6,27 @@ jest.mock('fs', () => ({
 }));
 
 const agendaOnMock = jest.fn().mockReturnThis();
-const agendaDatabaseMock = jest.fn().mockReturnThis();
 const agendaDefineMock = jest.fn();
 const agendaEveryMock = jest.fn().mockResolvedValue(undefined);
 const agendaStartMock = jest.fn().mockResolvedValue(undefined);
 const agendaStopMock = jest.fn().mockResolvedValue(undefined);
+const mockMongoBackendConstructor = jest.fn();
 
-jest.mock('@hokify/agenda', () => ({
+jest.mock('agenda', () => ({
   Agenda: jest.fn().mockImplementation(() => ({
     on: agendaOnMock,
-    database: agendaDatabaseMock,
     define: agendaDefineMock,
     every: agendaEveryMock,
     start: agendaStartMock,
     stop: agendaStopMock
   }))
+}));
+
+jest.mock('@agendajs/mongo-backend', () => ({
+  MongoBackend: jest.fn().mockImplementation((config) => {
+    mockMongoBackendConstructor(config);
+    return {};
+  })
 }));
 
 jest.mock('@/main/adapters', () => ({
@@ -47,7 +53,7 @@ jest.mock('@/util', () => ({
 }));
 
 beforeEach(() => {
-  (WorkerManager as any).instance = undefined;
+  Reflect.set(WorkerManager, 'instance', undefined);
 });
 
 type SutTypes = { sut: WorkerManager };
@@ -67,6 +73,10 @@ describe('WorkerManager', () => {
       const { sut } = makeSut();
       await sut.start();
       expect(agendaStartMock).toHaveBeenCalledTimes(1);
+      expect(mockMongoBackendConstructor).toHaveBeenCalledWith({
+        address: 'mongodb://localhost:27017/test?authSource=admin',
+        collection: 'agenda'
+      });
     });
   });
 
@@ -168,9 +178,10 @@ describe('WorkerManager', () => {
   });
 
   describe('agenda event callbacks', () => {
-    it('should log on fail event', () => {
+    it('should log on fail event', async () => {
       const { logger } = jest.requireMock('@/util');
-      makeSut();
+      const { sut } = makeSut();
+      await sut.start();
       const failCallback = agendaOnMock.mock.calls.find(
         ([event]) => event === 'fail'
       )?.[1];
@@ -180,9 +191,10 @@ describe('WorkerManager', () => {
       );
     });
 
-    it('should log on ready event', () => {
+    it('should log on ready event', async () => {
       const { logger } = jest.requireMock('@/util');
-      makeSut();
+      const { sut } = makeSut();
+      await sut.start();
       const readyCallback = agendaOnMock.mock.calls.find(
         ([event]) => event === 'ready'
       )?.[1];
@@ -192,9 +204,10 @@ describe('WorkerManager', () => {
       );
     });
 
-    it('should log on start event', () => {
+    it('should log on start event', async () => {
       const { logger } = jest.requireMock('@/util');
-      makeSut();
+      const { sut } = makeSut();
+      await sut.start();
       const startCallback = agendaOnMock.mock.calls.find(
         ([event]) => event === 'start'
       )?.[1];
@@ -204,9 +217,10 @@ describe('WorkerManager', () => {
       );
     });
 
-    it('should log on error event', () => {
+    it('should log on error event', async () => {
       const { logger } = jest.requireMock('@/util');
-      makeSut();
+      const { sut } = makeSut();
+      await sut.start();
       const errorCallback = agendaOnMock.mock.calls.find(
         ([event]) => event === 'error'
       )?.[1];
