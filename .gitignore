@@ -45,5 +45,8 @@ dist/**/*
 # SonarQube
 .scannerwork
 
+# Local Vibeflow workspace
+.vibeflow/
+
 helm/environment/*
 src/infra/db/mssql/util/connection/test_database.sqlite

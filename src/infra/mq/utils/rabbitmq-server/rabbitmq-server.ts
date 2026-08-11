@@ -463,7 +463,7 @@ export class RabbitMqServer {
   ): void {
     let queue;
     let enabled = true;
-    let prefetch;
+    let prefetch = this.defaultPrefetch;
 
     if (typeof arg1 === 'object') {
       queue = arg1.queue;

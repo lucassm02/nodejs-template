@@ -279,6 +279,22 @@ describe('RabbitMqServer', () => {
       );
     });
 
+    it('should apply default prefetch with string queue argument', () => {
+      const { RABBIT } = jest.requireMock('@/util');
+      RABBIT.DEFAULT_PREFETCH = 10;
+      const sut = new RabbitMqServer();
+      const spy = jest
+        .spyOn(sut as any, 'consume')
+        .mockResolvedValue(undefined);
+
+      sut.makeConsumer('my-queue', jest.fn());
+
+      expect(spy).toHaveBeenCalledWith('my-queue', expect.any(Function), {
+        prefetch: 10
+      });
+      RABBIT.DEFAULT_PREFETCH = undefined;
+    });
+
     it('should call consume with ConsumerOptions object argument', async () => {
       const { sut } = makeSut();
       const spy = jest
