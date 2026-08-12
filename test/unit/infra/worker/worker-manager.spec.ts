@@ -47,23 +47,30 @@ jest.mock('@/main/adapters', () => ({
     }
 }));
 
-jest.mock('@/util', () => ({
-  elasticAPM: jest.fn().mockReturnValue({ getAPM: () => null }),
-  logger: { log: jest.fn() },
-  apmTransaction: () => (_t: object, _k: string, desc: PropertyDescriptor) =>
-    desc,
-  workerLogger: () => (_t: object, _k: string, desc: PropertyDescriptor) =>
-    desc,
-  MONGO: {
-    URL: () => 'mongodb://localhost:27017',
-    NAME: 'test',
-    AUTH_SOURCE: 'admin',
-    CONNECTION_TIMEOUT_MS: 1000,
-    MAX_POOL_SIZE: 10,
-    MIN_POOL_SIZE: 1
-  },
-  WORKER: { LIST: [] }
-}));
+jest.mock('@/util', () => {
+  const { convertSnakeCaseKeysToCamelCase } = jest.requireActual(
+    '@/util/object/formatters'
+  );
+
+  return {
+    elasticAPM: jest.fn().mockReturnValue({ getAPM: () => null }),
+    logger: { log: jest.fn() },
+    apmTransaction: () => (_t: object, _k: string, desc: PropertyDescriptor) =>
+      desc,
+    workerLogger: () => (_t: object, _k: string, desc: PropertyDescriptor) =>
+      desc,
+    convertSnakeCaseKeysToCamelCase,
+    MONGO: {
+      URL: () => 'mongodb://localhost:27017',
+      NAME: 'test',
+      AUTH_SOURCE: 'admin',
+      CONNECTION_TIMEOUT_MS: 1000,
+      MAX_POOL_SIZE: 10,
+      MIN_POOL_SIZE: 1
+    },
+    WORKER: { LIST: [] }
+  };
+});
 
 beforeEach(() => {
   Reflect.set(WorkerManager, 'instance', undefined);
@@ -307,9 +314,17 @@ describe('WorkerManager', () => {
   });
 
   describe('#makeWorker agenda.define callback', () => {
-    it('should invoke the job callback and call done', async () => {
+    it('should invoke the job callback with a camelCase payload and call done', async () => {
       const { sut } = makeSut();
       const job = jest.fn().mockResolvedValue(undefined);
+      const payload = {
+        user_id: 'user-id',
+        alreadyCamelCase: true,
+        nested_data: {
+          created_at: '2026-08-12',
+          item_list: [{ item_id: 'item-id' }]
+        }
+      };
 
       sut.makeWorker({ name: 'cb-job' }, job);
       await sut.start();
@@ -317,10 +332,26 @@ describe('WorkerManager', () => {
       const defineCallback = agendaDefineMock.mock.calls[0][1];
       const done = jest.fn();
       await defineCallback(
-        { attrs: { data: { key: 'val' }, repeatInterval: '5 minutes' } },
+        { attrs: { data: payload, repeatInterval: '5 minutes' } },
         done
       );
 
+      expect(job).toHaveBeenCalledWith({
+        userId: 'user-id',
+        alreadyCamelCase: true,
+        nestedData: {
+          createdAt: '2026-08-12',
+          itemList: [{ itemId: 'item-id' }]
+        }
+      });
+      expect(payload).toStrictEqual({
+        user_id: 'user-id',
+        alreadyCamelCase: true,
+        nested_data: {
+          created_at: '2026-08-12',
+          item_list: [{ item_id: 'item-id' }]
+        }
+      });
       expect(done).toHaveBeenCalledTimes(1);
     });
   });
