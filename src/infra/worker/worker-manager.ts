@@ -8,6 +8,7 @@ import { jobAdapter } from '@/main/adapters';
 import {
   WORKER,
   apmTransaction,
+  convertSnakeCaseKeysToCamelCase,
   elasticAPM,
   logger,
   workerLogger
@@ -150,9 +151,10 @@ export class WorkerManager {
     agenda.define(name, async (job: AgendaJob, done) => {
       const { data, repeatInterval } = job.attrs;
       const payload = (data ?? {}) as Record<string, unknown>;
+      const payloadToCamelCase = convertSnakeCaseKeysToCamelCase(payload);
       try {
         await this.taskHandler(name, repeatInterval, payload, () =>
-          jobAdapter(...callbacks)(payload)
+          jobAdapter(...callbacks)(payloadToCamelCase)
         );
       } finally {
         done();
