@@ -75,7 +75,7 @@ export class DataValidation implements Interface {
         throw new CustomError(Interface.Exceptions.VALIDATION_ERROR, items);
       }
       if (!(values.exception instanceof Error))
-        throw new Error(values.exception);
+        throw new CustomError(values.exception as string, items);
       throw values.exception;
     }
   }

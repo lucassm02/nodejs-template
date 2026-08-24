@@ -72,7 +72,8 @@ export class CreateExampleMiddleware
             template(
               DICTIONARY.RESPONSE.MESSAGE.INVALID_DATA,
               'criação de exemplo'
-            )
+            ),
+            error.items
           );
         default:
           return serverError(error);
