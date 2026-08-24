@@ -78,6 +78,33 @@ const ALL_SENSITIVE_PATTERN = new RegExp(
   'i'
 );
 
+// Short keywords are abbreviations that also occur inside ordinary words, so
+// substring matching classifies `charge` (rg), `shipping` (pin), `company`
+// (pan) and `author` (auth) as sensitive and masks them. They only match a
+// whole word of the key; longer keywords keep substring matching, which is what
+// covers concatenated keys such as `mycardnumber`.
+const SHORT_KEYWORD_MAX_LENGTH = 4;
+
+function splitKeyIntoWords(key: string): string[] {
+  return key
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter(Boolean);
+}
+
+function matchesKeywords(
+  keywords: string[],
+  lowerKey: string,
+  words: string[]
+): boolean {
+  return keywords.some((keyword) =>
+    keyword.length <= SHORT_KEYWORD_MAX_LENGTH
+      ? words.includes(keyword)
+      : lowerKey.includes(keyword)
+  );
+}
+
 const PAN_LENGTHS = new Set([13, 14, 15, 16, 17, 18, 19]);
 
 function luhn(digits: string): boolean {
@@ -114,9 +141,11 @@ export function getSensitiveKeyType(
     return null;
   }
   const lower = key.toLowerCase();
-  if (CARD_KEYWORDS.some((k) => lower.includes(k))) return 'card';
-  if (REDACT_KEYWORDS.some((k) => lower.includes(k))) return 'redact';
-  if (PARTIAL_KEYWORDS.some((k) => lower.includes(k))) return 'partial';
+  const words = splitKeyIntoWords(key);
+
+  if (matchesKeywords(CARD_KEYWORDS, lower, words)) return 'card';
+  if (matchesKeywords(REDACT_KEYWORDS, lower, words)) return 'redact';
+  if (matchesKeywords(PARTIAL_KEYWORDS, lower, words)) return 'partial';
   return null;
 }
 
