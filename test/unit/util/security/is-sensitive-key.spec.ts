@@ -66,6 +66,40 @@ describe('isSensitiveKey', () => {
     });
   });
 
+  describe('short keywords concatenated with another keyword', () => {
+    it.each([
+      ['cpfcnpj', 'partial'],
+      ['cnpjcpf', 'partial'],
+      ['cpfCnpj', 'partial'],
+      ['cpf_cnpj', 'partial'],
+      ['usercpfcnpj', 'partial'],
+      ['cpfcnpjuser', 'partial'],
+      ['documentcpf', 'partial'],
+      ['documentoCpf', 'partial'],
+      ['cardpan', 'card'],
+      ['numeropan', 'card']
+    ])('should classify %s as %s', (key, expected) => {
+      expect(getSensitiveKeyType(key)).toBe(expected);
+    });
+
+    it.each([
+      'panel',
+      'japan',
+      'expand',
+      'pancake',
+      'spinner',
+      'opinion',
+      'campaign',
+      'champion',
+      'container',
+      'documentation',
+      'keyring',
+      'margin'
+    ])('should not classify %s as sensitive', (key) => {
+      expect(getSensitiveKeyType(key)).toBeNull();
+    });
+  });
+
   describe('long keywords', () => {
     it.each([
       ['cardnumber', 'card'],

@@ -87,8 +87,8 @@ const SHORT_KEYWORD_MAX_LENGTH = 4;
 
 // Fragments that ordinarily surround a keyword in a concatenated key name. A
 // short keyword still matches inside a longer word when what is left on both
-// sides is one of them, so `userauth`, `authdata` and `preauth` stay covered
-// while `author` (auth + or) and `shipping` (ship + pin + g) do not.
+// sides is built out of them, so `userauth`, `authdata` and `preauth` stay
+// covered while `author` (auth + or) and `shipping` (ship + pin + g) do not.
 const KEY_AFFIXES = new Set([
   'my',
   'our',
@@ -143,8 +143,53 @@ const KEY_AFFIXES = new Set([
   'payload',
   'body',
   'param',
-  'params'
+  'params',
+  'document',
+  'documento',
+  'documentos',
+  'doc',
+  'docs',
+  'usuario',
+  'cliente',
+  'conta',
+  'numero',
+  'nro',
+  'codigo',
+  'chave',
+  'dados',
+  'valor',
+  'campo',
+  'texto'
 ]);
+
+// Two sensitive keywords are often fused into a single name (`cpfcnpj`,
+// `cardpan`), so a keyword also counts as a surrounding fragment. Ordinary
+// words stay out because none of their pieces is a keyword or an affix.
+const KEY_FRAGMENTS = new Set([
+  ...KEY_AFFIXES,
+  ...CARD_KEYWORDS,
+  ...REDACT_KEYWORDS,
+  ...PARTIAL_KEYWORDS
+]);
+
+// Guards the decomposition below against a pathological key name.
+const MAX_FRAGMENT_LENGTH = 40;
+
+function isKnownFragment(fragment: string): boolean {
+  if (fragment === '' || KEY_FRAGMENTS.has(fragment)) return true;
+  if (fragment.length > MAX_FRAGMENT_LENGTH) return false;
+
+  for (let at = 1; at < fragment.length; at++) {
+    if (
+      KEY_FRAGMENTS.has(fragment.slice(0, at)) &&
+      isKnownFragment(fragment.slice(at))
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
 
 function splitKeyIntoWords(key: string): string[] {
   return key
@@ -164,12 +209,7 @@ function hasKeywordFragment(word: string, keyword: string): boolean {
     const before = word.slice(0, at);
     const after = word.slice(at + keyword.length);
 
-    if (
-      (before === '' || KEY_AFFIXES.has(before)) &&
-      (after === '' || KEY_AFFIXES.has(after))
-    ) {
-      return true;
-    }
+    if (isKnownFragment(before) && isKnownFragment(after)) return true;
 
     from = at + 1;
   }
