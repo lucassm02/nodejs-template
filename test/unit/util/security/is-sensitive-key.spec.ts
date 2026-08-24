@@ -33,12 +33,36 @@ describe('isSensitiveKey', () => {
       'company',
       'companyName',
       'author',
+      'authorId',
+      'authorized',
+      'authors',
       'authorName',
       'wildcard',
+      'cardholder',
       'discard'
     ])('should not classify %s as sensitive', (key) => {
       expect(getSensitiveKeyType(key)).toBeNull();
       expect(isSensitiveKey(key)).toBe(false);
+    });
+  });
+
+  describe('short keywords concatenated with a key affix', () => {
+    // A short keyword also matches inside a longer word when what surrounds
+    // it is a common key fragment (`user`, `pre`, `data`, `token`...), which
+    // is what covers names built without a separator.
+    it.each([
+      ['userauth', 'redact'],
+      ['userAuth', 'redact'],
+      ['user_auth', 'redact'],
+      ['authdata', 'redact'],
+      ['authData', 'redact'],
+      ['preauth', 'redact'],
+      ['preAuth', 'redact'],
+      ['myauthdata', 'redact'],
+      ['oauthToken', 'redact'],
+      ['cardHolder', 'card']
+    ])('should classify %s as %s', (key, expected) => {
+      expect(getSensitiveKeyType(key)).toBe(expected);
     });
   });
 

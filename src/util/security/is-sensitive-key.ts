@@ -80,10 +80,71 @@ const ALL_SENSITIVE_PATTERN = new RegExp(
 
 // Short keywords are abbreviations that also occur inside ordinary words, so
 // substring matching classifies `charge` (rg), `shipping` (pin), `company`
-// (pan) and `author` (auth) as sensitive and masks them. They only match a
-// whole word of the key; longer keywords keep substring matching, which is what
-// covers concatenated keys such as `mycardnumber`.
+// (pan) and `author` (auth) as sensitive and masks them. Longer keywords keep
+// substring matching, which is what covers concatenated keys such as
+// `mycardnumber`.
 const SHORT_KEYWORD_MAX_LENGTH = 4;
+
+// Fragments that ordinarily surround a keyword in a concatenated key name. A
+// short keyword still matches inside a longer word when what is left on both
+// sides is one of them, so `userauth`, `authdata` and `preauth` stay covered
+// while `author` (auth + or) and `shipping` (ship + pin + g) do not.
+const KEY_AFFIXES = new Set([
+  'my',
+  'our',
+  'user',
+  'users',
+  'client',
+  'customer',
+  'account',
+  'pre',
+  'post',
+  'new',
+  'old',
+  'current',
+  'previous',
+  'internal',
+  'external',
+  'default',
+  'temp',
+  'tmp',
+  'raw',
+  'encoded',
+  'hashed',
+  'masked',
+  'data',
+  'value',
+  'values',
+  'info',
+  'id',
+  'ids',
+  'key',
+  'keys',
+  'code',
+  'codes',
+  'number',
+  'num',
+  'no',
+  'hash',
+  'header',
+  'headers',
+  'token',
+  'tokens',
+  'secret',
+  'type',
+  'name',
+  'list',
+  'field',
+  'fields',
+  'string',
+  'str',
+  'text',
+  'content',
+  'payload',
+  'body',
+  'param',
+  'params'
+]);
 
 function splitKeyIntoWords(key: string): string[] {
   return key
@@ -93,6 +154,27 @@ function splitKeyIntoWords(key: string): string[] {
     .filter(Boolean);
 }
 
+function hasKeywordFragment(word: string, keyword: string): boolean {
+  let from = 0;
+
+  for (;;) {
+    const at = word.indexOf(keyword, from);
+    if (at === -1) return false;
+
+    const before = word.slice(0, at);
+    const after = word.slice(at + keyword.length);
+
+    if (
+      (before === '' || KEY_AFFIXES.has(before)) &&
+      (after === '' || KEY_AFFIXES.has(after))
+    ) {
+      return true;
+    }
+
+    from = at + 1;
+  }
+}
+
 function matchesKeywords(
   keywords: string[],
   lowerKey: string,
@@ -100,7 +182,7 @@ function matchesKeywords(
 ): boolean {
   return keywords.some((keyword) =>
     keyword.length <= SHORT_KEYWORD_MAX_LENGTH
-      ? words.includes(keyword)
+      ? words.some((word) => hasKeywordFragment(word, keyword))
       : lowerKey.includes(keyword)
   );
 }
