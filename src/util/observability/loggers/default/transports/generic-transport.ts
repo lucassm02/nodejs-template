@@ -2,8 +2,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Transport from 'winston-transport';
 
-import { isJson } from '@/util/text';
-
 type Options = Pick<Transport.TransportStreamOptions, 'format' | 'level'> & {
   receiver: ((params: { [key: string]: any }) => void) | Function;
 };
@@ -48,7 +46,12 @@ export class GenericTransport extends Transport {
 
     if (conditionToLog) {
       const message = params[messageSymbols];
-      const body = isJson(message) ? JSON.parse(message) : { message };
+      let body;
+      try {
+        body = JSON.parse(message);
+      } catch (_error) {
+        body = { message };
+      }
       this.logger({ level: this.level, ...body });
     }
 
