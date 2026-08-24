@@ -2,7 +2,8 @@ import { Logger } from '@/data/protocols/util';
 import { ErrorHandler } from '@/domain/usecases';
 import { ValidateAuthenticationKey } from '@/domain/usecases/authentication-key/validate-authentication-key';
 import { Middleware } from '@/presentation/protocols/middleware';
-import { serverError } from '@/presentation/utils';
+import { serverError, unauthorized } from '@/presentation/utils';
+import { DICTIONARY } from '@/util';
 
 export class ValidateAuthenticationKeyMiddleware implements Middleware {
   constructor(
@@ -19,7 +20,8 @@ export class ValidateAuthenticationKeyMiddleware implements Middleware {
     try {
       const authentication = httpRequest.headers.authentication as string;
 
-      if (!authentication) throw new Error('AUTHENTICATION_NOT_PROVIDED');
+      if (!authentication)
+        return unauthorized(DICTIONARY.RESPONSE.MESSAGE.UNAUTHORIZED);
 
       const authenticationKey =
         await this.validateAuthenticationKey.validate(authentication);
