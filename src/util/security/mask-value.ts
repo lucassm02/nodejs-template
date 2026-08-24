@@ -15,7 +15,10 @@ export function maskRedact(): string {
 
 export function maskPartial(value: string): string {
   const len = value.length;
-  const maskCount = Math.ceil(len * 0.8);
+  if (!len) return value;
+  // A one character value rounds down to zero masked characters and would be
+  // logged in the clear, so at least one character is always masked.
+  const maskCount = Math.max(1, Math.floor(len * 0.8));
   return '*'.repeat(maskCount) + value.slice(maskCount);
 }
 

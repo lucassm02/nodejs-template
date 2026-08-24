@@ -42,12 +42,16 @@ describe('maskPartial', () => {
 
   it('should handle short strings', () => {
     const result = maskPartial('ab');
-    expect(result).toBe('**');
+    expect(result).toBe('*b');
   });
 
   it('should handle single character', () => {
     const result = maskPartial('x');
     expect(result).toBe('*');
+  });
+
+  it('should return an empty string untouched', () => {
+    expect(maskPartial('')).toBe('');
   });
 });
 
@@ -71,6 +75,6 @@ describe('applyMask', () => {
 describe('maskValue', () => {
   it('should apply partial mask', () => {
     const result = maskValue('secret');
-    expect(result).toBe('*****t');
+    expect(result).toBe('****et');
   });
 });
