@@ -105,29 +105,65 @@ function matchesKeywords(
   );
 }
 
-const PAN_LENGTHS = new Set([13, 14, 15, 16, 17, 18, 19]);
+const PAN_MIN_DIGITS = 13;
+const PAN_MAX_DIGITS = 19;
+// Longest accepted candidate: every digit followed by one separator.
+const PAN_MAX_RAW_LENGTH = PAN_MAX_DIGITS * 2;
 
-function luhn(digits: string): boolean {
-  let sum = 0;
-  let alternate = false;
-  for (let i = digits.length - 1; i >= 0; i--) {
-    let n = parseInt(digits[i], 10);
-    if (alternate) {
-      n *= 2;
-      if (n > 9) n -= 9;
-    }
-    sum += n;
-    alternate = !alternate;
-  }
-  return sum % 10 === 0;
+const HYPHEN = 45;
+const SPACE = 32;
+const ZERO = 48;
+const NINE = 57;
+const ASCII_MAX = 127;
+const TAB = 9;
+const CARRIAGE_RETURN = 13;
+
+function isSeparator(charCode: number, char: string): boolean {
+  if (charCode === HYPHEN || charCode === SPACE) return true;
+  if (charCode >= TAB && charCode <= CARRIAGE_RETURN) return true;
+  // Keeps parity with the `\s` class for the rare non ASCII space.
+  return charCode > ASCII_MAX && /\s/.test(char);
 }
 
+// Runs Luhn over the raw value in a single pass, so a candidate is rejected
+// without ever allocating the digits-only copy the check used to build for
+// every logged value.
 function isPAN(value: unknown): boolean {
-  if (typeof value !== 'string' && typeof value !== 'number') return false;
-  const digits = String(value).replace(/[\s-]/g, '');
-  if (!/^\d+$/.test(digits)) return false;
-  if (!PAN_LENGTHS.has(digits.length)) return false;
-  return luhn(digits);
+  let raw: string;
+
+  if (typeof value === 'string') raw = value;
+  else if (typeof value === 'number') raw = String(value);
+  else return false;
+
+  const { length } = raw;
+  if (length < PAN_MIN_DIGITS || length > PAN_MAX_RAW_LENGTH) return false;
+
+  let digits = 0;
+  let sum = 0;
+  let alternate = false;
+
+  for (let index = length - 1; index >= 0; index--) {
+    const charCode = raw.charCodeAt(index);
+
+    if (charCode < ZERO || charCode > NINE) {
+      if (isSeparator(charCode, raw[index])) continue;
+      return false;
+    }
+
+    let digit = charCode - ZERO;
+    if (alternate) {
+      digit *= 2;
+      if (digit > 9) digit -= 9;
+    }
+
+    sum += digit;
+    alternate = !alternate;
+
+    if (++digits > PAN_MAX_DIGITS) return false;
+  }
+
+  if (digits < PAN_MIN_DIGITS) return false;
+  return sum % 10 === 0;
 }
 
 export type SensitiveKeyType = 'card' | 'redact' | 'partial';
