@@ -174,28 +174,28 @@ describe('CacheServer', () => {
       );
     });
 
-    it('should call server.add with key and value', async () => {
+    it('should call server.set with key and value', async () => {
       const { sut } = makeSut();
       sut.setCredentials({ host: 'localhost', port: 11211 });
       await sut.connect();
 
       await sut.set('mykey', 'myvalue');
 
-      expect(memjsClientMock.add).toHaveBeenCalledWith(
+      expect(memjsClientMock.set).toHaveBeenCalledWith(
         'mykey',
         'myvalue',
         undefined
       );
     });
 
-    it('should call server.add with object value serialized to JSON', async () => {
+    it('should call server.set with object value serialized to JSON', async () => {
       const { sut } = makeSut();
       sut.setCredentials({ host: 'localhost', port: 11211 });
       await sut.connect();
 
       await sut.set('k', { foo: 'bar' });
 
-      expect(memjsClientMock.add).toHaveBeenCalledWith(
+      expect(memjsClientMock.set).toHaveBeenCalledWith(
         'k',
         '{"foo":"bar"}',
         undefined
@@ -209,7 +209,7 @@ describe('CacheServer', () => {
 
       await sut.set({ key: 'k', value: 'v', ttl: 60 });
 
-      expect(memjsClientMock.add).toHaveBeenCalledWith('k', 'v', {
+      expect(memjsClientMock.set).toHaveBeenCalledWith('k', 'v', {
         expires: 60
       });
     });
