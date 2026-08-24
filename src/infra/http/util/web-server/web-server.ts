@@ -193,8 +193,6 @@ export class WebServer {
 
     setImmediate(() => this.serverBootstrap(+port, callback));
 
-    this.addressInfo = this.fastify.server.address();
-
     return this.fastify.server;
   }
 
@@ -236,8 +234,6 @@ export class WebServer {
 
     setImmediate(() => this.serverBootstrap(+port, callback));
 
-    this.addressInfo = this.fastify.server.address();
-
     return this.fastify.server;
   }
 
@@ -262,6 +258,9 @@ export class WebServer {
 
     this.fastify.ready(() => {
       callback?.();
+      this.fastify.server.once('listening', () => {
+        this.addressInfo = this.fastify.server.address();
+      });
       this.fastify.server.listen({
         port
       });
