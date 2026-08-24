@@ -3,16 +3,14 @@ import { DatabaseTransaction } from '@/domain/models';
 export const mergeTransactions = (
   transactions: (DatabaseTransaction | null)[]
 ) => {
-  const orderedTransactions = transactions.reverse();
-
   const rollback = async () => {
-    for await (const transaction of orderedTransactions) {
+    for await (const transaction of [...transactions].reverse()) {
       await transaction?.rollback();
     }
   };
 
   const commit = async () => {
-    for await (const transaction of orderedTransactions) {
+    for await (const transaction of transactions) {
       await transaction?.commit();
     }
   };
