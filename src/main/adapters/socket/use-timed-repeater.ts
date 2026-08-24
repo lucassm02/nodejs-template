@@ -26,7 +26,10 @@ export const useTimedRepeater = (
     finish: Function,
     [state]: [Record<string, unknown>, Function]
   ) => {
+    let finished = false;
     const clearAll = () => {
+      if (finished) return;
+      finished = true;
       clearTimeout(timer);
       clearInterval(repeater);
       return finish();
