@@ -21,7 +21,7 @@ export const mergeTransactions = (
 export const rollbackAll = async (
   transactions: (DatabaseTransaction | null)[]
 ) => {
-  for await (const transaction of transactions.reverse()) {
+  for await (const transaction of [...transactions].reverse()) {
     await transaction?.rollback();
   }
 };
