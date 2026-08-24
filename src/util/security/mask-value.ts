@@ -15,7 +15,7 @@ export function maskRedact(): string {
 
 export function maskPartial(value: string): string {
   const len = value.length;
-  const maskCount = Math.floor(len * 0.8);
+  const maskCount = Math.ceil(len * 0.8);
   return '*'.repeat(maskCount) + value.slice(maskCount);
 }
 
