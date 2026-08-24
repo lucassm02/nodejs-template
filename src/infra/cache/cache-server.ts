@@ -196,7 +196,7 @@ export class CacheServer {
 
     const handler =
       method === 'SET'
-        ? this.server.add.bind(this.server)
+        ? this.server.set.bind(this.server)
         : this.server.replace.bind(this.server);
 
     return handler(key, this.parseValueToString(value), options);
