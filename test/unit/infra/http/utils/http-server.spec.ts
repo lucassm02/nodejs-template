@@ -23,14 +23,23 @@ const decorateRequest = jest.fn();
 const addContentTypeParser = jest.fn();
 const addHook = jest.fn();
 
+// The address is only read once the underlying server actually binds, so the
+// mock keeps the `listening` handler and fires it from `listen`.
+const serverEvents: Record<string, Function[]> = {};
+
 const server = {
-  listen: jest.fn(),
+  listen: jest.fn().mockImplementation(() => {
+    serverEvents.listening?.forEach((listener) => listener());
+  }),
   address: jest.fn().mockReturnValue('http://127.0.0.1'),
   close,
   decorateRequest,
   listeners: jest.fn().mockReturnValue([]),
   removeAllListeners: jest.fn(),
-  on: jest.fn()
+  on: jest.fn(),
+  once: jest.fn().mockImplementation((event: string, listener: Function) => {
+    serverEvents[event] = [...(serverEvents[event] ?? []), listener];
+  })
 };
 
 const fastifyMock = () => ({
@@ -62,6 +71,14 @@ const makeSut = (): SutType => {
 
   return { sut };
 };
+
+// `listen` defers the bootstrap and the bootstrap polls for the routes to
+// finish loading, so the binding only happens a few ticks later.
+const ROUTES_POLL_INTERVAL = 100;
+const waitForListening = () =>
+  new Promise((resolve) => {
+    setTimeout(resolve, ROUTES_POLL_INTERVAL * 2);
+  });
 
 describe('HttpServer', () => {
   describe('setup', () => {
@@ -101,10 +118,11 @@ describe('HttpServer', () => {
     });
   });
   describe('address', () => {
-    it('should return an valid address info if serving is listen', () => {
+    it('should return an valid address info if serving is listen', async () => {
       const { sut } = makeSut();
 
       sut.listen(8080);
+      await waitForListening();
 
       const address = sut.address();
 
