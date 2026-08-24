@@ -88,7 +88,7 @@ export class ExampleModel extends YupErrorHandler {
     return this.data.deletedAt;
   }
 
-  #schema = {
+  static #schema = {
     exampleId: yup.string().required('O campo "exampleId" é obrigatório.'),
     externalId: yup.string().required('O campo "externalId" é obrigatório.'),
     value: yup.number().required('O campo "value" é obrigatório.'),
@@ -99,7 +99,7 @@ export class ExampleModel extends YupErrorHandler {
   };
 
   private validate() {
-    this.validateSchema(this.#schema, this.data);
+    this.validateSchema(ExampleModel.#schema, this.data);
   }
 }
 
