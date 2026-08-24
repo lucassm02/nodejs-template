@@ -7,7 +7,8 @@ import {
 import {
   convertCamelCaseKeysToSnakeCase,
   convertSnakeCaseKeysToCamelCase,
-  ELASTICSEARCH
+  ELASTICSEARCH,
+  logger
 } from '@/util';
 
 export class Elasticsearch
@@ -61,7 +62,15 @@ export class Elasticsearch
       });
 
       return convertSnakeCaseKeysToCamelCase(response._source);
-    } catch (_error) {
+    } catch (error) {
+      if (error?.meta?.statusCode === 404) return undefined;
+
+      logger.log({
+        level: 'error',
+        message: 'Elasticsearch getById failed',
+        error
+      });
+
       return undefined;
     }
   }
