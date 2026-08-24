@@ -168,20 +168,41 @@ function isPAN(value: unknown): boolean {
 
 export type SensitiveKeyType = 'card' | 'redact' | 'partial';
 
+// A log stream repeats the same key names indefinitely, and classifying a key
+// is deterministic, so the result is memoized. Keys can come from an external
+// payload, hence the ceiling: past it the cache stops growing and classifying
+// falls back to computing the result every time.
+const KEY_TYPE_CACHE_MAX_SIZE = 5_000;
+const keyTypeCache = new Map<string, SensitiveKeyType | null>();
+
+function classifyKey(key: string): SensitiveKeyType | null {
+  const cached = keyTypeCache.get(key);
+  if (cached !== undefined) return cached;
+
+  let type: SensitiveKeyType | null = null;
+
+  if (ALL_SENSITIVE_PATTERN.test(key)) {
+    const lower = key.toLowerCase();
+    const words = splitKeyIntoWords(key);
+
+    if (matchesKeywords(CARD_KEYWORDS, lower, words)) type = 'card';
+    else if (matchesKeywords(REDACT_KEYWORDS, lower, words)) type = 'redact';
+    else if (matchesKeywords(PARTIAL_KEYWORDS, lower, words)) type = 'partial';
+  }
+
+  if (keyTypeCache.size < KEY_TYPE_CACHE_MAX_SIZE) keyTypeCache.set(key, type);
+
+  return type;
+}
+
 export function getSensitiveKeyType(
   key: string,
   value?: unknown
 ): SensitiveKeyType | null {
-  if (!ALL_SENSITIVE_PATTERN.test(key)) {
-    if (value !== undefined && isPAN(value)) return 'card';
-    return null;
-  }
-  const lower = key.toLowerCase();
-  const words = splitKeyIntoWords(key);
+  const typeByKey = classifyKey(key);
+  if (typeByKey) return typeByKey;
 
-  if (matchesKeywords(CARD_KEYWORDS, lower, words)) return 'card';
-  if (matchesKeywords(REDACT_KEYWORDS, lower, words)) return 'redact';
-  if (matchesKeywords(PARTIAL_KEYWORDS, lower, words)) return 'partial';
+  if (value !== undefined && isPAN(value)) return 'card';
   return null;
 }
 
