@@ -284,13 +284,14 @@ export class WebServer {
   public async refresh() {
     if (!this.isStarted) return;
 
-    this.fastify.server.close(() => {
-      logger.log({ level: 'info', message: 'Refreshing server' });
-    });
-
     this.refreshEndpoints();
 
-    this.listen(this.listenerOptions.port, this.listenerOptions.callback);
+    this.fastify.server.close(() => {
+      logger.log({ level: 'info', message: 'Refreshing server' });
+
+      this.isStarted = false;
+      this.listen(this.listenerOptions.port, this.listenerOptions.callback);
+    });
   }
 
   public async close() {
