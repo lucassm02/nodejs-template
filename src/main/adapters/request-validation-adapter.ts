@@ -82,13 +82,11 @@ const expandPayloadCaseVariants = (payload: unknown): unknown => {
     (data, [key, value]) => {
       const expandedValue = expandPayloadCaseVariants(value);
 
-      return getCaseVariants(key).reduce<ValidationPayload>(
-        (result, variant) => ({
-          ...result,
-          [variant]: expandedValue
-        }),
-        data
-      );
+      for (const variant of getCaseVariants(key)) {
+        data[variant] = expandedValue;
+      }
+
+      return data;
     },
     {}
   );
