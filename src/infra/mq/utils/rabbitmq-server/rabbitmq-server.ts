@@ -89,6 +89,7 @@ export class RabbitMqServer {
 
     this.extractQueueOptions();
     this.loadOptionsFromEnv();
+    this.registerEventHandlers();
   }
 
   public static getInstance(): RabbitMqServer {
@@ -154,7 +155,7 @@ export class RabbitMqServer {
       throw new Error(this.Error.EmptyChannelPool);
     }
 
-    this.startEventListeners();
+    this.startConnectionListeners();
 
     this.logger({ level: 'info', message: 'Connection started' });
 
@@ -195,7 +196,6 @@ export class RabbitMqServer {
     await this.waitForPendingProcessing();
 
     this.connection?.removeAllListeners();
-    this.event.removeAllListeners();
 
     if (this.connection) {
       try {
@@ -203,11 +203,10 @@ export class RabbitMqServer {
       } catch (error) {
         this.logger(error);
       }
-
-      this.closing = false;
     }
 
     this.connection = null;
+    this.closing = false;
 
     this.logger({ level: 'info', message: 'Connection closed' });
 
@@ -645,7 +644,7 @@ export class RabbitMqServer {
     }
   }
 
-  private startEventListeners() {
+  private startConnectionListeners() {
     this.connection?.on('error', (error) => {
       this.logger(error);
     });
@@ -655,7 +654,12 @@ export class RabbitMqServer {
         this.event.emit(this.events.RESTART);
       }
     });
+  }
 
+  // Registered once for the lifetime of the instance: these listeners drive
+  // the reconnect retry loop itself, so they must survive stop()/start()
+  // cycles — including a start() that fails before reconnecting.
+  private registerEventHandlers() {
     this.event.on(this.events.RESTART, this.restart.bind(this));
     this.event.on(this.events.CHECK_CHANNEL_POOL, async () => {
       if (this.channelPool.size !== 0) return;
