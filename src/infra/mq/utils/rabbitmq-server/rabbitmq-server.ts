@@ -370,6 +370,8 @@ export class RabbitMqServer {
       const consumer = await channel.consume(queue, async (message) => {
         if (!message) return;
 
+        const rawContent = message.content.toString();
+
         try {
           if (this.closing) return this.reject(message);
 
@@ -379,7 +381,7 @@ export class RabbitMqServer {
 
           const payload = {
             body: convertSnakeCaseKeysToCamelCase(
-              this.convertMessageToJson(message)
+              this.convertMessageToJson(rawContent)
             ),
             headers: convertSnakeCaseKeysToCamelCase(
               message.properties.headers ?? {}
@@ -402,7 +404,7 @@ export class RabbitMqServer {
               level: 'warn',
               message: 'Unable to convert message to JSON',
               payload: {
-                message: message.content.toString(),
+                message: rawContent,
                 headers: message.properties.headers,
                 properties: { queue, ...message.fields }
               }
@@ -413,7 +415,7 @@ export class RabbitMqServer {
             level: 'verbose',
             message: 'The message left the queue',
             payload: {
-              message: message.content.toString(),
+              message: rawContent,
               headers: message.properties.headers,
               properties: { queue, ...message.fields }
             }
@@ -758,8 +760,8 @@ export class RabbitMqServer {
     return Buffer.from(string);
   }
 
-  private convertMessageToJson(message: Message): Record<string, unknown> {
-    return JSON.parse(message.content.toString());
+  private convertMessageToJson(content: string): Record<string, unknown> {
+    return JSON.parse(content);
   }
 
   @amqpLogger({
