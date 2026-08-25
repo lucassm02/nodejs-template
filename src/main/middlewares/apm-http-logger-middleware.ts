@@ -1,4 +1,4 @@
-import { elasticAPM } from '@/util';
+import { APM, elasticAPM } from '@/util';
 import { sanitizeObject } from '@/util/security/sanitize-object';
 
 import { httpLoggerAdapter } from '../adapters';
@@ -15,13 +15,17 @@ const makeLabel = (object: Record<string, unknown>, labelPrefix: string) => {
 
 export const apmHttpLoggerMiddleware = httpLoggerAdapter(
   ({ response, request }) => {
+    if (!APM.ENABLED) return;
+
+    const transaction = elasticAPM().getAPM()?.currentTransaction;
+    if (!transaction) return;
+
     const responseLabels = makeLabel(
       sanitizeObject(response),
       'http-response-'
     );
     const requestLabels = makeLabel(sanitizeObject(request), 'http-request-');
-    const transaction = elasticAPM().getAPM()?.currentTransaction;
-    transaction?.addLabels(responseLabels, false);
-    transaction?.addLabels(requestLabels, false);
+    transaction.addLabels(responseLabels, false);
+    transaction.addLabels(requestLabels, false);
   }
 );
