@@ -131,4 +131,31 @@ describe('YupErrorHandler', () => {
       }
     ]);
   });
+
+  it('#validateSchema compiles the ObjectSchema once and reuses it across calls sharing the same schema object', () => {
+    const stub = new Stub();
+    const schema = { foo: yup.string().required() };
+
+    stub.validate(schema, { foo: 'ok' });
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { schemaCache } = YupErrorHandler as any;
+    const compiledSchema = schemaCache.get(schema);
+    expect(compiledSchema).toBeDefined();
+
+    stub.validate(schema, { foo: 'still ok' });
+
+    expect(schemaCache.get(schema)).toBe(compiledSchema);
+  });
+
+  it('#validateSchema still validates every call against the data passed to it, not a stale result from the cached schema', () => {
+    const stub = new Stub();
+    const schema = { foo: yup.string().required() };
+
+    stub.validate(schema, { foo: 'valid' });
+    expect(stub.hasErrors()).toBeFalsy();
+
+    stub.validate(schema, { any: false });
+    expect(stub.hasErrors()).toBeTruthy();
+  });
 });

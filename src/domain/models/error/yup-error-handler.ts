@@ -5,7 +5,19 @@ export type YupError = {
   param: string | undefined;
 };
 
+const compileSchema = (schema: ObjectShape) => object().shape(schema);
+
 export class YupErrorHandler {
+  // Keyed by the schema object's identity: object().shape(schema) rebuilds
+  // the whole ObjectSchema (fields, dependency order) on every call, which is
+  // wasted work whenever the same schema instance is reused across calls, as
+  // static class schemas are. A schema shape built fresh per call simply
+  // never hits the cache, so this stays correct either way.
+  private static schemaCache = new WeakMap<
+    ObjectShape,
+    ReturnType<typeof compileSchema>
+  >();
+
   private errors: YupError[] = [];
 
   addError(error: YupError) {
@@ -40,7 +52,13 @@ export class YupErrorHandler {
 
   protected validateSchema<T>(schema: ObjectShape, data: T): void {
     try {
-      object().shape(schema).validateSync(data, {
+      let compiledSchema = YupErrorHandler.schemaCache.get(schema);
+      if (!compiledSchema) {
+        compiledSchema = compileSchema(schema);
+        YupErrorHandler.schemaCache.set(schema, compiledSchema);
+      }
+
+      compiledSchema.validateSync(data, {
         abortEarly: false
       });
     } catch (error) {
