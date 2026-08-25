@@ -9,7 +9,8 @@ export function getRabbitmqConnection() {
       user: RABBIT.USER,
       password: RABBIT.PASSWORD,
       host: RABBIT.HOST,
-      port: RABBIT.PORT
+      port: RABBIT.PORT,
+      virtualHost: RABBIT.VIRTUAL_HOST
     })
     .start();
 }
